@@ -43,11 +43,9 @@ dirac_delta <- function(i,j){
 #'
 #' @examples
 #'
-#' library(pracma)
-#'
 #' output = unit_vector(c(2,6,5))
 #' #should equal one if a unit vector
-#' length_output = Norm(output)
+#' length_output = pracma::Norm(output)
 #'
 #' @export
 

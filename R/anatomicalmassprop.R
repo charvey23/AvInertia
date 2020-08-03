@@ -38,7 +38,7 @@ massprop_bones <- function(m,l,r_out,r_in,rho,start,end){
   # ------------------------------- Adjust axis -------------------------------------
   # ---------------------------------------------------------------------------------
   z_axis = bone_end-bone_start;
-  temp_vec = c(1,1,1) # arbitrary
+  temp_vec = c(1,1,1) # arbitrary vector as long as it's not the z-axis
   x_axis = cross(z_axis_b,temp_vec/Norm(temp_vec));
 
   # doesn't matter where the x axis points as long as:
