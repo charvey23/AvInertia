@@ -2,8 +2,6 @@
 # all written by Christina Harvey
 # last updated: 2020-08-03
 
-library(pracma) # where should this go
-
 # ---------------------- Dirac delta function ---------------------------
 #' Dirac delta function
 #'
@@ -54,7 +52,7 @@ dirac_delta <- function(i,j){
 #' @export
 
 calc_univec <- function(vector){
-  unit_vector = vector/Norm(vector)
+  unit_vector = vector/pracma::Norm(vector)
   return(unit_vector)
 }
 
@@ -83,15 +81,13 @@ calc_rot <- function(z_vector, x_vector){
   unit_x_vector = calc_univec(x_vector)
 
   #cross z with x to get the righthanded axis
-  y_vector = cross(unit_z_vector,unit_x_vector)
+  y_vector = pracma::cross(unit_z_vector,unit_x_vector)
   # ensure vectors are in unit form
   y_vector = calc_univec(y_vector)
 
-  rotation = list()
-  rotation$VRP2object = rbind(x_vector,y_vector,z_vector)
-  rotation$object2VRP = t(rotation$VRP2object)
+  VRP2object = rbind(x_vector,y_vector,z_vector)
 
-  return(rotation)
+  return()
 }
 
 # ---------------------- Calculate a matrix translation with parallel axis theorem  ---------------------------
@@ -121,7 +117,7 @@ parallelaxis <- function(I_CG, offset_vec, m){
 
   for (i in 1:3){
     for (j in 1:3){
-      I_off[i,j] = I_CG[i,j] + m*((dirac_delta(i,j)*dot(offset_vec,offset_vec)) - (offset_vec[i]*offset_vec[j]))
+      I_off[i,j] = I_CG[i,j] + m*((dirac_delta(i,j)*pracma::dot(offset_vec,offset_vec)) - (offset_vec[i]*offset_vec[j]))
     }
   }
 
