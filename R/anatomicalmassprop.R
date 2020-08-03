@@ -1,7 +1,9 @@
+# Script containing the functions to calculate the moment of inertia and CG of different anatomical components
+# all written by Christina Harvey
+# last updated: 2020-08-03
 
 
-
-#' Title
+#' Calculate the moment of inertia of a bone modelled as a hollow cylinder with two solid end caps
 #'
 #' @param m full mass of the bone
 #' @param l full length of the bone
