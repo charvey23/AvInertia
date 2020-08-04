@@ -103,11 +103,12 @@ calc_rot <- function(z_vector, x_vector){
   #cross z with x to get the righthanded axis
   y_vector = pracma::cross(unit_z_vector,unit_x_vector)
   # ensure vectors are in unit form
-  y_vector = calc_univec(y_vector)
+  unit_y_vector = calc_univec(y_vector)
 
-  VRP2object = rbind(x_vector,y_vector,z_vector)
+  # rotation matrix representing the rotated basis
+  VRP2object = rbind(unit_x_vector,unit_y_vector,unit_z_vector)
 
-  return()
+  return(VRP2object)
 }
 
 # ---------------------- Calculate a matrix translation with parallel axis theorem  ---------------------------

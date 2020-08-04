@@ -29,16 +29,18 @@ massprop_bones <- function(m,l,r_out,r_in,rho,start,end){
   vol   = m/rho # total volume of the bone
 
   # calculate how thick the cap needs to be to match the vol1 = m/rho and vol2 = geometric
-  cap_t = (-(0.5*l*((r_out^2)-(r_in^2)))/(r_in^2))+(vol/(2*pi*(r_in^2)))
-  cap_m = pi*cap_t*cap_r^2
+  r_cap = r_out
+  t_cap = (-(0.5*l*((r_out^2)-(r_in^2)))/(r_in^2))+(vol/(2*pi*(r_in^2)))
+  m_cap = pi*t_cap*r_cap^2
 
-  cyl_m = m - (2*cap_m)
-  cyl_l = l - (2*cap_t)
+  # cylinder geometry
+  m_cyl = m - (2*m_cap)
+  l_cyl = l - (2*t_cap)
 
   # ------------------------------- Adjust axis -------------------------------------
-  z_axis = start;
+  z_axis = end-start;
   temp_vec = c(1,1,1) # arbitrary vector as long as it's not the z-axis
-  x_axis = crossprod(z_axis,temp_vec/norm(temp_vec, type = "2"))
+  x_axis = pracma::cross(z_axis,temp_vec/norm(temp_vec, type = "2"))
 
   # doesn't matter where the x axis points as long as: 1. we know what it is 2. it's orthogonal to z
   # calculate the rotation matrix between VRP frame of reference and the object
@@ -46,16 +48,16 @@ massprop_bones <- function(m,l,r_out,r_in,rho,start,end){
 
   # ----------------------- Calculate moment of inertia -----------------------------
 
-  I_cyl_b = calc_inertia_cylhollow(r_out, r_in, cyl_l, cyl_m) # Frame of reference: Bone | Origin: Bone CG
-  I_cap_b = calc_inertia_cylsolid(r_out, cap_t, cap_m)        # Frame of reference: Bone | Origin: Bone CG
+  I_cyl = calc_inertia_cylhollow(r_out, r_in, l_cyl, m_cyl) # Frame of reference: Bone | Origin: Bone CG
+  I_cap = calc_inertia_cylsolid(r_cap, t_cap, m_cap)        # Frame of reference: Bone | Origin: Bone CG
 
   # want to move origin from CG to VRP but need to know where the bone is relative to the VRP origin
-  off = VRP2object %*% start                                  # Frame of reference: Bone | Origin: VRP
+  off = VRP2object%*%start                                  # Frame of reference: Bone | Origin: VRP
 
   # determine the offset vector for each component with       # Frame of reference: Bone | Origin: VRP
-  I_cyl_off   = c(0,0,0.5*l_bone) + off            # the hollow cylinder is displaced halfway along the bone (in z-axis)
-  I_cap1_off  = c(0,0,0.5*cap_t) + off             # Cap 1 edge centered on the beginning of the bone
-  I_cap2_off  = c(0,0,(l_bone - (0.5*cap_t)))+ off # Cap 2 edge centered on the end of the bone
+  I_cyl_off   = c(0,0,0.5*l) + off                 # the hollow cylinder is displaced halfway along the bone (in z-axis)
+  I_cap1_off  = c(0,0,0.5*t_cap) + off             # Cap 1 edge centered on the beginning of the bone
+  I_cap2_off  = c(0,0,(l - (0.5*t_cap)))+ off      # Cap 2 edge centered on the end of the bone
 
   # need to adjust the moment of inertia tensor               # Frame of reference: Bone | Origin: VRP
   I_cyl_vrp   = parallelaxis(I_cyl,-I_cyl_off,m_cyl)
@@ -95,7 +97,7 @@ massprop_muscles <- function(m,l,rho,start,end){
   # ------------------------------- Adjust axis -------------------------------------
   z_axis = end-start
   temp_vec = c(1,1,1) # arbitrary vector as long as it's not the z-axis
-  x_axis = crossprod(z_axis,temp_vec/norm(temp_vec, type = "2"))
+  x_axis = pracma::cross(z_axis,temp_vec/norm(temp_vec, type = "2"))
   # doesn't matter where the x axis points as long as:1. we know what it is 2. it's orthogonal to z
   # calculate the rotation matrix between VRP frame of reference and the object
   VRP2object = calc_rot(z_axis,x_axis)
@@ -144,7 +146,7 @@ massprop_muscles <- function(m,l,rho,start,end){
 #' @examples
 massprop_skin <- function(m,rho,pts){
   # ------------------ Determine the geometry of the skin ---------------------------
-  temp_cross = crossprod((pts[2,]-pts[1,]),(pts[2,]-pts[3,]))
+  temp_cross = pracma::cross((pts[2,]-pts[1,]),(pts[2,]-pts[3,]))
 
   A = 0.5*norm(temp_cross, type = "2");
   v = m/rho
@@ -279,7 +281,7 @@ massprop_feathers <- function(m,rho,start,end,n_pts,l,l_c,l_r_cor,r_cor,r_med,r_
   # ------------------------------- Adjust axis -------------------------------------
 
   z_axis = end - start
-  x_axis = crossprod((pt[2,]-pt[1,]),(pt[3,]-pt[1,]), type = "2") # normal vector of the feather based on supplied data points
+  x_axis = pracma::cross((pt[2,]-pt[1,]),(pt[3,]-pt[1,]), type = "2") # normal vector of the feather based on supplied data points
 
   # calculate the rotation matrix between VRP frame of reference and the object
   VRP2object = calc_rot(z_axis,x_axis)
