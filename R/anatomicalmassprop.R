@@ -132,11 +132,13 @@ massprop_muscles <- function(m,l,rho,start,end){
 #' @param m mass of skin (kg)
 #' @param rho density of skin (kg/m^3)
 #' @param pts three points defining the vertices of the triangle. Frame of reference: VRP | Origin: VRP
-#' Must be numbered in a counterclockwise direction for positive area.
+#' Must be numbered in a counterclockwise direction for positive area, otherwise signs will be reversed.
 #' each point should be a different row as follows:
 #' pt1x, pt1y, pt1z
 #' pt2x, pt1y, pt2z
 #' pt3x, pt3y, pt3z
+#' For inner skin: row1 - Shoulder, row2 - Wrist, row3 - Elbow * ensures CCW ordering
+#' For outer skin: row1 - Wrist, row2 - Finger, row3 - Elbow * ensures CCW ordering
 #'
 #' @author Christina Harvey
 #'
@@ -146,7 +148,7 @@ massprop_muscles <- function(m,l,rho,start,end){
 #' @examples
 massprop_skin <- function(m,rho,pts){
   # ------------------ Determine the geometry of the skin ---------------------------
-  temp_cross = pracma::cross((pts[2,]-pts[1,]),(pts[2,]-pts[3,]))
+  temp_cross = pracma::cross((pts[3,]-pts[1,]),(pts[3,]-pts[2,]))
 
   A = 0.5*norm(temp_cross, type = "2");
   v = m/rho
@@ -154,15 +156,15 @@ massprop_skin <- function(m,rho,pts){
 
   # ------------------------------- Adjust axis -------------------------------------
   z_axis = temp_cross
-  x_axis = pts[2,]-pts[1,] # vector points towards the second input point along the bone edge
+  x_axis = pts[3,]-pts[1,] # vector points towards the second input point along the bone edge
 
   # calculate the rotation matrix between VRP frame of reference and the object
   VRP2object = calc_rot(z_axis,x_axis)
 
   # Adjust the input pts frame to skin axes
   adj_pts = pts # define the new matrix
-  for (i in 1:4){
-    adj_pts[i,] = VRP2object*pts[i,]                      # Frame of reference: Skin | Origin: VRP
+  for (i in 1:3){
+    adj_pts[i,] = VRP2object%*%pts[i,]                      # Frame of reference: Skin | Origin: VRP
   }
 
   # ---------------------------- Moment of inertia ------------------------------
@@ -285,7 +287,7 @@ massprop_feathers <- function(m,rho,start,end,n_pts,l,l_c,l_r_cor,r_cor,r_med,r_
 
   # calculate the rotation matrix between VRP frame of reference and the object
   VRP2object = calc_rot(z_axis,x_axis)
-  off = VRP2object*start
+  off = VRP2object%*%start
 
   # --------------------------- Moment of inertia -----------------------------------
   # ------- Calamus -------

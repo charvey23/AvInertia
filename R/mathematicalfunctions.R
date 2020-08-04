@@ -301,7 +301,7 @@ calc_inertia_platerect <- function(w, h, m){
 #'
 #' @export
 #'
-calc_inertia_platetri <- function(pts, a, rho, t, desired_prop){
+calc_inertia_platetri <- function(pts, A, rho, t, desired_prop){
 
   pts = rbind(pts,pts[1,]) # need to add the first point to allow circular calculation
 
@@ -309,11 +309,11 @@ calc_inertia_platetri <- function(pts, a, rho, t, desired_prop){
   x1  = 0
   y1  = 0
   for (i in 1:3){
-    x1   = x1 + (1/(6*a))*(((pts[i,1]*pts[i+1,2])-(pts[i+1,1]*pts[i,2]))*(pts[i,1]+pts[i+1,1]));
-    y1   = y1 + (1/(6*a))*(((pts[i,1]*pts[i+1,2])-(pts[i+1,1]*pts[i,2]))*(pts[i,2]+pts[i+1,2]));
+    x1   = x1 + (1/(6*A))*(((pts[i,1]*pts[i+1,2])-(pts[i+1,1]*pts[i,2]))*(pts[i,1]+pts[i+1,1]));
+    y1   = y1 + (1/(6*A))*(((pts[i,1]*pts[i+1,2])-(pts[i+1,1]*pts[i,2]))*(pts[i,2]+pts[i+1,2]));
   }
 
-  CG = c(x1, y1, pts[1,3]);
+  CG = c(x1, y1, pts[1,3]); # Frame of reference: Incoming points | Origin: Incoming points
 
   # adjust the incoming points to be so that the origin of the pts is on the plate's center of gravity
   adj_pts = pts # define the new matrix
