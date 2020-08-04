@@ -251,7 +251,8 @@ calc_inertia_platerect <- function(w, h, m){
 # -------------------- Mass Properties - flat triangular plate  -------------------------------
 #' Moment of inertia tensor of a solid square pyramid
 #'
-#' @param pts a matrix of the three 3D points that define a point on the triangular plate;
+#' @param pts a matrix of the three 3D points that define a point on the triangular plate.
+#' Frame of reference: Muscle | Origin: VRP
 #' each point should be a different row as follows:
 #' pt1x, pt1y, pt1z
 #' pt2x, pt1y, pt2z
