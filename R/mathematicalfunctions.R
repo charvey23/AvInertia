@@ -229,12 +229,10 @@ calc_inertia_cylhollow <- function(r_out, r_in, h, m){
 #'
 calc_inertia_pyrasolid <- function(w_2, h, m){
 
-  temp_r = r_out^2 + r_in^2
-
   I = matrix(0, nrow = 3, ncol = 3)
-  I[1,1] = (w^2+0.5*h^2) # Ixx
-  I[2,2] = (w^2+0.5*h^2) # Iyy
-  I[3,3] = 2*(w^2)       # Izz
+  I[1,1] = (w_2^2+0.5*h^2) # Ixx
+  I[2,2] = (w_2^2+0.5*h^2) # Iyy
+  I[3,3] = 2*(w_2^2)       # Izz
   I = (1/5)*m*I
 
   return(I)
@@ -243,9 +241,9 @@ calc_inertia_pyrasolid <- function(w_2, h, m){
 # -------------------- Mass Properties - flat rectangular plate  -------------------------------
 #' Moment of inertia tensor of a solid square pyramid
 #'
-#' @param w full width of one side of the pyramid base
-#' @param h height of the pyramid
-#' @param m mass of the pyramid
+#' @param w full width of one side of the plate
+#' @param h height of the plate
+#' @param m mass of the plate
 #'
 #' @author Christina Harvey
 #'
@@ -258,8 +256,6 @@ calc_inertia_pyrasolid <- function(w_2, h, m){
 #' @export
 #'
 calc_inertia_platerect <- function(w, h, m){
-
-  temp_r = r_out^2 + r_in^2
 
   I = matrix(0, nrow = 3, ncol = 3)
   I[1,1] = (w^2+h^2) # Ixx
