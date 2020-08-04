@@ -152,8 +152,7 @@ massprop_skin <- function(m,rho,pts){
 
   # ------------------------------- Adjust axis -------------------------------------
   z_axis = temp_cross
-  temp_vec = pts[2,]-pts[1,] # vector points towards the second input point along the bone edge
-  x_axis = crossprod(z_axis,temp_vec/norm(temp_vec, type = "2"))
+  x_axis = pts[2,]-pts[1,] # vector points towards the second input point along the bone edge
 
   # calculate the rotation matrix between VRP frame of reference and the object
   VRP2object = calc_rot(z_axis,x_axis)
@@ -221,9 +220,9 @@ massprop_pm <- function(m,pt){
 #' @param n_pts the pts that define the plane that the feather lies flat on.
 #' Order counterclockwise so that the normal will pointing downwards from the ventral surface of the feather.
 #' Frame of reference: VRP | Origin: VRP
-#' @param l_v length of the feather vane - tip to end of calamus (m)
+#' @param l length of the feather - tip to end of calamus (m)
 #' @param l_c length of the calamus - start of vane to end of calamus(m)
-#' @param l_r length of rachis - tip to start of vane (m)
+#' @param l_r_cor length of rachis/vane - tip to start of vane (m)
 #' @param r_cor radius of the cortex part of the calamus (m)
 #' @param r_med radius of the medullary part of the calamus (m)
 #' @param r_b barb radius (m)
@@ -237,11 +236,15 @@ massprop_pm <- function(m,pt){
 #'
 #' @author Christina Harvey
 #'
+#' @section Warning:
+#' Parallel axis theorem is only valid if relocating an object between it's CG and an arbitrary pt. I_arbitrary = I_CG + md^2
+#' Cannot be used between two arbitrary points.
+#'
 #' @return
 #' @export
 #'
 #' @examples
-massprop_feathers <- function(m,rho,start,end,n_pts,l_v,l_c,l_r,r_cor,r_med,r_b,d_b,m_f,rho_cor,rho_med, w_vp, w_vd,angle){
+massprop_feathers <- function(m,rho,start,end,n_pts,l,l_c,l_r_cor,r_cor,r_med,r_b,d_b,m_f,rho_cor,rho_med, w_vp, w_vd,angle){
 
   # ------------------ Determine the geometry of feathers ---------------------------
 
@@ -276,30 +279,98 @@ massprop_feathers <- function(m,rho,start,end,n_pts,l_v,l_c,l_r,r_cor,r_med,r_b,
   # ------------------------------- Adjust axis -------------------------------------
 
   z_axis = end - start
-  temp_vec = crossprod((pt[2,]-pt[1,]),(pt[3,]-pt[1,])) # normal vector of the feather based on supplied data points
-  x_axis = crossprod(z_axis,temp_vec/norm(temp_vec, type = "2"))
+  x_axis = crossprod((pt[2,]-pt[1,]),(pt[3,]-pt[1,]), type = "2") # normal vector of the feather based on supplied data points
+
   # calculate the rotation matrix between VRP frame of reference and the object
   VRP2object = calc_rot(z_axis,x_axis)
-
-  # Adjust the input pts frame to skin axes
-  adj_pts = pts # define the new matrix
-  for (i in 1:4){
-    adj_pts[i,] = VRP2object*pts[i,]                      # Frame of reference: Skin | Origin: VRP
-  }
+  off = VRP2object*start
 
   # --------------------------- Moment of inertia -----------------------------------
+  # ------- Calamus -------
+  # Moment of inertia tensors in the calamus
+  I_c_cor = calc_inertia_cylhollow(r_cor, r_med, l_c, m_c_cor)    # Frame of reference: Feather Calamus | Origin: Calamus CG
+  I_c_med = calc_inertia_cylsolid(r_med, l_c, m_c_med)            # Frame of reference: Feather Calamus | Origin: Calamus CG
 
-  I_s = calc_inertia_platetri(adj_pts, A, rho, t, "I")    # Frame of reference: Skin | Origin: Skin CG
-  CG_s = calc_inertia_platetri(adj_pts, A, rho, t, "CG")  # Frame of reference: Skin | Origin: VRP
+  # ------- Rachis -------
+  # Moment of inertia tensor in the rachis - inner medullary component
+  I_r_in_med  = calc_inertia_pyrasolid(r_med, l_r_med, m_c_med)       # Frame of reference: Feather Vane | Origin: Inner Rachis Medullary hollow pyramid CG
 
-  # need to adjust the moment of inertia tensor
-  I_s_vrp   = parallelaxis(I_s,-CG_s,m)                   # Frame of reference: Skin | Origin: VRP
+  # Moment of inertia tensor in the rachis - as if solid inner and outer cortex components
+  I_r_out_cor = calc_inertia_pyrasolid(r_cor, l_r_cor, m_r_cor)       # Frame of reference: Feather Vane | Origin: Start of the vane (center)
+  I_r_in_cor  = calc_inertia_pyrasolid(r_cor, l_r_med, m_c_med)       # Frame of reference: Feather Vane | Origin: Start of the vane (center)
+  I_r_cor = I_r_out_cor - I_r_in_cor # hollow square pyramid          # Frame of reference: Feather Vane | Origin: Start of the vane (center)
 
+  # mass of the solid inner and outer cortex components
+  mass_inner     = (4*rho_cor*r_med^2*l_r_med/3) # mass of solid inner cortex pyramid
+  mass_outer     = (4*rho_cor*r_cor^2*l_r_cor/3) # mass of solid outer cortex pyramid
+
+  # Calculate the CG of hollow cortex pyramid and solid medullary pyramid
+  CG_pyrasquare = c(0,0,0.25) # multiple by length
+  CG_r_out_cor  = CG_pyrasquare*l_r_cor # Frame of reference: Feather Vane | Origin: Start of the vane (center)
+  CG_r_in_cor   = CG_pyrasquare*l_r_med # Frame of reference: Feather Vane | Origin: Start of the vane (center)
+  CG_r_cor1 = (mass_outer*CG_r_out_cor - mass_inner*CG_r_in_cor)/m_r # Frame of reference: Feather Vane | Origin: Start of the vane (center)
+  CG_r_med1 = CG_pyrasquare*l_r_med # Frame of reference: Feather Vane | Origin: Start of the vane
+
+  # To properly use parallel axis need to relocate origin to the CG of the hollow pyramid
+  I_r_cor = parallelaxis(I_r_cor,CG_r_cor,m_r_cor)        # Frame of reference: Feather Vane | Origin: Outer Rachis Cortex hollow pyramid CG
+
+  # ------- Vane -------
+  I_vd = calc_inertia_platerect(w_vd, l_r_cor, m_vd)    # Frame of reference: Feather Distal Vane | Origin: Distal Vane CG
+  CG_vd_prerot1 = c(0,-0.5*w_vd,0.5*l_r_cor)            # Frame of reference: Feather Vane | Origin: Start of the vane (edge)
+
+  I_vp = calc_inertia_platerect(w_vp, l_r_cor, m_vp)    # Frame of reference: Feather Proximal Vane | Origin: Proximal Vane CG
+  CG_vp_prerot1 = c(0,0.5*w_vp,0.5*l_r_cor)             # Frame of reference: Feather Vane | Origin: Start of the vane (edge)
+
+
+  # ------- Adjust the Vanes and Rachis to be Feather Calamus frame of reference -------
+  # postive angle is a ccw rotation about x (normal to the feather plane) ** all angles should be negative for bird feathers
+  rot_r  = rotx(angle)
+  rot_vd = rotx(angle - atand(r_cor/l_r_cor))
+  rot_vp = rotx(angle + atand(r_cor/l_r_cor))
+
+  # rotate all rachis and vane MOI to be in the same frame of reference as the calamus
+  I_r_cor = rot_r %*% I_r_cor %*% t(rot_r)    # Frame of reference: Feather Calamus | Origin: Outer Rachis Cortex hollow pyramid CG
+  I_r_med = rot_r %*% I_r_med %*% t(rot_r)    # Frame of reference: Feather Calamus | Origin: Inner Rachis Medullary hollow pyramid CG
+  I_vd    = rot_vd %*% I_vd %*% t(rot_vd)     # Frame of reference: Feather Calamus | Origin: Distal Vane CG
+  I_vp    = rot_vp %*% I_vp %*% t(rot_vp)     # Frame of reference: Feather Calamus | Origin: Proximal Vane CG
+
+  # rotate all rachis CG to be in the same frame of reference as the calamus
+  CG_r_cor_rot   = rot_r*CG_r_cor1              # Frame of reference: Feather Calamus | Origin: Start of the vane (center of pyramid base)
+  CG_r_med_rot   = rot_r*CG_r_med1              # Frame of reference: Feather Calamus | Origin: Start of the vane (center of pyramid base)
+
+  # rotate all vane CG about the lower corner close to the rachis to be in the same frame of reference as the calamus need to also relocate
+  CG_vd_prerot2  =  rotx(-atand(r_c/l_v))*CG_vd_prerot1 # Frame of reference: Feather Vane | Origin: Start of the vane (edge)
+  CG_vp_prerot2  =  rotx(atand(r_c/l_v))*CG_vp_prerot1  # Frame of reference: Feather Vane | Origin: Start of the vane (edge)
+
+  CG_vd_prerot3  =  CG_vd_prerot2 - c(0,r_c,0)          # Frame of reference: Feather Vane | Origin: Start of the vane (center)
+  CG_vp_prerot3  =  CG_vp_prerot2 + c(0,r_c,0)          # Frame of reference: Feather Vane | Origin: Start of the vane (center)
+
+  CG_vd_postrot =  rot_vd*CG_vd_prerot3                 # Frame of reference: Feather Calamus | Origin: Start of the vane (center)
+  CG_vp_postrot =  rot_vp*CG_vp_prerot3                 # Frame of reference: Feather Calamus | Origin: Start of the vane (center)
+
+  # ---- Determine the offset between the start of the feather and the current I origin ----
+  CG_c     = c(0,0,0.5*l_c) + off                       # Frame of reference: Feather Calamus | Origin: VRP
+  CG_r_cor = c(0,0,l_c) + CG_r_cor_rot + off            # Frame of reference: Feather Calamus | Origin: VRP
+  CG_r_med = c(0,0,l_c) + CG_r_med_rot + off            # Frame of reference: Feather Calamus | Origin: VRP
+  CG_vd    = c(0,0,l_c) + CG_vd_postrot + off           # Frame of reference: Feather Calamus | Origin: VRP
+  CG_vp    = c(0,0,l_c) + CG_vp_postrot + off           # Frame of reference: Feather Calamus | Origin: VRP
+
+  CG_calaxis = (m_c_cor*CG_c + m_c_med*CG_c + m_r_cor*CG_r_cor + m_r_med*CG_r_med + m_vd*CG_vd + m_vp*CG_vp)/m_f # Frame of reference: Feather Calamus | Origin: VRP
+
+  # ---- Relocate the MOI from object CG to VRP ----
+  I_c_cor = parallelaxis(I_c_cor,-CG_c,m_c_cor)         # Frame of reference: Feather Calamus | Origin: VRP
+  I_c_med = parallelaxis(I_c_med,-CG_c,m_c_med)         # Frame of reference: Feather Calamus | Origin: VRP
+  I_r_cor = parallelaxis(I_r_cor,-CG_r_cor,m_r_cor)     # Frame of reference: Feather Calamus | Origin: VRP
+  I_r_med = parallelaxis(I_r_med,-CG_r_med,m_r_med)     # Frame of reference: Feather Calamus | Origin: VRP
+  I_vd    = parallelaxis(I_vd,-CG_vd,m_vd)              # Frame of reference: Feather Calamus | Origin: VRP
+  I_vp    = parallelaxis(I_vp,-CG_vp,m_vp)              # Frame of reference: Feather Calamus | Origin: VRP
+
+  I_calaxis = I_c_cor + I_c_med + I_r_cor + I_r_med + I_vd + I_vp # Frame of reference: Feather Calamus | Origin: VRP
+
+  # ---- Adjust frames to VRP ----
   mass_prop = list() # pre-define
-
-  # Adjust frames to VRP
-  mass_prop$I  = t(VRP2object) %*% I_s_vrp %*% VRP2object # Frame of reference: VRP | Origin: VRP
-  mass_prop$CG = t(VRP2object) %*% CG_s                   # Frame of reference: VRP | Origin: VRP
+  mass_prop$I  = t(VRP2object) %*% I_calaxis %*% VRP2object # Frame of reference: VRP | Origin: VRP
+  mass_prop$CG = t(VRP2object) %*% CG_calaxis               # Frame of reference: VRP | Origin: VRP
 
   return(mass_prop)
 }
