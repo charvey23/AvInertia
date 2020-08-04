@@ -32,6 +32,28 @@ dirac_delta <- function(i,j){
   }
 }
 
+# ---------------------- Rotation about the x axis ---------------------------
+#' x-axis rotation matrix
+#'
+#' @param angle angle to rotate
+#'
+#' @author Christina Harvey
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+rotx <- function(angle){
+  R = matrix(0, nrow = 3, ncol = 3)
+  R[1,1] = 1
+  R[2,2] = pracma::cosd(angle)
+  R[3,3] = pracma::cosd(angle)
+  R[3,2] = pracma::sind(angle)
+  R[2,3] = -pracma::sind(angle)
+  return(R)
+}
+
 # ---------------------- Calculate a unit vector --------------------------
 #' Determine the unit vector of any input vector
 #'
@@ -188,9 +210,9 @@ calc_inertia_cylhollow <- function(r_out, r_in, h, m){
 }
 
 # -------------------- Mass Properties - solid square pyramid  -------------------------------
-#' Moment of inertia tensor of a solid square pyramid
+#' Moment of inertia tensor of a solid square pyramid about the centered point on the base
 #'
-#' @param w full width of one side of the pyramid base
+#' @param w_2 half width of one side of the pyramid base
 #' @param h height of the pyramid
 #' @param m mass of the pyramid
 #'
@@ -204,7 +226,7 @@ calc_inertia_cylhollow <- function(r_out, r_in, h, m){
 #'
 #' @export
 #'
-calc_inertia_pyrasolid <- function(w, h, m){
+calc_inertia_pyrasolid <- function(w_2, h, m){
 
   temp_r = r_out^2 + r_in^2
 
