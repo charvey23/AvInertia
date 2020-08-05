@@ -81,7 +81,6 @@ massprop_bones <- function(m,l,r_out,r_in,rho,start,end){
 #' Calculate the moment of inertia of a muscle modelled as a solid cylinder distributed along the bone length
 #'
 #' @param m mass of muscle (kg)
-#' @param l length of muscle (m)
 #' @param rho density of muscle (kg/m^3)
 #' @param start 3D point where bone starts. Frame of reference: VRP | Origin: VRP
 #' @param end 3D point where bone ends. Frame of reference: VRP | Origin: VRP
@@ -90,8 +89,9 @@ massprop_bones <- function(m,l,r_out,r_in,rho,start,end){
 #' @export
 #'
 #' @examples
-massprop_muscles <- function(m,l,rho,start,end){
+massprop_muscles <- function(m,rho,start,end){
 
+  l = norm((end - start), type = "2")
   r = sqrt(m/(rho*pi*l)) # determine the pseudo radius of the muscles
 
   # ------------------------------- Adjust axis -------------------------------------
