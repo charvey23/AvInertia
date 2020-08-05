@@ -52,11 +52,13 @@ for (species in 1:no_species){
 
   # -------------- Begin iteration through the wings of this species ------------------------------
 
-  for (ind_wing in 1:length(dat_pt)){
+  for (ind_wing in 1:10){
     count_start = count
 
-
+    # --------------------------------------------------
     # --------------- Bone Data ------------------------
+    # --------------------------------------------------
+
     rho_bone     = dat_mat$density[which(dat_mat$material == "Bone")]
     dat_bone_hum = subset(dat_bone_curr, bone == "Humerus")
     dat_bone_uln = subset(dat_bone_curr, bone == "Ulna")
@@ -97,11 +99,14 @@ for (species in 1:no_species){
     # add data to bone specific data frame
     mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],ulnare,mass_properties_bone,count,"wristbones",prop_type_list,prop_type_ind)
 
+    prop_bone = list()
     # simply addition as long as about the same origin in the same frame of reference (Frame of reference: VRP | Origin: VRP)
-    I_bone  = hum$I + ulna$I + radius$I + car$I + wristbone$I
+    prop_bone$I  = hum$I + ulna$I + radius$I + car$I + wristbone$I
     # weighted average of the individual center of mass (Frame of reference: VRP | Origin: VRP)
-    CG_bone = (dat_bone_hum$bone_mass*hum$CG + dat_bone_uln$bone_mass*ulna$CG + dat_bone_rad$bone_mass*radius$CG + dat_bone_car$bone_mass*car$CG + (subset(dat_bone_curr, bone == "Ulnare")$bone_mass + subset(dat_bone_curr, bone == "Radiale")$bone_mass)*wristbone$CG)/sum(dat_bone_curr$bone_mass)
-
+    prop_bone$CG = (dat_bone_hum$bone_mass*hum$CG + dat_bone_uln$bone_mass*ulna$CG + dat_bone_rad$bone_mass*radius$CG + dat_bone_car$bone_mass*car$CG + (subset(dat_bone_curr, bone == "Ulnare")$bone_mass + subset(dat_bone_curr, bone == "Radiale")$bone_mass)*wristbone$CG)/sum(dat_bone_curr$bone_mass)
+    # save all bone data to the master list
+    mass_properties = store_data(species_curr,alldat_curr[ind_wing,],prop_bone,mass_properties,count,"bones",prop_type_list,prop_type_ind)
+  }
 }
 
 store_data <- function(species_curr,alldat_row,temp,mass_properties,count,name,prop_type_list,prop_type_ind){
