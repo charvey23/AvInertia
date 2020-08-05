@@ -204,8 +204,13 @@ massprop_skin <- function(m,rho,pts){
 #'
 #' @examples
 massprop_pm <- function(m,pt){
+
+  emtpy_I = matrix(0, nrow = 3, ncol = 3) # 0 tensor for point mass about it's own CG
+
+  mass_prop = list() # pre-define
+
   # Adjust frames to VRP
-  mass_prop$I  = parallelaxis(0,-pt,m)  # Frame of reference: VRP | Origin: VRP
+  mass_prop$I  = parallelaxis(emtpy_I,-pt,m)  # Frame of reference: VRP | Origin: VRP
   mass_prop$CG = pt                     # Frame of reference: VRP | Origin: VRP
 
   return(mass_prop)
