@@ -64,29 +64,44 @@ for (species in 1:no_species){
     dat_bone_car = subset(dat_bone_curr, bone == "Carpometacarpus")
 
     # --- Humerus ---
-    temp = massprop_bones(dat_bone_hum$bone_mass,dat_bone_hum$bone_len,dat_bone_hum$bone_out_rad,dat_bone_hum$bone_in_rad,rho_bone,
+    hum = massprop_bones(dat_bone_hum$bone_mass,dat_bone_hum$bone_len,dat_bone_hum$bone_out_rad,dat_bone_hum$bone_in_rad,rho_bone,
                              c(dat_pt$Pt1X[ind_wing], dat_pt$Pt1Y[ind_wing], dat_pt$Pt1Z[ind_wing]),
                              c(dat_pt$Pt2X[ind_wing], dat_pt$Pt2Y[ind_wing], dat_pt$Pt2Z[ind_wing]))
     # add data to bone specific data frame
-    mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],temp,mass_properties_bone,count,"humerus",prop_type_list,prop_type_ind)
+    mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],hum,mass_properties_bone,count,"humerus",prop_type_list,prop_type_ind)
+
     # --- Ulna ---
-    temp = massprop_bones(dat_bone_uln$bone_mass,dat_bone_uln$bone_len,dat_bone_uln$bone_out_rad,dat_bone_uln$bone_in_rad,rho_bone,
+    ulna = massprop_bones(dat_bone_uln$bone_mass,dat_bone_uln$bone_len,dat_bone_uln$bone_out_rad,dat_bone_uln$bone_in_rad,rho_bone,
                           c(dat_pt$Pt2X[ind_wing], dat_pt$Pt2Y[ind_wing], dat_pt$Pt2Z[ind_wing]),
                           c(dat_pt$Pt3X[ind_wing], dat_pt$Pt3Y[ind_wing], dat_pt$Pt3Z[ind_wing]))
     # add data to bone specific data frame
-    mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],temp,mass_properties_bone,count,"ulna",prop_type_list,prop_type_ind)
+    mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],ulna,mass_properties_bone,count,"ulna",prop_type_list,prop_type_ind)
+
     # --- Radius ---
-    temp = massprop_bones(dat_bone_rad$bone_mass,dat_bone_rad$bone_len,dat_bone_rad$bone_out_rad,dat_bone_rad$bone_in_rad,rho_bone,
+    radius = massprop_bones(dat_bone_rad$bone_mass,dat_bone_rad$bone_len,dat_bone_rad$bone_out_rad,dat_bone_rad$bone_in_rad,rho_bone,
                           c(dat_pt$Pt2X[ind_wing], dat_pt$Pt2Y[ind_wing], dat_pt$Pt2Z[ind_wing]),
                           c(dat_pt$Pt3X[ind_wing], dat_pt$Pt3Y[ind_wing], dat_pt$Pt3Z[ind_wing]))
     # add data to bone specific data frame
-    mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],temp,mass_properties_bone,count,"radius",prop_type_list,prop_type_ind)
+    mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],radius,mass_properties_bone,count,"radius",prop_type_list,prop_type_ind)
+
     # --- Carpometacarpus ---
-    temp = massprop_bones(dat_bone_rad$bone_mass,dat_bone_rad$bone_len,dat_bone_rad$bone_out_rad,dat_bone_rad$bone_in_rad,rho_bone,
-                          c(dat_pt$Pt2X[ind_wing], dat_pt$Pt2Y[ind_wing], dat_pt$Pt2Z[ind_wing]),
+    car = massprop_bones(dat_bone_car$bone_mass,dat_bone_car$bone_len,dat_bone_car$bone_out_rad,dat_bone_car$bone_in_rad,rho_bone,
+                          c(dat_pt$Pt3X[ind_wing], dat_pt$Pt3Y[ind_wing], dat_pt$Pt3Z[ind_wing]),
+                          c(dat_pt$Pt4X[ind_wing], dat_pt$Pt4Y[ind_wing], dat_pt$Pt4Z[ind_wing]))
+    # add data to bone specific data frame
+    mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],car,mass_properties_bone,count,"carpo",prop_type_list,prop_type_ind)
+
+    # --- Wrist Bones - Ulnare/Radiale---
+    wristbone = massprop_pm((subset(dat_bone_curr, bone == "Ulnare")$bone_mass + subset(dat_bone_curr, bone == "Radiale")$bone_mass),
                           c(dat_pt$Pt3X[ind_wing], dat_pt$Pt3Y[ind_wing], dat_pt$Pt3Z[ind_wing]))
     # add data to bone specific data frame
-    mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],temp,mass_properties_bone,count,"carpo",prop_type_list,prop_type_ind)
+    mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],ulnare,mass_properties_bone,count,"wristbones",prop_type_list,prop_type_ind)
+
+    # simply addition as long as about the same origin in the same frame of reference (Frame of reference: VRP | Origin: VRP)
+    I_bone  = hum$I + ulna$I + radius$I + car$I + wristbone$I
+    # weighted average of the individual center of mass (Frame of reference: VRP | Origin: VRP)
+    CG_bone = (dat_bone_hum$bone_mass*hum$CG + dat_bone_uln$bone_mass*ulna$CG + dat_bone_rad$bone_mass*radius$CG + dat_bone_car$bone_mass*car$CG + (subset(dat_bone_curr, bone == "Ulnare")$bone_mass + subset(dat_bone_curr, bone == "Radiale")$bone_mass)*wristbone$CG)/sum(dat_bone_curr$bone_mass)
+
 }
 
 store_data <- function(species_curr,alldat_row,temp,mass_properties,count,name,prop_type_list,prop_type_ind){
