@@ -252,7 +252,7 @@ massprop_feathers <- function(start,end,n_pts,l_c,l_r_cor,r_cor,r_b,d_b,m_f,rho_
   # mass of each component of the feather
   m_vp = rho_cor*(l_r_cor/d_b)*w_vp*pi*r_b^2 # mass of the proximal vane
   m_vd = rho_cor*(l_r_cor/d_b)*w_vd*pi*r_b^2 # mass of the distal vane
-  m_r  = m_f - m_vp - m_vd               # mass of the rachis and calamus
+  m_r  = m_f - m_vp - m_vd                   # mass of the rachis and calamus
 
   # determine the width of the medullary material inside the rachis
   c_0 = (rho_cor*(r_cor^2)*((pi*l_c) + (4*l_r_cor/3))) - m_r
@@ -294,32 +294,33 @@ massprop_feathers <- function(start,end,n_pts,l_c,l_r_cor,r_cor,r_b,d_b,m_f,rho_
   I_c_med = calc_inertia_cylsolid(r_med, l_c, m_c_med)            # Frame of reference: Feather Calamus | Origin: Calamus CG
 
   # ------- Rachis -------
-  # Moment of inertia tensor in the rachis - inner medullary component
-  I_r_med  = calc_inertia_pyrasolid(r_med, l_r_med, m_r_med)       # Frame of reference: Feather Vane | Origin: Inner Rachis Medullary hollow pyramid CG
+  # Moment of inertia tensor in the rachis - inner medullary component CAUTION this is about the center of base
+  I_r_med_base  = calc_inertia_pyrasolid(r_med, l_r_med, m_r_med)       # Frame of reference: Feather Vane | Origin: Inner Rachis Medullary hollow pyramid CG
 
   # Moment of inertia tensor in the rachis - as if solid inner and outer cortex components
   I_r_out_cor = calc_inertia_pyrasolid(r_cor, l_r_cor, mass_outer)       # Frame of reference: Feather Vane | Origin: Start of the vane (center)
-  I_r_in_cor  = calc_inertia_pyrasolid(r_cor, l_r_med, mass_inner)       # Frame of reference: Feather Vane | Origin: Start of the vane (center)
-  I_r_cor = I_r_out_cor - I_r_in_cor # hollow square pyramid             # Frame of reference: Feather Vane | Origin: Start of the vane (center)
-
+  I_r_in_cor  = calc_inertia_pyrasolid(r_med, l_r_med, mass_inner)       # Frame of reference: Feather Vane | Origin: Start of the vane (center)
+  I_r_cor_base = I_r_out_cor - I_r_in_cor # hollow square pyramid             # Frame of reference: Feather Vane | Origin: Start of the vane (center)
+  #matches up to here
   # Calculate the CG of hollow cortex pyramid and solid medullary pyramid
   CG_pyrasquare = c(0,0,0.25) # multiple by length
   CG_r_out_cor  = CG_pyrasquare*l_r_cor # Frame of reference: Feather Vane | Origin: Start of the vane (center)
   CG_r_in_cor   = CG_pyrasquare*l_r_med # Frame of reference: Feather Vane | Origin: Start of the vane (center)
-  CG_r_cor1 = (mass_outer*CG_r_out_cor - mass_inner*CG_r_in_cor)/m_r # Frame of reference: Feather Vane | Origin: Start of the vane (center)
+  CG_r_cor1 = (mass_outer*CG_r_out_cor - mass_inner*CG_r_in_cor)/m_r_cor # Frame of reference: Feather Vane | Origin: Start of the vane (center)
   CG_r_med1 = CG_pyrasquare*l_r_med # Frame of reference: Feather Vane | Origin: Start of the vane
 
-  # To properly use parallel axis need to relocate origin to the CG of the hollow pyramid
-  I_r_cor = parallelaxis(I_r_cor,CG_r_cor1,m_r_cor)        # Frame of reference: Feather Vane | Origin: Outer Rachis Cortex hollow pyramid CG
+  # To properly use parallel axis need to relocate origin to the CG of the hollow pyramid and solid pyramid
+  I_r_cor = parallelaxis(I_r_cor_base,CG_r_cor1,m_r_cor)        # Frame of reference: Feather Vane | Origin: Outer Rachis Cortex hollow pyramid CG
+  I_r_med = parallelaxis(I_r_med_base,CG_r_med1,m_r_med)        # Frame of reference: Feather Vane | Origin: Inner Rachis Medullary solid pyramid CG
 
   # ------- Vane -------
   I_vd = calc_inertia_platerect(w_vd, l_r_cor, m_vd)    # Frame of reference: Feather Distal Vane | Origin: Distal Vane CG
-  CG_vd_prerot1 = c(0,-0.5*w_vd,0.5*l_r_cor)            # Frame of reference: Feather Vane | Origin: Start of the vane (edge)
+  CG_vd_prerot1 = c(0,-0.5*w_vd,0.5*l_r_cor)            # Frame of reference: Feather Distal Vane | Origin: Start of the vane (edge)
 
   I_vp = calc_inertia_platerect(w_vp, l_r_cor, m_vp)    # Frame of reference: Feather Proximal Vane | Origin: Proximal Vane CG
-  CG_vp_prerot1 = c(0,0.5*w_vp,0.5*l_r_cor)             # Frame of reference: Feather Vane | Origin: Start of the vane (edge)
+  CG_vp_prerot1 = c(0,0.5*w_vp,0.5*l_r_cor)             # Frame of reference: Feather Proximal Vane | Origin: Start of the vane (edge)
 
-  #matches up to here
+
   # ------- Adjust the Vanes and Rachis to be Feather Calamus frame of reference -------
   # postive angle is a ccw rotation about x (normal to the feather plane) ** all angles should be negative for bird feathers
   rot_r  = rotx(angle)
@@ -343,8 +344,8 @@ massprop_feathers <- function(start,end,n_pts,l_c,l_r_cor,r_cor,r_b,d_b,m_f,rho_
   CG_vd_prerot3  =  CG_vd_prerot2 - c(0,r_cor,0)          # Frame of reference: Feather Vane | Origin: Start of the vane (center)
   CG_vp_prerot3  =  CG_vp_prerot2 + c(0,r_cor,0)          # Frame of reference: Feather Vane | Origin: Start of the vane (center)
 
-  CG_vd_postrot =  rot_vd%*%CG_vd_prerot3                 # Frame of reference: Feather Calamus | Origin: Start of the vane (center)
-  CG_vp_postrot =  rot_vp%*%CG_vp_prerot3                 # Frame of reference: Feather Calamus | Origin: Start of the vane (center)
+  CG_vd_postrot =  rot_r%*%CG_vd_prerot3                  # Frame of reference: Feather Calamus | Origin: Start of the vane (center)
+  CG_vp_postrot =  rot_r%*%CG_vp_prerot3                  # Frame of reference: Feather Calamus | Origin: Start of the vane (center)
 
   # ---- Determine the offset between the start of the feather and the current I origin ----
   CG_c     = c(0,0,0.5*l_c) + off                       # Frame of reference: Feather Calamus | Origin: VRP
