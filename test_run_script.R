@@ -7,6 +7,7 @@ dat_bone = readxl::read_xlsx('Master_AnatomicalData.xlsx', sheet = 'Bones')
 dat_feat = readxl::read_xlsx('Master_AnatomicalData.xlsx', sheet = 'Feathers')
 dat_mat  = readxl::read_xlsx('Master_AnatomicalData.xlsx', sheet = 'MaterialSpecs')
 
+# adjust to SI units
 dat_feat$l_cal  = 0.01*dat_feat$l_cal
 dat_feat$l_vane = 0.01*dat_feat$l_vane
 dat_feat$w_r    = 0.01*dat_feat$w_r

@@ -1,40 +1,3 @@
-# -------------------- Store Data  -------------------------------
-#' Function to store moment of inertia tensor and center of gravity vector components in long format
-#'
-#' @param species_curr current species code
-#' @param alldat_row current dataframe containing the necessary identifying information for the wing shape
-#' @param dat_mass new MOI and CG data to add to mass_properties as new rows
-#' @param mass_properties current master data fram that saves the data
-#' @param name name of the component
-#' @return
-#' @export
-#'
-#' @examples
-store_data <- function(species_curr,alldat_row,dat_mass,mass_properties,name){
-  prop_type_list = c("Ixx","Iyy","Izz","Ixy","Iyz","Ixz","CGx","CGy","CGz")
-  prop_type_ind  = cbind(c(1,2,3,1,2,1),c(1,2,3,2,3,3))
-
-  species = species_curr
-  wingID  = as.character(alldat_row$WingID)
-  testID  = as.character(alldat_row$TestID)
-  frameID = as.character(alldat_row$frameID)
-
-  # MOI
-  for (i in 1:6){
-    new_row = data.frame(species = species,WingID = wingID,TestID = testID, FrameID = frameID, component = name,
-                         object = prop_type_list[i], value = dat_mass$I[prop_type_ind[i,1],prop_type_ind[i,2]]) # saves the name and valueof the tensor component
-    mass_properties = rbind(mass_properties,new_row)
-  }
-
-  #CG
-  for (i in 1:3){
-    new_row = data.frame(species = species,WingID = wingID,TestID = testID, FrameID = frameID, component = name,
-                         object = prop_type_list[6+i], value = dat_mass$CG[i]) # saves the name and value of the CG component
-    mass_properties = rbind(mass_properties,new_row)
-  }
-
-  return(mass_properties)
-}
 
 # -------------------- Mass Properties - Halfspan bird wing  -------------------------------
 #' Function that reads in anatomical data and returns the moment of inertia tensor and center
@@ -100,7 +63,7 @@ massprop_birdwing <- function(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_m
   prop_bone$I  = hum$I + ulna$I + radius$I + car$I + wristbone$I
   # weighted average of the individual center of mass (Frame of reference: VRP | Origin: VRP)
   prop_bone$CG = (dat_bone_hum$bone_mass*hum$CG + dat_bone_uln$bone_mass*ulna$CG + dat_bone_rad$bone_mass*radius$CG + dat_bone_car$bone_mass*car$CG + (subset(dat_bone_curr, bone == "Ulnare")$bone_mass + subset(dat_bone_curr, bone == "Radiale")$bone_mass)*wristbone$CG)/sum(dat_bone_curr$bone_mass)
-
+  prop_bone$m  = sum(dat_bone_curr$bone_mass)
   # ----------------------------------------------------
   # --------------- Muscle Data ------------------------
   # ----------------------------------------------------
@@ -119,6 +82,7 @@ massprop_birdwing <- function(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_m
   prop_muscles$I  = brach$I + abrach$I + manus$I
   # weighted average of the individual center of mass (Frame of reference: VRP | Origin: VRP)
   prop_muscles$CG = (mass_muscles[1]*brach$CG + mass_muscles[2]*abrach$CG + mass_muscles[3]*manus$CG)/sum(mass_muscles)
+  prop_muscles$m  = sum(mass_muscles)
 
   # ---------------------------------------------------------
   # --------------- Skin/Covert Data ------------------------
@@ -135,18 +99,21 @@ massprop_birdwing <- function(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_m
   prop_skin$I  = skin_prop$I + skin_man$I
   # weighted average of the individual center of mass (Frame of reference: VRP | Origin: VRP)
   prop_skin$CG = (mass_skin[1]*skin_prop$CG + mass_skin[2]*skin_man$CG)/sum(mass_skin)
+  prop_skin$m  = sum(mass_skin)
 
   # -------------------------------------------------------
   # ----------------- Feather Data ------------------------
   # -------------------------------------------------------
 
   #pre-define storage matrices
-  res_pri    = list()
-  res_pri$I  = array(dim = c(3,3,no_pri))
-  res_pri$CG = array(dim = c(no_pri,3))
-  res_sec    = list()
-  res_sec$I  = array(dim = c(3,3,no_sec))
-  res_sec$CG = array(dim = c(no_sec,3))
+  res_pri     = list()
+  res_pri$I   = array(dim = c(3,3,no_pri))
+  res_pri$CG  = array(dim = c(no_pri,3))
+  res_pri$CGm = array(dim = c(no_pri,3))
+  res_sec     = list()
+  res_sec$I   = array(dim = c(3,3,no_sec))
+  res_sec$CG  = array(dim = c(no_sec,3))
+  res_sec$CGm = array(dim = c(no_sec,3))
 
   # density information
   rho_cor = dat_mat$density[which(dat_mat$material == "Cortex")]
@@ -163,31 +130,44 @@ massprop_birdwing <- function(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_m
   # --- Primaries ---
   for (i in 1:no_pri){
     feather_name = paste("P",i,sep = "")
-    info = subset(dat_feat_curr,Feather == feather_name)
-
-    tmp = massprop_feathers(info$m_f,info$l_cal,info$l_vane, info$w_r,
+    pri_info = subset(dat_feat_curr,Feather == feather_name) # subset data to be for this specific feather
+    # Calculate MOI and CG
+    tmp = massprop_feathers(pri_info$m_f,pri_info$l_cal,pri_info$l_vane, pri_info$w_r,
                       dat_bird_curr$barb_radius, dat_bird_curr$barb_distance,
                       rho_cor,rho_med,
-                      info$w_vp,info$w_vd,info$vane_angle,
+                      pri_info$w_vp,pri_info$w_vd,pri_info$vane_angle,
                       feather_info$normal[i,],feather_info$loc_start[i,],feather_info$loc_end[i,])
-
+    # Save MOI, CG and CG*mass
     res_pri$I[,,i] = tmp$I
     res_pri$CG[i,] = tmp$CG
+    res_pri$CGm[i,] = tmp$CG*pri_info$m_f
+
   }
   # --- Secondaries ---
   for (i in 1:no_sec){
     feather_name = paste("S",i,sep = "")
-    info = subset(dat_feat_curr,Feather == feather_name)
-
-    tmp = massprop_feathers(info$m_f,info$l_cal,info$l_vane, info$w_r,
+    sec_info = subset(dat_feat_curr,Feather == feather_name)  # subset data to be for this specific feather
+    # Calculate MOI and CG
+    tmp = massprop_feathers(sec_info$m_f,sec_info$l_cal,sec_info$l_vane, sec_info$w_r,
                             dat_bird_curr$barb_radius, dat_bird_curr$barb_distance,
                             rho_cor,rho_med,
-                            info$w_vp,info$w_vd,info$vane_angle,
+                            sec_info$w_vp,sec_info$w_vd,sec_info$vane_angle,
                             feather_info$normal[i+no_pri,],feather_info$loc_start[i+no_pri,],feather_info$loc_end[i+no_pri,])
-
+    # Save MOI, CG and CG*mass
     res_sec$I[,,i] = tmp$I
     res_sec$CG[i,] = tmp$CG
+    res_sec$CGm[i,] = tmp$CG*sec_info$m_f
   }
+
+  # --- Alula ----
+  m_alula = subset(dat_feat_curr,Feather == "alula")$m_f
+  alula   = massprop_pm(m_alula, Pt3)
+
+  # --- All Feathers ---
+  prop_feathers = list()
+  prop_feathers$I  = rbind(rowSums(res_pri$I[,1,]),rowSums(res_pri$I[,2,]),rowSums(res_pri$I[,3,]))
+  prop_feathers$CG = (colSums(res_pri$CGm) + colSums(res_sec$CGm) + alula$CG*m_alula)/sum(dat_feat_curr$m_f)
+  prop_feathers$m  = sum(dat_feat_curr$m_f)
 
   # ----------------------------------------------------
   # ----------------- Save Data ------------------------
@@ -203,8 +183,54 @@ massprop_birdwing <- function(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_m
   # save all combined data groups to the master list
   mass_properties      = store_data(species_curr,alldat_curr[ind_wing,],prop_bone,mass_properties,count,"bones")
   mass_properties      = store_data(species_curr,alldat_curr[ind_wing,],prop_muscles,mass_properties,count,"muscles")
+  mass_properties      = store_data(species_curr,alldat_curr[ind_wing,],prop_skin,mass_properties,count,"skin")
+  mass_properties      = store_data(species_curr,alldat_curr[ind_wing,],prop_feathers,mass_properties,count,"feathers")
 
-
+  # save all wing data
+  prop_bird    = list()
+  prop_bird$I  = prop_bone$I + prop_muscles$I + prop_skin$I + prop_feathers$I
+  prop_bird$m  = prop_bone$m + prop_muscles$m + prop_skin$m + prop_feathers$m
+  prop_bird$CG = (prop_bone$CG*prop_bone$m + prop_muscles$CG*prop_muscles$m + prop_skin$CG*prop_skin$m + prop_feathers$CG*prop_feathers$m)/prop_bird$m
   return(mass_properties)
 
 }
+
+
+# -------------------- Store Data  -------------------------------
+#' Function to store moment of inertia tensor and center of gravity vector components in long format
+#'
+#' @param species_curr current species code
+#' @param alldat_row current dataframe containing the necessary identifying information for the wing shape
+#' @param dat_mass new MOI and CG data to add to mass_properties as new rows
+#' @param mass_properties current master data fram that saves the data
+#' @param name name of the component
+#' @return
+#' @export
+#'
+#' @examples
+store_data <- function(species_curr,alldat_row,dat_mass,mass_properties,name){
+  prop_type_list = c("Ixx","Iyy","Izz","Ixy","Iyz","Ixz","CGx","CGy","CGz")
+  prop_type_ind  = cbind(c(1,2,3,1,2,1),c(1,2,3,2,3,3))
+
+  species = species_curr
+  wingID  = as.character(alldat_row$WingID)
+  testID  = as.character(alldat_row$TestID)
+  frameID = as.character(alldat_row$frameID)
+
+  # MOI
+  for (i in 1:6){
+    new_row = data.frame(species = species,WingID = wingID,TestID = testID, FrameID = frameID, component = name,
+                         object = prop_type_list[i], value = dat_mass$I[prop_type_ind[i,1],prop_type_ind[i,2]]) # saves the name and valueof the tensor component
+    mass_properties = rbind(mass_properties,new_row)
+  }
+
+  #CG
+  for (i in 1:3){
+    new_row = data.frame(species = species,WingID = wingID,TestID = testID, FrameID = frameID, component = name,
+                         object = prop_type_list[6+i], value = dat_mass$CG[i]) # saves the name and value of the CG component
+    mass_properties = rbind(mass_properties,new_row)
+  }
+
+  return(mass_properties)
+}
+
