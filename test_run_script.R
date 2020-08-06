@@ -33,6 +33,7 @@ for (species in 1:length(alldat$species)){
   #            frame of reference with the origin at the vehicle reference
   #            point (VRP). VRP is assumed to be in the center of the body
   #            on the y axis between the two humerus bones
+  w_sk = 0.045*(dat_bird_curr$total_bird_mass^0.37); # predicted distance between humerus heads (Nudds & Rayner)
 
   for (i in 1:length(colnames(dat_pt))){
     if (grepl("Y",colnames(dat_pt)[i],fixed=TRUE)){
@@ -59,10 +60,7 @@ for (species in 1:length(alldat$species)){
 
     clean_pts = rbind(Pt1,Pt2,Pt3,Pt4,Pt8,Pt9,Pt10,Pt11)
 
-    feather_info = list()
-
-    test = massprop_birdwing(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, dat_pt_curr,clean_pts)
-
+    test = massprop_birdwing(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts)
 
   }
 }

@@ -28,8 +28,6 @@ massprop_birdwing <- function(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_m
   mass_properties_muscle    = mass_properties                    # specific muscle data
   mass_properties_feathers  = mass_properties                    # individual feather mass property data
 
-  w_sk = 0.045*(dat_bird_curr$total_bird_mass^0.37); # predicted distance between humerus heads (Nudds & Rayner)
-
   # define incoming points
   Pt1 = clean_pts[1,] # shoulder
   Pt2 = clean_pts[2,] # elbow
@@ -105,16 +103,6 @@ massprop_birdwing <- function(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_m
   # ----------------- Feather Data ------------------------
   # -------------------------------------------------------
 
-  #pre-define storage matrices
-  res_pri     = list()
-  res_pri$I   = array(dim = c(3,3,no_pri))
-  res_pri$CG  = array(dim = c(no_pri,3))
-  res_pri$CGm = array(dim = c(no_pri,3))
-  res_sec     = list()
-  res_sec$I   = array(dim = c(3,3,no_sec))
-  res_sec$CG  = array(dim = c(no_sec,3))
-  res_sec$CGm = array(dim = c(no_sec,3))
-
   # density information
   rho_cor = dat_mat$density[which(dat_mat$material == "Cortex")]
   rho_med = dat_mat$density[which(dat_mat$material == "Medullary")]
@@ -124,6 +112,16 @@ massprop_birdwing <- function(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_m
   secondaries = dat_feat_curr[grep("S",dat_feat_curr$Feather),]
   no_sec = length(secondaries$Feather)
   no_pri = length(primaries$Feather)
+
+  #pre-define storage matrices
+  res_pri     = list()
+  res_pri$I   = array(dim = c(3,3,no_pri))
+  res_pri$CG  = array(dim = c(no_pri,3))
+  res_pri$CGm = array(dim = c(no_pri,3))
+  res_sec     = list()
+  res_sec$I   = array(dim = c(3,3,no_sec))
+  res_sec$CG  = array(dim = c(no_sec,3))
+  res_sec$CGm = array(dim = c(no_sec,3))
 
   # determine the orientation and normal of each feather
   feather_info = orient_feather(primaries,secondaries,no_pri,no_sec,Pt1,Pt2,Pt3,Pt4,Pt9,Pt10,Pt11)
@@ -174,23 +172,26 @@ massprop_birdwing <- function(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_m
   # ----------------------------------------------------
 
   # add data to bone specific data frame
-  mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],hum,mass_properties_bone,count,"humerus")
-  mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],ulna,mass_properties_bone,count,"ulna")
-  mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],radius,mass_properties_bone,count,"radius")
-  mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],car,mass_properties_bone,count,"carpo")
-  mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],ulnare,mass_properties_bone,count,"wristbones")
+  mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],hum,mass_properties_bone,"humerus")
+  mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],ulna,mass_properties_bone,"ulna")
+  mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],radius,mass_properties_bone,"radius")
+  mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],car,mass_properties_bone,"carpo")
+  mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],wristbone,mass_properties_bone,"wristbones")
 
   # save all combined data groups to the master list
-  mass_properties      = store_data(species_curr,alldat_curr[ind_wing,],prop_bone,mass_properties,count,"bones")
-  mass_properties      = store_data(species_curr,alldat_curr[ind_wing,],prop_muscles,mass_properties,count,"muscles")
-  mass_properties      = store_data(species_curr,alldat_curr[ind_wing,],prop_skin,mass_properties,count,"skin")
-  mass_properties      = store_data(species_curr,alldat_curr[ind_wing,],prop_feathers,mass_properties,count,"feathers")
+  mass_properties      = store_data(species_curr,alldat_curr[ind_wing,],prop_bone,mass_properties,"bones")
+  mass_properties      = store_data(species_curr,alldat_curr[ind_wing,],prop_muscles,mass_properties,"muscles")
+  mass_properties      = store_data(species_curr,alldat_curr[ind_wing,],prop_skin,mass_properties,"skin")
+  mass_properties      = store_data(species_curr,alldat_curr[ind_wing,],prop_feathers,mass_properties,"feathers")
 
   # save all wing data
   prop_bird    = list()
   prop_bird$I  = prop_bone$I + prop_muscles$I + prop_skin$I + prop_feathers$I
   prop_bird$m  = prop_bone$m + prop_muscles$m + prop_skin$m + prop_feathers$m
   prop_bird$CG = (prop_bone$CG*prop_bone$m + prop_muscles$CG*prop_muscles$m + prop_skin$CG*prop_skin$m + prop_feathers$CG*prop_feathers$m)/prop_bird$m
+
+  mass_properties      = store_data(species_curr,alldat_curr[ind_wing,],prop_bird,mass_properties,"bird")
+
   return(mass_properties)
 
 }
