@@ -112,6 +112,27 @@ massprop_birdwing <- function(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_m
   # weighted average of the individual center of mass (Frame of reference: VRP | Origin: VRP)
   prop_muscles$CG = (mass_muscles[1]*brach$CG + mass_muscles[2]*abrach$CG + mass_muscles[3]*manus$CG)/sum(mass_muscles)
 
+  # ---------------------------------------------------------
+  # --------------- Skin/Covert Data ------------------------
+  # ---------------------------------------------------------
+  rho_skin     = dat_mat$density[which(dat_mat$material == "Skin")]
+  mass_skin    = c()
+  mass_skin[1] = dat_bird_curr$propatagiale_skin_mass
+  mass_skin[2] = dat_bird_curr$manus_skin_mass
+  skin_prop    = massprop_skin(mass_skin[1],rho_skin,rbind(Pt1,Pt3,Pt2))
+  skin_man     = massprop_skin(mass_skin[2],rho_skin,rbind(Pt3,Pt4,Pt2))
+  # --- All Skin ---
+  prop_skin = list()
+  # simply addition as long as about the same origin in the same frame of reference (Frame of reference: VRP | Origin: VRP)
+  prop_skin$I  = skin_prop$I + skin_man$I
+  # weighted average of the individual center of mass (Frame of reference: VRP | Origin: VRP)
+  prop_skin$CG = (mass_skin[1]*skin_prop$CG + mass_skin[2]*skin_man$CG)/sum(mass_skin)
+
+  # -------------------------------------------------------
+  # ----------------- Feather Data ------------------------
+  # -------------------------------------------------------
+
+
   # ----------------------------------------------------
   # ----------------- Save Data ------------------------
   # ----------------------------------------------------
@@ -122,10 +143,10 @@ massprop_birdwing <- function(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_m
   mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],radius,mass_properties_bone,count,"radius")
   mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],car,mass_properties_bone,count,"carpo")
   mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],ulnare,mass_properties_bone,count,"wristbones")
-  # save all bone data to the master list
+
+  # save all combined data groups to the master list
   mass_properties      = store_data(species_curr,alldat_curr[ind_wing,],prop_bone,mass_properties,count,"bones")
-
-
+  mass_properties      = store_data(species_curr,alldat_curr[ind_wing,],prop_muscles,mass_properties,count,"muscles")
 
 
   return(mass_properties)
