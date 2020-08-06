@@ -230,7 +230,7 @@ massprop_pm <- function(m,pt){
 #' Frame of reference: VRP | Origin: VRP
 #' @param l_c length of the calamus - start of vane to end of calamus(m)
 #' @param l_r_cor length of rachis/vane - tip to start of vane (m)
-#' @param r_cor radius of the cortex part of the calamus (m)
+#' @param w_r width (diameter) of the cortex part of the calamus (m)
 #' @param r_b barb radius (m)
 #' @param d_b barb distance (m)
 #' @param m_f mass of the entire feather
@@ -250,9 +250,10 @@ massprop_pm <- function(m,pt){
 #' @export
 #'
 #' @examples
-massprop_feathers <- function(start,end,n_pts,l_c,l_r_cor,r_cor,r_b,d_b,m_f,rho_cor,rho_med, w_vp,w_vd,angle){
+massprop_feathers <- function(m_f,l_c,l_r_cor,w_r,r_b,d_b,rho_cor,rho_med,w_vp,w_vd,angle,normal,start,end){
 
   # ------------------ Determine the geometry of feathers ---------------------------
+  r_cor = 0.5*w_r # radius of the cortex part of the calamus
 
   # mass of each component of the feather
   m_vp = rho_cor*(l_r_cor/d_b)*w_vp*pi*r_b^2 # mass of the proximal vane
@@ -268,7 +269,7 @@ massprop_feathers <- function(start,end,n_pts,l_c,l_r_cor,r_cor,r_b,d_b,m_f,rho_
 
   #save the root that is real and positive
   for (i in 1:length(cubic_roots)){
-    if (round(Imag(cubic_roots[i]),15) == 0 & Re(cubic_roots[i]) > 0 & Re(cubic_roots[i]) < r_cor){
+    if (round(Im(cubic_roots[i]),15) == 0 & Re(cubic_roots[i]) > 0 & Re(cubic_roots[i]) < r_cor){
       r_med = as.numeric(Re(cubic_roots[i])) # radius of the medullary component within the calamus
     }
   }
@@ -284,13 +285,13 @@ massprop_feathers <- function(start,end,n_pts,l_c,l_r_cor,r_cor,r_b,d_b,m_f,rho_
   mass_outer = (4*rho_cor*(r_cor^2)*l_r_cor/3)                                  # mass as if entire rachis was solid cortex
   mass_inner = (4*rho_cor*r_med^2*l_r_med/3)                                    # mass as if hollow part of rachis was solid cortex
   # ------------------------------- Adjust axis -------------------------------------
-
+  # first find the frame where z points towards the tip then rotate to frame where z axis points straight along the calamus
   z_axis = end - start
-  x_axis = pracma::cross((n_pts[2,]-n_pts[1,]),(n_pts[3,]-n_pts[1,])) # normal vector of the feather based on supplied data points
+  x_axis = normal
 
   # calculate the rotation matrix between VRP frame of reference and the object
   VRP2object = calc_rot(z_axis,x_axis)
-  off = VRP2object%*%start
+  off = VRP2object%*%start                                        # Frame of reference: Feather Calamus | Origin: VRP
 
   # --------------------------- Moment of inertia -----------------------------------
   # ------- Calamus -------
@@ -329,8 +330,8 @@ massprop_feathers <- function(start,end,n_pts,l_c,l_r_cor,r_cor,r_b,d_b,m_f,rho_
   # ------- Adjust the Vanes and Rachis to be Feather Calamus frame of reference -------
   # postive angle is a ccw rotation about x (normal to the feather plane) ** all angles should be negative for bird feathers
   rot_r  = rotx(angle)
-  rot_vd = rotx(angle - atand(r_cor/l_r_cor))
-  rot_vp = rotx(angle + atand(r_cor/l_r_cor))
+  rot_vd = rotx(angle - pracma::atand(r_cor/l_r_cor))
+  rot_vp = rotx(angle + pracma::atand(r_cor/l_r_cor))
 
   # rotate all rachis and vane MOI to be in the same frame of reference as the calamus
   I_r_cor = rot_r %*% I_r_cor %*% t(rot_r)    # Frame of reference: Feather Calamus | Origin: Outer Rachis Cortex hollow pyramid CG
@@ -343,14 +344,15 @@ massprop_feathers <- function(start,end,n_pts,l_c,l_r_cor,r_cor,r_b,d_b,m_f,rho_
   CG_r_med_rot   = rot_r%*%CG_r_med1              # Frame of reference: Feather Calamus | Origin: Start of the vane (center of pyramid base)
 
   # rotate all vane CG about the lower corner close to the rachis to be in the same frame of reference as the calamus need to also relocate
-  CG_vd_prerot2  =  rotx(-atand(r_cor/l_r_cor))%*%CG_vd_prerot1 # Frame of reference: Feather Vane | Origin: Start of the vane (edge)
-  CG_vp_prerot2  =  rotx(atand(r_cor/l_r_cor))%*%CG_vp_prerot1  # Frame of reference: Feather Vane | Origin: Start of the vane (edge)
+  CG_vd_prerot2  =  rotx(-pracma::atand(r_cor/l_r_cor))%*%CG_vd_prerot1 # Frame of reference: Feather Vane | Origin: Start of the vane (edge)
+  CG_vp_prerot2  =  rotx(pracma::atand(r_cor/l_r_cor))%*%CG_vp_prerot1  # Frame of reference: Feather Vane | Origin: Start of the vane (edge)
 
   CG_vd_prerot3  =  CG_vd_prerot2 - c(0,r_cor,0)          # Frame of reference: Feather Vane | Origin: Start of the vane (center)
   CG_vp_prerot3  =  CG_vp_prerot2 + c(0,r_cor,0)          # Frame of reference: Feather Vane | Origin: Start of the vane (center)
 
   CG_vd_postrot =  rot_r%*%CG_vd_prerot3                  # Frame of reference: Feather Calamus | Origin: Start of the vane (center)
   CG_vp_postrot =  rot_r%*%CG_vp_prerot3                  # Frame of reference: Feather Calamus | Origin: Start of the vane (center)
+
 
   # ---- Determine the offset between the start of the feather and the current I origin ----
   CG_c     = c(0,0,0.5*l_c) + off                       # Frame of reference: Feather Calamus | Origin: VRP
@@ -378,3 +380,4 @@ massprop_feathers <- function(start,end,n_pts,l_c,l_r_cor,r_cor,r_b,d_b,m_f,rho_
 
   return(mass_prop)
 }
+

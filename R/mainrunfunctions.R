@@ -6,7 +6,6 @@
 #' @param dat_mass new MOI and CG data to add to mass_properties as new rows
 #' @param mass_properties current master data fram that saves the data
 #' @param name name of the component
-#'
 #' @return
 #' @export
 #'
@@ -45,14 +44,17 @@ store_data <- function(species_curr,alldat_row,dat_mass,mass_properties,name){
 #' @param dat_bone_curr
 #' @param dat_feat_curr
 #' @param dat_mat_curr
-#' @param dat_pt_curr data frame of the key positions of the bird
-#' @param dat_pt_curr data frame that defines how each pt# relates to the true position on the bird
+#' @param clean_pts data frame of the key positions of the bird as follows:
+#' pt1x, pt1y, pt1z - Point that defines the shoulder joint
+#' pt2x, pt1y, pt2z - Point that defines the elbow joint
+#' pt3x, pt3y, pt3z - Point that defines the wrist joint
+#' pt4x, pt4y, pt4z - Point that defines the end of carpometacarpus
 #'
 #' @return
 #' @export
 #'
 #' @examples
-massprop_birdwing <- function(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat_curr, dat_pt_curr, ptlink){
+massprop_birdwing <- function(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat_curr, clean_pts){
 
 
   column_names = c("species","WingID","TestID","FrameID","prop_type","component","value")
@@ -65,11 +67,16 @@ massprop_birdwing <- function(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_m
 
   w_sk = 0.045*(dat_bird_curr$total_bird_mass^0.37); # predicted distance between humerus heads (Nudds & Rayner)
 
-  # Initialize common pts
-  Pt1 = c(dat_pt_curr$Pt1X, dat_pt_curr$Pt1Y, dat_pt_curr$Pt1Z) # Shoulder
-  Pt2 = c(dat_pt_curr$Pt2X, dat_pt_curr$Pt2Y, dat_pt_curr$Pt2Z) # Elbow
-  Pt3 = c(dat_pt_curr$Pt3X, dat_pt_curr$Pt3Y, dat_pt_curr$Pt3Z) # Wrist
-  Pt4 = c(dat_pt_curr$Pt4X, dat_pt_curr$Pt4Y, dat_pt_curr$Pt4Z) # End of carpometacarpus
+  # define incoming points
+  Pt1 = clean_pts[1,] # shoulder
+  Pt2 = clean_pts[2,] # elbow
+  Pt3 = clean_pts[3,] # wrist
+  Pt4 = clean_pts[4,] # end of carpometacarpus
+
+  Pt8  = clean_pts[5,] # tip of most distal primary
+  Pt9  = clean_pts[6,] # tip of last primary to model as if on the end of the carpometacarpus
+  Pt10 = clean_pts[7,] # tip of S1
+  Pt11 = clean_pts[8,] # tip of last secondary feather at wing root
 
   # --------------------------------------------------
   # --------------- Bone Data ------------------------
@@ -86,6 +93,7 @@ massprop_birdwing <- function(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_m
   radius    = massprop_bones(dat_bone_rad$bone_mass,dat_bone_rad$bone_len,dat_bone_rad$bone_out_rad,dat_bone_rad$bone_in_rad,rho_bone, Pt2, Pt3)
   car       = massprop_bones(dat_bone_car$bone_mass,dat_bone_car$bone_len,dat_bone_car$bone_out_rad,dat_bone_car$bone_in_rad,rho_bone, Pt3, Pt4)
   wristbone = massprop_pm((subset(dat_bone_curr, bone == "Ulnare")$bone_mass + subset(dat_bone_curr, bone == "Radiale")$bone_mass), Pt3)
+
   # --- All Bones ---
   prop_bone = list()
   # simply addition as long as about the same origin in the same frame of reference (Frame of reference: VRP | Origin: VRP)
@@ -132,6 +140,54 @@ massprop_birdwing <- function(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_m
   # ----------------- Feather Data ------------------------
   # -------------------------------------------------------
 
+  #pre-define storage matrices
+  res_pri    = list()
+  res_pri$I  = array(dim = c(3,3,no_pri))
+  res_pri$CG = array(dim = c(no_pri,3))
+  res_sec    = list()
+  res_sec$I  = array(dim = c(3,3,no_sec))
+  res_sec$CG = array(dim = c(no_sec,3))
+
+  # density information
+  rho_cor = dat_mat$density[which(dat_mat$material == "Cortex")]
+  rho_med = dat_mat$density[which(dat_mat$material == "Medullary")]
+
+  # separate out primaries and secondaries
+  primaries   = dat_feat_curr[grep("P",dat_feat_curr$Feather),]
+  secondaries = dat_feat_curr[grep("S",dat_feat_curr$Feather),]
+  no_sec = length(secondaries$Feather)
+  no_pri = length(primaries$Feather)
+
+  # determine the orientation and normal of each feather
+  feather_info = orient_feather(primaries,secondaries,no_pri,no_sec,Pt1,Pt2,Pt3,Pt4,Pt9,Pt10,Pt11)
+  # --- Primaries ---
+  for (i in 1:no_pri){
+    feather_name = paste("P",i,sep = "")
+    info = subset(dat_feat_curr,Feather == feather_name)
+
+    tmp = massprop_feathers(info$m_f,info$l_cal,info$l_vane, info$w_r,
+                      dat_bird_curr$barb_radius, dat_bird_curr$barb_distance,
+                      rho_cor,rho_med,
+                      info$w_vp,info$w_vd,info$vane_angle,
+                      feather_info$normal[i,],feather_info$loc_start[i,],feather_info$loc_end[i,])
+
+    res_pri$I[,,i] = tmp$I
+    res_pri$CG[i,] = tmp$CG
+  }
+  # --- Secondaries ---
+  for (i in 1:no_sec){
+    feather_name = paste("S",i,sep = "")
+    info = subset(dat_feat_curr,Feather == feather_name)
+
+    tmp = massprop_feathers(info$m_f,info$l_cal,info$l_vane, info$w_r,
+                            dat_bird_curr$barb_radius, dat_bird_curr$barb_distance,
+                            rho_cor,rho_med,
+                            info$w_vp,info$w_vd,info$vane_angle,
+                            feather_info$normal[i+no_pri,],feather_info$loc_start[i+no_pri,],feather_info$loc_end[i+no_pri,])
+
+    res_sec$I[,,i] = tmp$I
+    res_sec$CG[i,] = tmp$CG
+  }
 
   # ----------------------------------------------------
   # ----------------- Save Data ------------------------

@@ -347,3 +347,69 @@ calc_inertia_platetri <- function(pts, A, rho, t, desired_prop){
   }
 }
 
+
+# ---------------------------------------------------------------------------------------
+##### -------------------------- Feather Orientation ------------------------------ #####
+# ---------------------------------------------------------------------------------------
+
+orient_feather <- function(primaries,secondaries,no_pri,no_sec,Pt1,Pt2,Pt3,Pt4,Pt9,Pt10,Pt11){
+
+  # pre-define variables
+  count             = 1
+  feather           = list()
+  feather$loc_start = matrix(0, nrow = (no_pri+no_sec), ncol = 3)
+  feather$loc_end   = matrix(0, nrow = (no_pri+no_sec), ncol = 3)
+  feather$normal    = matrix(0, nrow = (no_pri+no_sec), ncol = 3)
+  k = 1
+  # --- Primaries ---
+  # Calculate the start and end of the primaries
+  for(i in 1:no_pri){
+
+    if (i < (no_pri-2)) {
+      # Note: We don't want last primary to be exact same spot as S1 or P7 to be at same spot as P8
+      #       this requires that we skip the first and last position
+
+      # -- Start -- Primaries less than P7 distribute linearly along the carpometacarpus
+      feather$loc_start[count,] = Pt3 + (1/8)*(i)*(Pt4-Pt3)
+      # -- End -- Distributes linearly between P7 and S1
+      feather$loc_end[count,]   = Pt10 + (1/8)*(i)*(Pt9-Pt10)
+
+    } else {
+      # -- Start -- Any primary past P7 starts on the end of the carpometacarpus
+      feather$loc_start[count,] = Pt4;
+      # -- End -- Distributes linearly
+      feather$loc_end[count,]   = Pt9 + (1/(no_pri-7))*(k)*(Pt8-Pt9);
+      k = k + 1
+    }
+    count = count + 1
+  }
+
+  # --- Secondaries ---
+  # Note: Secondaries will at most be in line with the elbow point along the
+  #       vector drawn between S1 and the wing root trailing edge
+  sec_vec = Pt11-Pt10;                   # vector between S1 and the wing root trailing edge
+  t       = (Pt2[2]-Pt10[2])/sec_vec[2]; # proportion along the vector where it intersects y = Pt2y
+  sec_end = c((t*sec_vec[1]+Pt10[1]), Pt2[2], (t*sec_vec[3]+Pt10[3])); # Point along the vector at Pt2Y
+
+  # Calculate the start and end of the secondaries
+  for(i in 1:no_sec){
+    # -- Start --
+    #equally space the start of the secondaries along the forearm ulna/radius
+    feather$loc_start[count,] = Pt3 + (1/(no_sec-1))*(i-1)*(Pt2-Pt3);
+    # -- End --
+    feather$loc_end[count,]   = Pt10 + (1/(no_sec-1))*(i-1)*(sec_end-Pt10);
+    count = count + 1
+  }
+
+  # --- Calculate normal for the feather ----
+
+  for(i in 1:(no_pri+no_sec)){
+    if(i <= no_pri){
+      feather$normal[i,] = pracma::cross((Pt3-Pt4),(feather$loc_end[i,]-Pt4)) # primaries on the carpometacarpus plane
+    } else {
+      feather$normal[i,] = pracma::cross((Pt2-Pt3),(feather$loc_end[i,]-Pt3)) # secondaries on the ulna/radius plane
+    }
+  }
+
+  return(feather)
+}

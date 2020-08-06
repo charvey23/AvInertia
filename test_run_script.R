@@ -7,6 +7,13 @@ dat_bone = readxl::read_xlsx('Master_AnatomicalData.xlsx', sheet = 'Bones')
 dat_feat = readxl::read_xlsx('Master_AnatomicalData.xlsx', sheet = 'Feathers')
 dat_mat  = readxl::read_xlsx('Master_AnatomicalData.xlsx', sheet = 'MaterialSpecs')
 
+dat_feat$l_cal  = 0.01*dat_feat$l_cal
+dat_feat$l_vane = 0.01*dat_feat$l_vane
+dat_feat$w_r    = 0.01*dat_feat$w_r
+dat_feat$w_vp   = 0.01*dat_feat$w_vp
+dat_feat$w_vd   = 0.01*dat_feat$w_vd
+dat_feat$m_f    = 0.001*dat_feat$m_f
+
 no_species = unique(dat_bird$species)
 
 for (species in 1:length(alldat$species)){
@@ -38,7 +45,22 @@ for (species in 1:length(alldat$species)){
 
     dat_pt_curr = dat_pt[ind_wing,] # should only be one row of input points
 
-    test = massprop_birdwing(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, dat_pt_curr)
+    # Initialize common pts
+    Pt1  = c(dat_pt_curr$Pt1X, dat_pt_curr$Pt1Y, dat_pt_curr$Pt1Z) # Shoulder
+    Pt2  = c(dat_pt_curr$Pt2X, dat_pt_curr$Pt2Y, dat_pt_curr$Pt2Z) # Elbow
+    Pt3  = c(dat_pt_curr$Pt3X, dat_pt_curr$Pt3Y, dat_pt_curr$Pt3Z) # Wrist
+    Pt4  = c(dat_pt_curr$Pt4X, dat_pt_curr$Pt4Y, dat_pt_curr$Pt4Z) # End of carpometacarpus
+
+    Pt8  = c(dat_pt_curr$Pt8X, dat_pt_curr$Pt8Y, dat_pt_curr$Pt8Z) # Tip of most distal primary
+    Pt9  = c(dat_pt_curr$Pt9X, dat_pt_curr$Pt9Y, dat_pt_curr$Pt9Z) # Tip of last primary to model as if on the end of the carpometacarpus
+    Pt10 = c(dat_pt_curr$Pt10X, dat_pt_curr$Pt10Y, dat_pt_curr$Pt10Z) # S1
+    Pt11 = c(dat_pt_curr$Pt11X, dat_pt_curr$Pt11Y, dat_pt_curr$Pt11Z) # Wing root trailing edge
+
+    clean_pts = rbind(Pt1,Pt2,Pt3,Pt4,Pt8,Pt9,Pt10,Pt11)
+
+    feather_info = list()
+
+    test = massprop_birdwing(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, dat_pt_curr,clean_pts)
 
 
   }
