@@ -1,5 +1,7 @@
 # This script is written to create the test cases
 
+devtools::load_all()
+
 # --------------------- Read in data -----------------------
 alldat   = read.csv('2020_05_25_OrientedWings.csv')
 dat_bird = readxl::read_xlsx('Master_AnatomicalData.xlsx', sheet = 'FullBird')
@@ -16,8 +18,8 @@ dat_feat$w_vd   = 0.01*dat_feat$w_vd
 dat_feat$m_f    = 0.001*dat_feat$m_f
 
 no_species = unique(dat_bird$species)
-
-for (species in 1:length(alldat$species)){
+# eventually replace with length(dat_bird$species)
+for (species in 1:1){
   # ----------- Filter the data to the current species ---------
   species_curr  = dat_bird$species[species]
   alldat_curr   = subset(alldat, species == species_curr)
@@ -40,6 +42,10 @@ for (species in 1:length(alldat$species)){
       dat_pt[,i] = dat_pt[,i] + w_sk/2
     }
   }
+  # --------------------- Initialize variables -----------------------
+  all_data = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
+  column_names = c("species","WingID","TestID","FrameID","prop_type","component","value")
+  colnames(all_data) = column_names
 
   # -------------- Begin iteration through the wings of this species ------------------------------
 
@@ -57,15 +63,12 @@ for (species in 1:length(alldat$species)){
     Pt9  = c(dat_pt_curr$Pt9X, dat_pt_curr$Pt9Y, dat_pt_curr$Pt9Z) # Tip of last primary to model as if on the end of the carpometacarpus
     Pt10 = c(dat_pt_curr$Pt10X, dat_pt_curr$Pt10Y, dat_pt_curr$Pt10Z) # S1
     Pt11 = c(dat_pt_curr$Pt11X, dat_pt_curr$Pt11Y, dat_pt_curr$Pt11Z) # Wing root trailing edge
-
     clean_pts = rbind(Pt1,Pt2,Pt3,Pt4,Pt8,Pt9,Pt10,Pt11)
 
-    test = massprop_birdwing(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts)
+
+    curr_data = massprop_birdwing(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts)
+
+    all_data = rbind(all_data, curr_data)
 
   }
 }
-
-
-
-
-

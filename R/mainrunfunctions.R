@@ -19,10 +19,9 @@
 #' @examples
 massprop_birdwing <- function(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat_curr, clean_pts){
 
-
-  column_names = c("species","WingID","TestID","FrameID","prop_type","component","value")
   # --------------------- Initialize variables -----------------------
   mass_properties = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
+  column_names = c("species","WingID","TestID","FrameID","prop_type","component","value")
   colnames(mass_properties) = column_names
   mass_properties_bone      = mass_properties                    # specific bone data
   mass_properties_muscle    = mass_properties                    # specific muscle data
@@ -189,8 +188,14 @@ massprop_birdwing <- function(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_m
   prop_bird$I  = prop_bone$I + prop_muscles$I + prop_skin$I + prop_feathers$I
   prop_bird$m  = prop_bone$m + prop_muscles$m + prop_skin$m + prop_feathers$m
   prop_bird$CG = (prop_bone$CG*prop_bone$m + prop_muscles$CG*prop_muscles$m + prop_skin$CG*prop_skin$m + prop_feathers$CG*prop_feathers$m)/prop_bird$m
+  mass_properties  = store_data(species_curr,alldat_curr[ind_wing,],prop_bird,mass_properties,"wing")
 
-  mass_properties      = store_data(species_curr,alldat_curr[ind_wing,],prop_bird,mass_properties,"bird")
+  # save the final mass used for the analysis
+  new_row = data.frame(species = species_curr, WingID = as.character(alldat_curr$WingID[ind_wing]),
+                       TestID = as.character(alldat_curr$TestID[ind_wing]), FrameID = as.character(alldat_curr$frameID[ind_wing]),
+                       component = "wing", object = "m", value = prop_bird$m) # saves the name and valueof the tensor component
+
+  mass_properties = rbind(mass_properties,new_row)
 
   return(mass_properties)
 
