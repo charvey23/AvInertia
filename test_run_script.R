@@ -3,11 +3,11 @@
 devtools::load_all()
 
 # --------------------- Read in data -----------------------
-alldat   = read.csv('2020_05_25_OrientedWings.csv')
-dat_bird = readxl::read_xlsx('Master_AnatomicalData.xlsx', sheet = 'FullBird')
-dat_bone = readxl::read_xlsx('Master_AnatomicalData.xlsx', sheet = 'Bones')
-dat_feat = readxl::read_xlsx('Master_AnatomicalData.xlsx', sheet = 'Feathers')
-dat_mat  = readxl::read_xlsx('Master_AnatomicalData.xlsx', sheet = 'MaterialSpecs')
+alldat   = read.csv('./data/2020_05_25_OrientedWings.csv')
+dat_bird = readxl::read_xlsx('./data/Master_AnatomicalData.xlsx', sheet = 'FullBird')
+dat_bone = readxl::read_xlsx('./data/Master_AnatomicalData.xlsx', sheet = 'Bones')
+dat_feat = readxl::read_xlsx('./data/Master_AnatomicalData.xlsx', sheet = 'Feathers')
+dat_mat  = readxl::read_xlsx('./data/Master_AnatomicalData.xlsx', sheet = 'MaterialSpecs')
 
 # adjust to SI units
 dat_feat$l_cal  = 0.01*dat_feat$l_cal

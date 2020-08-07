@@ -1,2 +1,5 @@
 ^birdmoment\.Rproj$
 ^\.Rproj\.user$
+^\./data$
+^\./data/2020_05_25_OrientedWings\.csv$
+^\./data/Master_AnatomicalData\.xlsx$
