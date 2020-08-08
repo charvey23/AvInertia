@@ -114,6 +114,5 @@ plotRefToTarget(
 
 ## although points 2, 6, 7, and 12 are not included in the link frame, their
 ## locations make a lot of sense
-## but no matter which wings i plot, it seems point #5 is always in an odd
-## location
-## am i messing something up?
+
+## point 5 is fake!!! thanks christina!
