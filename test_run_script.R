@@ -72,3 +72,48 @@ for (species in 1:1){
 
   }
 }
+
+
+
+#### 2020-08-07 vbb plotting ####
+library(geomorph)
+library(dplyr)
+
+## gonna plot some of the wings to just remind myself how things look
+
+set.seed(123)
+## take a random sample of 100 instead of all ~69000
+## trying to plot all 69000 will melt your computer
+## trust me, i tried :(
+samp <- sample_n(dat_pt, 100)
+## make a 3D array
+samp_3d <- arrayspecs(samp, p = 12, k = 3)
+## not used later, but just in case it's convenient:
+samp_2d <- two.d.array(samp_3d)
+
+## make a matrix of "links" that will be drawn on to connect dots
+links <- data.frame(a = c(1, 3, 4, 8, 9, 10, 11),
+                    b = c(3, 4, 8, 9, 10, 11, 1))
+linkmat <- as.matrix(links)
+
+## plot of all (sampled) wings
+## this is an unholy mess, but may be useful later if we devise a way to connect
+## links for all sampled wings (and not just the mean shape, as the function
+## does by default)
+plotAllSpecimens(samp_3d, links = linkmat)
+
+## so let's just isolate two arbitrary ones
+plotRefToTarget(
+  samp_3d[, , 1],   ## can swap out 1 with any number from 1 to 100
+  samp_3d[, , 10],  ## same for 10
+  method = "points",
+  links = linkmat,
+  label = TRUE
+)
+
+
+## although points 2, 6, 7, and 12 are not included in the link frame, their
+## locations make a lot of sense
+## but no matter which wings i plot, it seems point #5 is always in an odd
+## location
+## am i messing something up?
