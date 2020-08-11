@@ -230,7 +230,7 @@ massprop_pm <- function(m,pt){
 #' Frame of reference: VRP | Origin: VRP
 #' @param l_c length of the calamus - start of vane to end of calamus(m)
 #' @param l_r_cor length of rachis/vane - tip to start of vane (m)
-#' @param w_r width (diameter) of the cortex part of the calamus (m)
+#' @param w_cal width (diameter) of the cortex part of the calamus (m)
 #' @param r_b barb radius (m)
 #' @param d_b barb distance (m)
 #' @param m_f mass of the entire feather
@@ -250,10 +250,10 @@ massprop_pm <- function(m,pt){
 #' @export
 #'
 #' @examples
-massprop_feathers <- function(m_f,l_c,l_r_cor,w_r,r_b,d_b,rho_cor,rho_med,w_vp,w_vd,angle,normal,start,end){
+massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp,w_vd,angle,normal,start,end){
 
   # ------------------ Determine the geometry of feathers ---------------------------
-  r_cor = 0.5*w_r # radius of the cortex part of the calamus
+  r_cor = 0.5*w_cal # radius of the cortex part of the calamus
 
   # mass of each component of the feather
   m_vp = rho_cor*(l_r_cor/d_b)*w_vp*pi*r_b^2 # mass of the proximal vane

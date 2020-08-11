@@ -3,21 +3,63 @@
 #' Function that reads in anatomical data and returns the moment of inertia tensor and center
 #' of gravity of a wing one side of the bird
 #'
-#' @param dat_bird_curr
-#' @param dat_bone_curr
-#' @param dat_feat_curr
-#' @param dat_mat_curr
-#' @param clean_pts data frame of the key positions of the bird as follows:
-#' pt1x, pt1y, pt1z - Point that defines the shoulder joint
-#' pt2x, pt1y, pt2z - Point that defines the elbow joint
-#' pt3x, pt3y, pt3z - Point that defines the wrist joint
-#' pt4x, pt4y, pt4z - Point that defines the end of carpometacarpus
+#' @param species_curr Species identification code as a string
 #'
-#' @return
-#' @export
+#' @param dat_bird_curr dataframe related to the current bird wing that must include the following columns:
+#' \item{total_bird_mass}{Mass of full bird for the current wing (kg)}
+#' \item{wing_mass}{Mass of one wing, should be the current wing (kg)}
+#' \item{barb_radius}{Radius of feather barb  for current species (m)}
+#' \item{barb_distance}{Distance between feather barbs for current species (m)}
+#' \item{brachial_muscle_mass}{Mass of all muscles in the brachial region of the wing (kg)}
+#' \item{antebrachial_muscle_mass}{Mass of all muscles in the antebrachial region of the wing (kg)}
+#' \item{manus_muscle_mass}{Mass of all muscles in the manus region of the wing (kg)}
+#'
+#' @param dat_bone_curr dataframe related to the current bird wing bones that must include the following columns:
+#' \item{bone}{Bone ID code. Must include: "Humerus","Ulna","Radius","Carpometacarpus,"Ulnare" and "Radiale".}
+#' \item{bone_mass}{Mass of bone in the same row as the appropriate bone ID code (kg)}
+#' \item{bone_len}{Length of bone in the same row as the appropriate bone ID code (m)}
+#' \item{bone_out_rad}{Outer radius of bone in the same row as the appropriate bone ID code (m)}
+#' \item{bone_in_rad}{Inner radius of bone in the same row as the appropriate bone ID code (m)}
+#'
+#' @param dat_feat_curr data related to the current bird wing feathers input as a dataframe with the following structure:
+#' \item{feather}{Feather ID code. Must be in standard format i.e. 1st primary is "P1", third secondary is "S3", etc.
+#' Alula feathers should be grouped and named "alula".}
+#' \item{m_f}{Mass of feather in the same row as the appropriate feather ID code (kg)}
+#' \item{l_cal}{Length of calamus in the same row as the appropriate feather ID code (m)}
+#' \item{l_vane}{Length of rachis/vane in the same row as the appropriate feather ID code (m)}
+#' \item{w_cal}{Width (diameter) of calamus in the same row as the appropriate feather ID code (m)}
+#' \item{w_vp}{Width of proximal vane (average value) in the same row as the appropriate feather ID code (m)}
+#' \item{w_vd}{Width of distal vane (average value)  in the same row as the appropriate feather ID code (m)}
+#' NOTE: Alula feathers will be treated as point mass so only the mass of the feathers is required. Other columns can be left blank.
+#'
+#' @param dat_mat_curr data related to the current species input as a dataframe with the following structure:
+#' \item{material}{Material information. Must include the following: "Bone","Skin","Muscle","Cortex", "Medullary"}
+#' \item{density}{Density of each material (kg/m^3)}
+#'
+#' @param clean_pts data frame of the key positions of the bird as follows:
+#' \item{pt1x, pt1y, pt1z}{Point on the shoulder joint}
+#' \item{pt2x, pt1y, pt2z}{Point on the elbow joint}
+#' \item{pt3x, pt3y, pt3z}{Point on the wrist joint}
+#' \item{pt4x, pt4y, pt4z}{Point on the end of carpometacarpus}
+#' \item{pt8x, pt8y, pt8z}{Point on tip of most distal primary}
+#' \item{pt9x, pt9y, pt9z}{Point that defines the end of carpometacarpus}
+#' \item{pt10x, pt10y, pt10z}{Point on tip of last primary to model as if on the end of the carpometacarpus}
+#' \item{pt11x, pt11y, pt11z}{Point on tip of most proximal feather (wing root trailing edge)}
+#' CAUTION: These points must all have the vehicle reference point (VRP) as their origin
+#'          and the vehicle major axes as their frame of reference. This is normally selected so that
+#'          the VRP is in line with the body center of gravity. Ensure the axes used represent a right-handed axis system.
+#'
+#' @author Christina Harvey
+#'
+#' @return Function returns the moment of inertia and center of gravity of one wing about the VRP in the VRP frame.
+#'
 #'
 #' @examples
-massprop_birdwing <- function(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat_curr, clean_pts){
+#'
+#'
+#' @export
+#'
+massprop_birdwing <- function(species_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat_curr, clean_pts){
 
   # --------------------- Initialize variables -----------------------
   mass_properties = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
@@ -107,10 +149,10 @@ massprop_birdwing <- function(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_m
   rho_med = dat_mat$density[which(dat_mat$material == "Medullary")]
 
   # separate out primaries and secondaries
-  primaries   = dat_feat_curr[grep("P",dat_feat_curr$Feather),]
-  secondaries = dat_feat_curr[grep("S",dat_feat_curr$Feather),]
-  no_sec = length(secondaries$Feather)
-  no_pri = length(primaries$Feather)
+  primaries   = dat_feat_curr[grep("P",dat_feat_curr$feather),]
+  secondaries = dat_feat_curr[grep("S",dat_feat_curr$feather),]
+  no_sec = length(secondaries$feather)
+  no_pri = length(primaries$feather)
 
   #pre-define storage matrices
   res_pri     = list()
@@ -127,9 +169,9 @@ massprop_birdwing <- function(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_m
   # --- Primaries ---
   for (i in 1:no_pri){
     feather_name = paste("P",i,sep = "")
-    pri_info = subset(dat_feat_curr,Feather == feather_name) # subset data to be for this specific feather
+    pri_info = subset(dat_feat_curr,feather == feather_name) # subset data to be for this specific feather
     # Calculate MOI and CG
-    tmp = massprop_feathers(pri_info$m_f,pri_info$l_cal,pri_info$l_vane, pri_info$w_r,
+    tmp = massprop_feathers(pri_info$m_f,pri_info$l_cal,pri_info$l_vane, pri_info$w_cal,
                       dat_bird_curr$barb_radius, dat_bird_curr$barb_distance,
                       rho_cor,rho_med,
                       pri_info$w_vp,pri_info$w_vd,pri_info$vane_angle,
@@ -143,9 +185,9 @@ massprop_birdwing <- function(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_m
   # --- Secondaries ---
   for (i in 1:no_sec){
     feather_name = paste("S",i,sep = "")
-    sec_info = subset(dat_feat_curr,Feather == feather_name)  # subset data to be for this specific feather
+    sec_info = subset(dat_feat_curr,feather == feather_name)  # subset data to be for this specific feather
     # Calculate MOI and CG
-    tmp = massprop_feathers(sec_info$m_f,sec_info$l_cal,sec_info$l_vane, sec_info$w_r,
+    tmp = massprop_feathers(sec_info$m_f,sec_info$l_cal,sec_info$l_vane, sec_info$w_cal,
                             dat_bird_curr$barb_radius, dat_bird_curr$barb_distance,
                             rho_cor,rho_med,
                             sec_info$w_vp,sec_info$w_vd,sec_info$vane_angle,
@@ -157,7 +199,7 @@ massprop_birdwing <- function(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_m
   }
 
   # --- Alula ----
-  m_alula = subset(dat_feat_curr,Feather == "alula")$m_f
+  m_alula = subset(dat_feat_curr,feather == "alula")$m_f
   alula   = massprop_pm(m_alula, Pt3)
 
   # --- All Feathers ---

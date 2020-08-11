@@ -66,7 +66,7 @@ for (species in 1:1){
     clean_pts = rbind(Pt1,Pt2,Pt3,Pt4,Pt8,Pt9,Pt10,Pt11)
 
 
-    curr_data = massprop_birdwing(dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts)
+    curr_data = massprop_birdwing(species_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts)
 
     all_data = rbind(all_data, curr_data)
 
