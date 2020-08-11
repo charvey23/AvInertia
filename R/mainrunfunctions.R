@@ -3,9 +3,13 @@
 #' Function that reads in anatomical data and returns the moment of inertia tensor and center
 #' of gravity of a wing one side of the bird
 #'
-#' @param species_curr Species identification code as a string
+#' @param dat_wingID_curr Dataframe related to the current bird wing ID info that must include the following columns:
+#' \item{species}{Species ID code as a string}
+#' \item{WingID}{Wing ID code as a string}
+#' \item{TestID}{Test ID code as a string}
+#' \item{frameID}{Video frame ID code as a string}
 #'
-#' @param dat_bird_curr dataframe related to the current bird wing that must include the following columns:
+#' @param dat_bird_curr Dataframe related to the current bird wing that must include the following columns:
 #' \item{total_bird_mass}{Mass of full bird for the current wing (kg)}
 #' \item{wing_mass}{Mass of one wing, should be the current wing (kg)}
 #' \item{barb_radius}{Radius of feather barb  for current species (m)}
@@ -14,14 +18,14 @@
 #' \item{antebrachial_muscle_mass}{Mass of all muscles in the antebrachial region of the wing (kg)}
 #' \item{manus_muscle_mass}{Mass of all muscles in the manus region of the wing (kg)}
 #'
-#' @param dat_bone_curr dataframe related to the current bird wing bones that must include the following columns:
+#' @param dat_bone_curr Dataframe related to the current bird wing bones that must include the following columns:
 #' \item{bone}{Bone ID code. Must include: "Humerus","Ulna","Radius","Carpometacarpus,"Ulnare" and "Radiale".}
 #' \item{bone_mass}{Mass of bone in the same row as the appropriate bone ID code (kg)}
 #' \item{bone_len}{Length of bone in the same row as the appropriate bone ID code (m)}
 #' \item{bone_out_rad}{Outer radius of bone in the same row as the appropriate bone ID code (m)}
 #' \item{bone_in_rad}{Inner radius of bone in the same row as the appropriate bone ID code (m)}
 #'
-#' @param dat_feat_curr data related to the current bird wing feathers input as a dataframe with the following structure:
+#' @param dat_feat_curr Dataframe related to the current bird wing feathers input as a dataframe with the following structure:
 #' \item{feather}{Feather ID code. Must be in standard format i.e. 1st primary is "P1", third secondary is "S3", etc.
 #' Alula feathers should be grouped and named "alula".}
 #' \item{m_f}{Mass of feather in the same row as the appropriate feather ID code (kg)}
@@ -32,11 +36,11 @@
 #' \item{w_vd}{Width of distal vane (average value)  in the same row as the appropriate feather ID code (m)}
 #' NOTE: Alula feathers will be treated as point mass so only the mass of the feathers is required. Other columns can be left blank.
 #'
-#' @param dat_mat_curr data related to the current species input as a dataframe with the following structure:
+#' @param dat_mat_curr Dataframe related to the current species input as a dataframe with the following structure:
 #' \item{material}{Material information. Must include the following: "Bone","Skin","Muscle","Cortex", "Medullary"}
 #' \item{density}{Density of each material (kg/m^3)}
 #'
-#' @param clean_pts data frame of the key positions of the bird as follows:
+#' @param clean_pts Dataframe of the key positions of the bird as follows:
 #' \item{pt1x, pt1y, pt1z}{Point on the shoulder joint}
 #' \item{pt2x, pt1y, pt2z}{Point on the elbow joint}
 #' \item{pt3x, pt3y, pt3z}{Point on the wrist joint}
@@ -51,7 +55,8 @@
 #'
 #' @author Christina Harvey
 #'
-#' @return Function returns the moment of inertia and center of gravity of one wing about the VRP in the VRP frame.
+#' @return Function returns a dataframe that includes the moment of inertia and center of gravity of
+#' one wing about the VRP in the VRP frame and that of each major anatomical group i.e. skin, feathers, bones, muscles.
 #'
 #'
 #' @examples
@@ -59,7 +64,7 @@
 #'
 #' @export
 #'
-massprop_birdwing <- function(species_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat_curr, clean_pts){
+massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat_curr, clean_pts){
 
   # --------------------- Initialize variables -----------------------
   mass_properties = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
@@ -213,66 +218,76 @@ massprop_birdwing <- function(species_curr, dat_bird_curr, dat_bone_curr, dat_fe
   # ----------------------------------------------------
 
   # add data to bone specific data frame
-  mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],hum,mass_properties_bone,"humerus")
-  mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],ulna,mass_properties_bone,"ulna")
-  mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],radius,mass_properties_bone,"radius")
-  mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],car,mass_properties_bone,"carpo")
-  mass_properties_bone = store_data(species_curr,alldat_curr[ind_wing,],wristbone,mass_properties_bone,"wristbones")
+  mass_properties_bone = store_data(dat_wingID_curr,hum,mass_properties_bone,"humerus")
+  mass_properties_bone = store_data(dat_wingID_curr,ulna,mass_properties_bone,"ulna")
+  mass_properties_bone = store_data(dat_wingID_curr,radius,mass_properties_bone,"radius")
+  mass_properties_bone = store_data(dat_wingID_curr,car,mass_properties_bone,"carpo")
+  mass_properties_bone = store_data(dat_wingID_curr,wristbone,mass_properties_bone,"wristbones")
 
   # save all combined data groups to the master list
-  mass_properties      = store_data(species_curr,alldat_curr[ind_wing,],prop_bone,mass_properties,"bones")
-  mass_properties      = store_data(species_curr,alldat_curr[ind_wing,],prop_muscles,mass_properties,"muscles")
-  mass_properties      = store_data(species_curr,alldat_curr[ind_wing,],prop_skin,mass_properties,"skin")
-  mass_properties      = store_data(species_curr,alldat_curr[ind_wing,],prop_feathers,mass_properties,"feathers")
+  mass_properties      = store_data(dat_wingID_curr,prop_bone,mass_properties,"bones")
+  mass_properties      = store_data(dat_wingID_curr,prop_muscles,mass_properties,"muscles")
+  mass_properties      = store_data(dat_wingID_curr,prop_skin,mass_properties,"skin")
+  mass_properties      = store_data(dat_wingID_curr,prop_feathers,mass_properties,"feathers")
 
   # save all wing data
   prop_bird    = list()
   prop_bird$I  = prop_bone$I + prop_muscles$I + prop_skin$I + prop_feathers$I
   prop_bird$m  = prop_bone$m + prop_muscles$m + prop_skin$m + prop_feathers$m
   prop_bird$CG = (prop_bone$CG*prop_bone$m + prop_muscles$CG*prop_muscles$m + prop_skin$CG*prop_skin$m + prop_feathers$CG*prop_feathers$m)/prop_bird$m
-  mass_properties  = store_data(species_curr,alldat_curr[ind_wing,],prop_bird,mass_properties,"wing")
+  mass_properties  = store_data(dat_wingID_curr,prop_bird,mass_properties,"wing")
 
   # save the final mass used for the analysis
-  new_row = data.frame(species = species_curr, WingID = as.character(alldat_curr$WingID[ind_wing]),
-                       TestID = as.character(alldat_curr$TestID[ind_wing]), FrameID = as.character(alldat_curr$frameID[ind_wing]),
+  new_row = data.frame(species = dat_wingID_curr$species, WingID = as.character(dat_wingID_curr$WingID),
+                       TestID = as.character(dat_wingID_curr$TestID), FrameID = as.character(dat_wingID_curr$frameID),
                        component = "wing", object = "m", value = prop_bird$m) # saves the name and valueof the tensor component
 
   mass_properties = rbind(mass_properties,new_row)
 
   return(mass_properties)
-
 }
 
 
 # -------------------- Store Data  -------------------------------
 #' Function to store moment of inertia tensor and center of gravity vector components in long format
 #'
-#' @param species_curr current species code
-#' @param alldat_row current dataframe containing the necessary identifying information for the wing shape
-#' @param dat_mass new MOI and CG data to add to mass_properties as new rows
-#' @param mass_properties current master data fram that saves the data
-#' @param name name of the component
-#' @return
-#' @export
+#' @param dat_wingID_curr Dataframe related to the current bird wing ID info that must include the following columns:
+#' \item{species}{Species ID code as a string}
+#' \item{WingID}{Wing ID code as a string}
+#' \item{TestID}{Test ID code as a string}
+#' \item{frameID}{Video frame ID code as a string}
+#'
+#' @param dat_mass Dataframe containing the new MOI and CG data to add to mass_properties as new rows. Must include:
+#' \item{I}{Moment of inertia tensor (kg-m^2)}
+#' \item{CG}{Center of gravity with three location components (m)}
+#'
+#' @param mass_properties Dataframe containing any previously saved data.
+#' Must have the following columns: "species","WingID","TestID","FrameID","prop_type","component","value".
+#'
+#' @param name Name of the component for which the moment of inertia and center of gravity were computed.
+#'
+#' @return This function returns mass_properties as an updated dataframe with a new row corresponding to the dat_mass information
 #'
 #' @examples
-store_data <- function(species_curr,alldat_row,dat_mass,mass_properties,name){
+#'
+#' @export
+store_data <- function(dat_wingID_curr,dat_mass,mass_properties,name){
   prop_type_list = c("Ixx","Iyy","Izz","Ixy","Iyz","Ixz","CGx","CGy","CGz")
   prop_type_ind  = cbind(c(1,2,3,1,2,1),c(1,2,3,2,3,3))
 
-  species = species_curr
-  wingID  = as.character(alldat_row$WingID)
-  testID  = as.character(alldat_row$TestID)
-  frameID = as.character(alldat_row$frameID)
+  species = dat_wingID_curr$species
+  wingID  = dat_wingID_curr$WingID
+  testID  = dat_wingID_curr$TestID
+  frameID = dat_wingID_curr$frameID
 
-  # MOI
+  # Moment of inertia tensor
   for (i in 1:6){
     new_row = data.frame(species = species,WingID = wingID,TestID = testID, FrameID = frameID, component = name,
                          object = prop_type_list[i], value = dat_mass$I[prop_type_ind[i,1],prop_type_ind[i,2]]) # saves the name and valueof the tensor component
     mass_properties = rbind(mass_properties,new_row)
   }
 
-  #CG
+  # Center of gravity
   for (i in 1:3){
     new_row = data.frame(species = species,WingID = wingID,TestID = testID, FrameID = frameID, component = name,
                          object = prop_type_list[6+i], value = dat_mass$CG[i]) # saves the name and value of the CG component
