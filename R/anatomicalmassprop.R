@@ -1,6 +1,6 @@
 # Script containing the functions to calculate the moment of inertia and CG of different anatomical components
 # all written by Christina Harvey
-# last updated: 2020-08-03
+# last updated: 2020-08-11
 
 # ---------------------------------------------------------------------------------------
 ##### ------------------------ Mass properties of Bone ---------------------------- #####
@@ -8,18 +8,20 @@
 
 #' Calculate the moment of inertia of a bone modelled as a hollow cylinder with two solid end caps
 #'
-#' @param m full mass of the bone
-#' @param l full length of the bone
-#' @param r_out outer radius of bone
-#' @param r_in inner radius of bone
-#' @param rho density of the bone (kg/m^3)
+#' @param m Mass of bone (kg)
+#' @param l Length of bone (kg)
+#' @param r_out Outer radius of bone (m)
+#' @param r_in Inner radius of bone (m)
+#' @param rho Density of the bone (kg/m^3)
 #' @param start 3D point where bone starts. Frame of reference: VRP | Origin: VRP
 #' @param end 3D point where bone ends. Frame of reference: VRP | Origin: VRP
 #'
-#' @return
+#' @return This function returns a list that includes:
+#' \item{I}{the moment of inertia tensor of a bone modelled as a hollow cylinder with two solid end caps}
+#' \item{CG}{the center of gravity position of a bone modelled as a hollow cylinder with two solid end caps}
 #'
 #' @section Warning:
-#' the parallel axis theorem only works if the moment of inertia is calculated about components centroidal axis
+#' Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
 #'
 #' @export
 #'
@@ -80,12 +82,15 @@ massprop_bones <- function(m,l,r_out,r_in,rho,start,end){
 
 #' Calculate the moment of inertia of a muscle modelled as a solid cylinder distributed along the bone length
 #'
-#' @param m mass of muscle (kg)
-#' @param rho density of muscle (kg/m^3)
+#' @param m Mass of muscle (kg)
+#' @param rho Density of muscle (kg/m^3)
 #' @param start 3D point where bone starts. Frame of reference: VRP | Origin: VRP
 #' @param end 3D point where bone ends. Frame of reference: VRP | Origin: VRP
 #'
-#' @return
+#' @return This function returns a list that includes:
+#' \item{I}{the moment of inertia tensor of a muscle modelled as a solid cylinder distributed along the bone length}
+#' \item{CG}{the center of gravity position of a muscle modelled as a solid cylinder distributed along the bone length}
+#'
 #' @export
 #'
 #' @examples
@@ -142,7 +147,10 @@ massprop_muscles <- function(m,rho,start,end){
 #'
 #' @author Christina Harvey
 #'
-#' @return
+#' @return This function returns a list that includes:
+#' \item{I}{the moment of inertia tensor of skin modelled as a flat triangular plate}
+#' \item{CG}{the center of gravity position of skin modelled as a flat triangular plate}
+#'
 #' @export
 #'
 #' @examples
@@ -189,7 +197,7 @@ massprop_skin <- function(m,rho,pts){
 ##### --------------------- Mass properties of a point mass ----------------------- #####
 # ---------------------------------------------------------------------------------------
 
-#' Calculate the moment of inertia of of any point mass
+#' Calculate the moment of inertia of any point mass
 #'
 #' @param m mass of skin (kg)
 #' @param pt density of skin (kg/m^3)
@@ -199,7 +207,10 @@ massprop_skin <- function(m,rho,pts){
 #'
 #' @author Christina Harvey
 #'
-#' @return
+#' @return This function returns a list that includes:
+#' \item{I}{the moment of inertia tensor of a point mass}
+#' \item{CG}{the center of gravity position of a point mass}
+#'
 #' @export
 #'
 #' @examples
@@ -246,7 +257,10 @@ massprop_pm <- function(m,pt){
 #' Parallel axis theorem is only valid if relocating an object between it's CG and an arbitrary pt. I_arbitrary = I_CG + md^2
 #' Cannot be used between two arbitrary points.
 #'
-#' @return
+#' @return This function returns a list that includes:
+#' \item{I}{the moment of inertia tensor of a simplified feather}
+#' \item{CG}{the center of gravity position of a simplified feather}
+#'
 #' @export
 #'
 #' @examples

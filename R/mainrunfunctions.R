@@ -1,3 +1,6 @@
+# Script containing the overarching function that calculates the moment of inertia and CG for an entire wing.
+# all written by Christina Harvey
+# last updated: 2020-08-11
 
 # -------------------- Mass Properties - Halfspan bird wing  -------------------------------
 #' Function that reads in anatomical data and returns the moment of inertia tensor and center
