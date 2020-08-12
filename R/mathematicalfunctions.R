@@ -352,7 +352,27 @@ calc_inertia_platetri <- function(pts, A, rho, t, desired_prop){
 ##### -------------------------- Feather Orientation ------------------------------ #####
 # ---------------------------------------------------------------------------------------
 
-orient_feather <- function(primaries,secondaries,no_pri,no_sec,Pt1,Pt2,Pt3,Pt4,Pt9,Pt10,Pt11){
+#' Code that returns the orientation of each primary and secondary feather on the wing.
+#'
+#' @param no_pri Amount of primary feathers
+#' @param no_sec Amount of secondary feathers
+#' @param Pt1 Point on the shoulder joint
+#' @param Pt2 Point on the elbow joint
+#' @param Pt3 Point on the wrist joint
+#' @param Pt4 Point on the end of carpometacarpus
+#' @param Pt9 Point on tip of most distal primary
+#' @param Pt10 Point on tip of last primary to model as if on the end of the carpometacarpus
+#' @param Pt11 Point on tip of most proximal feather (wing root trailing edge)
+#'
+#' @author Christina Harvey
+#'
+#' @return This function returns the point where each feather starts and ends as well as the
+#' vector that defines the normal to each feather plane.
+#'
+#' @export
+#'
+#' @examples
+orient_feather <- function(no_pri,no_sec,Pt1,Pt2,Pt3,Pt4,Pt9,Pt10,Pt11){
 
   # pre-define variables
   count             = 1

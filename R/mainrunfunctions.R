@@ -182,8 +182,7 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
     tmp = massprop_feathers(pri_info$m_f,pri_info$l_cal,pri_info$l_vane, pri_info$w_cal,
                       dat_bird_curr$barb_radius, dat_bird_curr$barb_distance,
                       rho_cor,rho_med,
-                      pri_info$w_vp,pri_info$w_vd,pri_info$vane_angle,
-                      feather_info$normal[i,],feather_info$loc_start[i,],feather_info$loc_end[i,])
+                      pri_info$w_vp,pri_info$w_vd,pri_info$vane_angle,feather_info[i,])
     # Save MOI, CG and CG*mass
     res_pri$I[,,i] = tmp$I
     res_pri$CG[i,] = tmp$CG
