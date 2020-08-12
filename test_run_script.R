@@ -12,7 +12,7 @@ dat_mat  = readxl::read_xlsx('./data/Master_AnatomicalData.xlsx', sheet = 'Mater
 # adjust to SI units
 dat_feat$l_cal  = 0.01*dat_feat$l_cal
 dat_feat$l_vane = 0.01*dat_feat$l_vane
-dat_feat$w_r    = 0.01*dat_feat$w_r
+dat_feat$w_cal  = 0.01*dat_feat$w_cal
 dat_feat$w_vp   = 0.01*dat_feat$w_vp
 dat_feat$w_vd   = 0.01*dat_feat$w_vd
 dat_feat$m_f    = 0.001*dat_feat$m_f

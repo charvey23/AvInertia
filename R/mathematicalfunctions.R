@@ -116,8 +116,9 @@ calc_rot <- function(z_vector, x_vector){
 #' Will be in the same frame of reference as the input tensor.
 #'
 #' @param I_CG
-#' @param offset_vec
+#' @param offset_vec Should always point from the CG to the arbitrary point A
 #' @param m
+#' @param cg_a If input I is about the CG enter "CG" or if I is about an arbitrary axis enter "A".
 #'
 #' @author Christina Harvey
 #'
@@ -129,20 +130,27 @@ calc_rot <- function(z_vector, x_vector){
 #' @export
 #'
 
-parallelaxis <- function(I_CG, offset_vec, m){
+parallelaxis <- function(I, offset_vec, m, cg_a){
 
   # CAUTION: the parallel axis theorem only works if the I_CG is given about
   #          the object's centroidal axis
 
-  I_off = matrix(0, nrow = 3, ncol = 3) # predefine matrix
+  I_new = matrix(0, nrow = 3, ncol = 3) # predefine matrix
+
+  if(cg_a == "CG"){
+    sign = 1
+  }
+
+  if(cg_a == "A"){
+    sign = -1
+  }
 
   for (i in 1:3){
     for (j in 1:3){
-      I_off[i,j] = I_CG[i,j] + m*((dirac_delta(i,j)*pracma::dot(offset_vec,offset_vec)) - (offset_vec[i]*offset_vec[j]))
+      I_new[i,j] = I[i,j] + sign*m*((dirac_delta(i,j)*pracma::dot(offset_vec,offset_vec)) - (offset_vec[i]*offset_vec[j]))
     }
   }
-
-  return(I_off)
+  return(I_new)
 }
 
 
@@ -220,7 +228,7 @@ calc_inertia_cylhollow <- function(r_out, r_in, h, m){
 #' @author Christina Harvey
 #'
 #' @return Function returns the moment of inertia tensor of a solid square pyramid cylinder about
-#' its center of gravity with z oriented through it's major axis
+#' its center of gravity with z oriented through it's major axis. Origin is NOT at the center of gravity but at the center of the base.
 #'
 #'
 #' @examples
