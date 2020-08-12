@@ -303,23 +303,18 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   mass_outer = (4*rho_cor*(r_cor^2)*l_r_cor/3)                                  # mass as if entire rachis was solid cortex
   mass_inner = (4*rho_cor*r_med^2*l_r_med/3)                                    # mass as if hollow part of rachis was solid cortex
 
-  # ------------------------------- Adjust axis -------------------------------------
-  # first find the frame where z points towards the tip then rotate to frame where z axis points straight along the calamus
-  z_axis = end - start     # Frame of reference: VRP | Origin: VRP
-  x_axis = normal          # Frame of reference: VRP | Origin: VRP
-
-  # calculate the rotation matrix between VRP frame of reference and the feather start to tip
-  VRP2object = calc_rot(z_axis,x_axis)
-
   # --------------------------- Moment of inertia -----------------------------------
 
   # 1. For each component compute their inertia about their center of mass in the centroidal axes
-  # 2. Parallel axis to the start of feather
-  # 3. Rotate the centroidal axes to be in the feather calamus axis (Rachis and Vane only)
-  # 4. Sum all feather components
-  # 5. Rotate axes so that the feather tip will fall on the z-axis
-  # 6. Rotate axes tO VRP axes (feather tip z-axis is now along the vector defined by start-end)
-
+  # 2. Rotate the axes to be in the feather rachis axis (Vanes only)
+  # 3. Parallel axis to the start of feather vane (Vanes only)
+  # 4. Sum the vanes and rachis components
+  # 5. Rotate the axes to be in the feather calamus axis (Rachis and Vanes only)
+  # 6. Parallel axis to the start of feather
+  # 7. Sum all feather components
+  # 8. Rotate axes so that the feather tip will fall on the z-axis
+  # 9. Rotate axes tO VRP axes (feather tip z-axis is now along the vector defined by start-end)
+  # 9. Parallel axis to the VRP
   # ------- Calamus -------
   # 1. Moment of inertia tensors in the calamus
   I_c_cor1 = calc_inertia_cylhollow(r_cor, r_med, l_c, m_c_cor) # Frame of reference: Feather Calamus | Origin: Calamus CG
@@ -327,7 +322,7 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   I_cCG    = I_c_cor1 + I_c_med1                                # Frame of reference: Feather Calamus | Origin: Calamus CG
   m_c      = m_c_cor + m_c_med
 
-  # 2. Adjust so that the origin is at the start of the feather - READY TO BE SUMMED WITH OTHER COMPONENTS
+  # 6. Adjust so that the origin is at the start of the feather - READY TO BE SUMMED WITH OTHER COMPONENTS
   CG_c1 = c(0,0,0.5*l_c)                                        # Frame of reference: Feather Calamus | Origin: Start of Feather
   I_c1  = parallelaxis(I_cCG,-CG_c1,m_c, "CG")                  # Frame of reference: Feather Calamus | Origin: Start of Feather
 
@@ -337,29 +332,32 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   # CAUTION: this is about the center of base
   I_r_med_base  = calc_inertia_pyrasolid(r_med, l_r_med, m_r_med)        # Frame of reference: Feather Rachis | Origin: Start of the vane (center)
   # - Cortex - hollow square pyramid
-  # Moment of inertia tensor - as if solid inner and outer cortex components
+  # 1. Moment of inertia tensor - as if solid inner and outer cortex components
   # CAUTION: this is about the center of base
   I_r_out_cor = calc_inertia_pyrasolid(r_cor, l_r_cor, mass_outer)       # Frame of reference: Feather Rachis | Origin: Start of the vane
   I_r_in_cor  = calc_inertia_pyrasolid(r_med, l_r_med, mass_inner)       # Frame of reference: Feather Rachis | Origin: Start of the vane
   I_r_cor_base = I_r_out_cor - I_r_in_cor # hollow square pyramid        # Frame of reference: Feather Rachis | Origin: Start of the vane
 
-  # Calculate the CG of hollow cortex pyramid and solid medullary pyramid
   CG_pyrasquare = c(0,0,0.25) # multiply by length
   CG_r_out_cor  = CG_pyrasquare*l_r_cor                                      # Frame of reference: Feather Rachis | Origin: Start of the vane
   CG_r_in_cor   = CG_pyrasquare*l_r_med                                      # Frame of reference: Feather Rachis | Origin: Start of the vane
+  # Calculate the CG of hollow cortex pyramid
   CG_r_cor1     = (mass_outer*CG_r_out_cor - mass_inner*CG_r_in_cor)/m_r_cor # Frame of reference: Feather Rachis | Origin: Start of the vane
+  # Calculate the CG of solid medullary pyramid
   CG_r_med1     = CG_pyrasquare*l_r_med                                      # Frame of reference: Feather Rachis | Origin: Start of the vane
+  # Calculate the CG of the entire rachis
   CG_r1         = ((CG_r_cor1*m_r_cor)+(CG_r_med1*m_r_med))/m_r              # Frame of reference: Feather Rachis | Origin: Start of the vane
   # -------------------
 
   # ------- Vane -------
+  # 1. Moment of inertia for each vane about their centroidal axes
   I_vd1  = calc_inertia_platerect(w_vd, l_r_cor, m_vd)    # Frame of reference: Feather Distal Vane | Origin: Distal Vane CG
   CG_vd1 = c(0,-0.5*w_vd,0.5*l_r_cor)                     # Frame of reference: Feather Distal Vane | Origin: Start of the vane (distal edge)
 
   I_vp1  = calc_inertia_platerect(w_vp, l_r_cor, m_vp)    # Frame of reference: Feather Proximal Vane | Origin: Proximal Vane CG
   CG_vp1 = c(0,0.5*w_vp,0.5*l_r_cor)                      # Frame of reference: Feather Proximal Vane | Origin: Start of the vane (proximal edge)
 
-  # Rotate postive angle is a ccw rotation about x (normal to the feather plane) ** all angles should be negative for bird feathers
+  # 2. Rotate postive angle is a ccw rotation about x (normal to the feather plane) ** all angles should be negative for bird feathers
   rot_vd = rotx(-pracma::atand(r_cor/l_r_cor))
   rot_vp = rotx(pracma::atand(r_cor/l_r_cor))
   I_vd2  = rot_vd %*% I_vd1 %*% t(rot_vd)                 # Frame of reference: Feather Rachis | Origin: Distal Vane CG
@@ -367,43 +365,51 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   CG_vd2 = rot_vd %*% CG_vd1                              # Frame of reference: Feather Rachis | Origin: Start of the vane (distal edge)
   CG_vp2 = rot_vp %*% CG_vp1                              # Frame of reference: Feather Rachis | Origin: Start of the vane (proximal edge)
 
-  # adjust I and CG to the start of the vane
+  # 3. adjust I and CG to the start of the vane
   CG_vd3 =  CG_vd2 - c(0,r_cor,0)                         # Frame of reference: Feather Rachis | Origin: Start of the vane
   CG_vp3 =  CG_vp2 + c(0,r_cor,0)                         # Frame of reference: Feather Rachis | Origin: Start of the vane
   I_vd3  = parallelaxis(I_vd2,-CG_vd3,m_vd, "CG")         # Frame of reference: Feather Rachis | Origin: Start of the vane
   I_vp3  = parallelaxis(I_vp2,-CG_vp3,m_vp, "CG")         # Frame of reference: Feather Rachis | Origin: Start of the vane
 
   # ----------- Rotate all Rachis and Vane components relative to the calamus -----------------
-  # sum the rachis and vane components that are in Frame of reference: Feather Rachis | Origin: Start of the vane (center)
+  # 4. sum the rachis and vane components that are in Frame of reference: Feather Rachis | Origin: Start of the vane (center)
   I_vr1  = I_vp3 + I_vd3 + I_r_med_base + I_r_cor_base
   CG_vr1 = ((CG_r_cor1*m_r_cor)+(CG_r_med1*m_r_med)+(CG_vd3*m_vd)+(CG_vp3*m_vp))/(m_r+m_vd+m_vp)
 
-  #Rotate the frame of reference from the rachis to the calamus
+  # 5. Rotate the frame of reference from the rachis to the calamus
   I_vr2  = rotx(angle) %*% I_vr1 %*% t(rotx(angle))              # Frame of reference: Feather Calamus | Origin: Start of the vane
   CG_vr2 = rotx(angle) %*% CG_vr1                                # Frame of reference: Feather Calamus | Origin: Start of the vane
 
-  # Adjust the origin to the start of the feather
+  # 6. Adjust the origin to the start of the feather
   I_vrCG  = parallelaxis(I_vr2,CG_vr2,(m_r+m_vd+m_vp),"A")       # Frame of reference: Feather Calamus | Origin: Rachis & Vane CG
   CG_vr3 = CG_r1 + c(0,0,l_c)                                    # Frame of reference: Feather Calamus | Origin: Start of Feather
   I_vr3   = parallelaxis(I_vrCG,-CG_vr3,(m_r+m_vd+m_vp), "CG")   # Frame of reference: Feather Calamus | Origin: Start of Feather
 
-  # ----------- Sum all feather components - must be in Frame of reference: Feather Calamus | Origin: Start of Feather -----------------
+  # 7. Sum all feather components - must be in Frame of reference: Feather Calamus | Origin: Start of Feather -----------------
   I_1  = I_c1 + I_vr3
   CG_1 = ((CG_c1*m_c)+(CG_vr3*(m_r+m_vd+m_vp)))/m_f
 
-  # --- Rotate the axes about the x-axis with the origin at the start of the feather so that the length of the calamus is no longer directly along the z-axis.
+  # 8. Rotate the axes about the x-axis with the origin at the start of the feather so that the length of the calamus is no longer directly along the z-axis.
   full_rot = rotx(pracma::atand(l_r_cor*abs(pracma::sind(angle))/(l_c + l_r_cor*abs(pracma::cosd(angle)))))
   I_2     = full_rot %*% I_1 %*% t(full_rot)                  # Frame of reference: Feather start to tip | Origin: Start of Feather
   CG_2    = full_rot %*% CG_1                                 # Frame of reference: Feather start to tip | Origin: Start of Feather
 
-  # Rotate the axes so that the previous z axis now becomes the vector (end-start)
+  # ------------------------------- Adjust axis -------------------------------------
+  # first find the frame where z points towards the tip then rotate to frame where z axis points straight along the calamus
+  z_axis = end - start     # Frame of reference: VRP | Origin: VRP
+  x_axis = normal          # Frame of reference: VRP | Origin: VRP
+
+  # calculate the rotation matrix between VRP frame of reference and the feather start to tip
+  VRP2object = calc_rot(z_axis,x_axis)
+
+  # 9. Rotate the axes so that the previous z axis now becomes the vector (end-start)
   I_3     = t(VRP2object) %*% I_2 %*% VRP2object              # Frame of reference: VRP | Origin: Start of Feather
   CG_3    = t(VRP2object) %*% CG_2                            # Frame of reference: VRP | Origin: Start of Feather
 
-  #Return the origin to the center of gravity of the full feather
+  # To properly use parallel axis firt, return the origin to the center of gravity of the full feather
   I_fCG    = parallelaxis(I_c3,-CG_c3,m_c, "A")               # Frame of reference: VRP | Origin: Feather CG
 
-  # ---- Return the origin to the VRP ----
+  # 10. Return the origin to the VRP
   mass_prop = list() # pre-define
   mass_prop$I  = parallelaxis(I_fCG,-CG_full,m_c, "CG")  # Frame of reference: VRP | Origin: VRP
   mass_prop$CG = CG_c3 + start                           # Frame of reference: VRP | Origin: VRP
