@@ -22,7 +22,7 @@ no_species = unique(dat_bird$species)
 for (species in 1:1){
   # ----------- Filter the data to the current species ---------
   species_curr  = dat_bird$species[species]
-  alldat_curr   = subset(alldat, species == species_curr)
+  alldat_curr   = subset(alldat, species == species_curr & sweep == 0 & dihedral == 0)
   dat_bird_curr = subset(dat_bird, species == species_curr)
   dat_bone_curr = subset(dat_bone, species == species_curr)
   dat_feat_curr = subset(dat_feat, species == species_curr)
@@ -49,7 +49,7 @@ for (species in 1:1){
 
   # -------------- Begin iteration through the wings of this species ------------------------------
 
-  for (ind_wing in 1:10){
+  for (ind_wing in 1:length(alldat_curr$frameID)){
 
     dat_pt_curr = dat_pt[ind_wing,] # should only be one row of input points
 

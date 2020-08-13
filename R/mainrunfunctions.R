@@ -3,6 +3,8 @@
 # last updated: 2020-08-11
 
 # -------------------- Mass Properties - Halfspan bird wing  -------------------------------
+#' Halfspan bird wing mass properties
+#'
 #' Function that reads in anatomical data and returns the moment of inertia tensor and center
 #' of gravity of a wing one side of the bird
 #'
@@ -251,6 +253,8 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
 
 
 # -------------------- Store Data  -------------------------------
+#' Store data
+#'
 #' Function to store moment of inertia tensor and center of gravity vector components in long format
 #'
 #' @param dat_wingID_curr Dataframe related to the current bird wing ID info that must include the following columns:

@@ -33,7 +33,7 @@ dirac_delta <- function(i,j){
 }
 
 # ---------------------- Rotation about the x axis ---------------------------
-#' x-axis rotation matrix
+#' Rotation matrix (x-axis)
 #'
 #' @param angle angle to rotate
 #'
@@ -55,6 +55,8 @@ rotx <- function(angle){
 }
 
 # ---------------------- Calculate a unit vector --------------------------
+#' Unit vector
+#'
 #' Determine the unit vector of any input vector
 #'
 #' @param vector
@@ -78,7 +80,7 @@ calc_univec <- function(vector){
 
 
 # ---------------------- Calculate a rotation matrices ---------------------------
-#' Title
+#' Rotation matrix based on unit vectors
 #'
 #' @param z_vector
 #' @param x_vector
@@ -112,6 +114,8 @@ calc_rot <- function(z_vector, x_vector){
 }
 
 # ---------------------- Calculate a matrix translation with parallel axis theorem  ---------------------------
+#' Parallel axis theory
+#'
 #' Reads in an initial tensor and an offset to compute the transformed tensor.
 #' Will be in the same frame of reference as the input tensor.
 #'
@@ -188,7 +192,7 @@ calc_inertia_cylsolid <- function(r, h, m){
 }
 
 # ---------------------- Mass Properties - Hollow cylinder -------------------------------
-#' Moment of inertia tensor of a solid cylinder
+#' Moment of inertia tensor of a hollow cylinder
 #'
 #' @param r_out outer radius of the cylinder
 #' @param r_in inner radius of the cylinder
@@ -219,7 +223,9 @@ calc_inertia_cylhollow <- function(r_out, r_in, h, m){
 }
 
 # -------------------- Mass Properties - solid square pyramid  -------------------------------
-#' Moment of inertia tensor of a solid square pyramid about the centered point on the base
+#' Moment of inertia tensor of a solid square pyramid
+#'
+#' All outputs are based on an origin at the centered point on the base
 #'
 #' @param w_2 half width of one side of the pyramid base
 #' @param h height of the pyramid
@@ -229,7 +235,6 @@ calc_inertia_cylhollow <- function(r_out, r_in, h, m){
 #'
 #' @return Function returns the moment of inertia tensor of a solid square pyramid cylinder about
 #' its center of gravity with z oriented through it's major axis. Origin is NOT at the center of gravity but at the center of the base.
-#'
 #'
 #' @examples
 #'
@@ -247,7 +252,7 @@ calc_inertia_pyrasolid <- function(w_2, h, m){
 }
 
 # -------------------- Mass Properties - flat rectangular plate  -------------------------------
-#' Moment of inertia tensor of a solid square pyramid
+#' Moment of inertia tensor of a flat rectangular plate
 #'
 #' @param w full width of one side of the plate
 #' @param h height of the plate
@@ -276,7 +281,7 @@ calc_inertia_platerect <- function(w, h, m){
 
 
 # -------------------- Mass Properties - flat triangular plate  -------------------------------
-#' Moment of inertia tensor of a solid square pyramid
+#' Moment of inertia tensor of a flat triangular plate
 #'
 #' @param pts a matrix of the three 3D points that define a point on the triangular plate.
 #' Frame of reference: Muscle | Origin: VRP
@@ -360,6 +365,8 @@ calc_inertia_platetri <- function(pts, A, rho, t, desired_prop){
 ##### -------------------------- Feather Orientation ------------------------------ #####
 # ---------------------------------------------------------------------------------------
 
+#' Determine the feather orientation
+#'
 #' Code that returns the orientation of each primary and secondary feather on the wing.
 #'
 #' @param no_pri Amount of primary feathers

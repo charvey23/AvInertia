@@ -6,6 +6,8 @@
 ##### ------------------------ Mass properties of Bone ---------------------------- #####
 # ---------------------------------------------------------------------------------------
 
+#' Bone mass properties
+#'
 #' Calculate the moment of inertia of a bone modelled as a hollow cylinder with two solid end caps
 #'
 #' @param m Mass of bone (kg)
@@ -80,6 +82,8 @@ massprop_bones <- function(m,l,r_out,r_in,rho,start,end){
 ##### ------------------------ Mass properties of Muscle -------------------------- #####
 # ---------------------------------------------------------------------------------------
 
+#' Muscle mass properties
+#'
 #' Calculate the moment of inertia of a muscle modelled as a solid cylinder distributed along the bone length
 #'
 #' @param m Mass of muscle (kg)
@@ -137,6 +141,8 @@ massprop_muscles <- function(m,rho,start,end){
 ##### ------------------------- Mass properties of Skin --------------------------- #####
 # ---------------------------------------------------------------------------------------
 
+#' Skin mass properties
+#'
 #' Calculate the moment of inertia of skin modelled as a flat triangular plate
 #'
 #' @param m Mass of skin (kg)
@@ -205,6 +211,8 @@ massprop_skin <- function(m,rho,pts){
 ##### --------------------- Mass properties of a point mass ----------------------- #####
 # ---------------------------------------------------------------------------------------
 
+#' Point-mass mass properties
+#'
 #' Calculate the moment of inertia of any point mass
 #'
 #' @param m Mass of skin (kg)
@@ -241,6 +249,8 @@ massprop_pm <- function(m,pt){
 ##### ---------------------- Mass properties of Feathers -------------------------- #####
 # ---------------------------------------------------------------------------------------
 
+#' Feather mass properties
+#'
 #' Calculate the moment of inertia of skin modelled as a flat triangular plate
 #'
 #' @param m_f Mass of the entire feather (kg)
@@ -393,6 +403,9 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   full_rot = rotx(pracma::atand(l_r_cor*abs(pracma::sind(angle))/(l_c + l_r_cor*abs(pracma::cosd(angle)))))
   I_2     = full_rot %*% I_1 %*% t(full_rot)                  # Frame of reference: Feather start to tip | Origin: Start of Feather
   CG_2    = full_rot %*% CG_1                                 # Frame of reference: Feather start to tip | Origin: Start of Feather
+  #Print to verify against feather only studies
+  #print(I_2)
+  #print(CG_2)
 
   # ------------------------------- Adjust axis -------------------------------------
   # first find the frame where z points towards the tip then rotate to frame where z axis points straight along the calamus
@@ -403,16 +416,16 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   VRP2object = calc_rot(z_axis,x_axis)
 
   # 9. Rotate the axes so that the previous z axis now becomes the vector (end-start)
-  I_3     = t(VRP2object) %*% I_2 %*% VRP2object              # Frame of reference: VRP | Origin: Start of Feather
-  CG_3    = t(VRP2object) %*% CG_2                            # Frame of reference: VRP | Origin: Start of Feather
+  I_3     = t(VRP2object) %*% I_2 %*% VRP2object         # Frame of reference: VRP | Origin: Start of Feather
+  CG_3    = t(VRP2object) %*% CG_2                       # Frame of reference: VRP | Origin: Start of Feather
 
   # To properly use parallel axis firt, return the origin to the center of gravity of the full feather
-  I_fCG    = parallelaxis(I_c3,-CG_c3,m_c, "A")               # Frame of reference: VRP | Origin: Feather CG
+  I_fCG    = parallelaxis(I_3,-CG_3,m_f,"A")             # Frame of reference: VRP | Origin: Feather CG
 
   # 10. Return the origin to the VRP
   mass_prop = list() # pre-define
-  mass_prop$I  = parallelaxis(I_fCG,-CG_full,m_c, "CG")  # Frame of reference: VRP | Origin: VRP
-  mass_prop$CG = CG_c3 + start                           # Frame of reference: VRP | Origin: VRP
+  mass_prop$I  = parallelaxis(I_fCG,-(CG_3 + start),m_f,"CG")   # Frame of reference: VRP | Origin: VRP
+  mass_prop$CG = CG_3 + start                           # Frame of reference: VRP | Origin: VRP
 
   return(mass_prop)
 }
