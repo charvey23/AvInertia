@@ -77,6 +77,7 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
   colnames(mass_properties) = column_names
   mass_properties_bone      = mass_properties                    # specific bone data
   mass_properties_muscle    = mass_properties                    # specific muscle data
+  mass_properties_skin      = mass_properties                    # specific skin data
   mass_properties_feathers  = mass_properties                    # individual feather mass property data
 
   # define incoming points
@@ -184,7 +185,8 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
     tmp = massprop_feathers(pri_info$m_f,pri_info$l_cal,pri_info$l_vane, pri_info$w_cal,
                       dat_bird_curr$barb_radius, dat_bird_curr$barb_distance,
                       rho_cor,rho_med,
-                      pri_info$w_vp,pri_info$w_vd,pri_info$vane_angle,feather_info$loc_start[i,],feather_info$loc_end[i,],feather_info$normal[i,])
+                      pri_info$w_vp,pri_info$w_vd,pri_info$vane_angle,
+                      feather_info$loc_start[i,],feather_info$loc_end[i,],feather_info$normal[i,])
     # Save MOI, CG and CG*mass
     res_pri$I[,,i] = tmp$I
     res_pri$CG[i,] = tmp$CG
@@ -200,7 +202,7 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
                             dat_bird_curr$barb_radius, dat_bird_curr$barb_distance,
                             rho_cor,rho_med,
                             sec_info$w_vp,sec_info$w_vd,sec_info$vane_angle,
-                            feather_info$normal[i+no_pri,],feather_info$loc_start[i+no_pri,],feather_info$loc_end[i+no_pri,])
+                            feather_info$loc_start[i+no_pri,],feather_info$loc_end[i+no_pri,],feather_info$normal[i+no_pri,])
     # Save MOI, CG and CG*mass
     res_sec$I[,,i] = tmp$I
     res_sec$CG[i,] = tmp$CG
@@ -228,6 +230,33 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
   mass_properties_bone = store_data(dat_wingID_curr,car,mass_properties_bone,"carpo")
   mass_properties_bone = store_data(dat_wingID_curr,wristbone,mass_properties_bone,"wristbones")
 
+  # add data to muscle specific data frame
+  mass_properties_muscle = store_data(dat_wingID_curr,brach,mass_properties_muscle,"brach")
+  mass_properties_muscle = store_data(dat_wingID_curr,abrach,mass_properties_muscle,"abrach")
+  mass_properties_muscle = store_data(dat_wingID_curr,manus,mass_properties_muscle,"manus")
+
+  # add data to muscle specific data frame
+  mass_properties_skin = store_data(dat_wingID_curr,skin_prop,mass_properties_skin,"skin_prop")
+  mass_properties_skin = store_data(dat_wingID_curr,skin_man,mass_properties_skin,"skin_man")
+
+  # add data to bone specific data frame
+  # --- Primaries ---
+  for (i in 1:no_pri){
+    feather_name = paste("P",i,sep = "")
+    curr_res_pri = list()
+    curr_res_pri$I  = res_pri$I[,,i]
+    curr_res_pri$CG = res_pri$CG[i,]
+    mass_properties_feathers = store_data(dat_wingID_curr,curr_res_pri,mass_properties_feathers,feather_name)
+  }
+  # --- Secondaries ---
+  for (i in 1:no_sec){
+    feather_name = paste("S",i,sep = "")
+    curr_res_sec = list()
+    curr_res_sec$I  = res_sec$I[,,i]
+    curr_res_sec$CG = res_sec$CG[i,]
+    mass_properties_feathers = store_data(dat_wingID_curr,curr_res_sec,mass_properties_feathers,feather_name)
+  }
+
   # save all combined data groups to the master list
   mass_properties      = store_data(dat_wingID_curr,prop_bone,mass_properties,"bones")
   mass_properties      = store_data(dat_wingID_curr,prop_muscles,mass_properties,"muscles")
@@ -247,6 +276,9 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
                        component = "wing", object = "m", value = prop_bird$m) # saves the name and valueof the tensor component
 
   mass_properties = rbind(mass_properties,new_row)
+
+  # Plot to verify correct outputs
+  # CGplot = plot_CGloc(clean_pts,mass_properties,mass_properties_skin,mass_properties_bone,mass_properties_feathers,mass_properties_muscle)
 
   return(mass_properties)
 }

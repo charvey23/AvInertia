@@ -16,4 +16,5 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1.9000
 Imports: 
     pracma,
-    readxl
+    readxl,
+    ggplot2
