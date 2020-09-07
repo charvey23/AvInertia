@@ -28,6 +28,15 @@
 #' @export
 #'
 #' @examples
+#'
+#' # This example takes the humerus data contained within the package to predict
+#' # the humerus moment of inertia and center of gravity with the origin at the VRP and in the VRP frame of reference.
+#'
+#' library(birdmoment)
+#'
+#' massprop_bones(m,l,r_out,r_in,rho,start,end)
+#'
+#'
 massprop_bones <- function(m,l,r_out,r_in,rho,start,end){
   # ---------------------------- Define geometry ------------------------------------
   vol   = m/rho # total volume of the bone

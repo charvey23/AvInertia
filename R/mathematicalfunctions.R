@@ -2,27 +2,27 @@
 # all written by Christina Harvey
 # last updated: 2020-08-03
 
-# ---------------------- Dirac delta function ---------------------------
-#' Dirac delta function
+# ---------------------- Kroneckerdelta function ---------------------------
+#' Kroneckerdelta function
 #'
-#' @param i  an index (usually row of a matrix)
-#' @param j  an index (usually column of a matrix)
+#' @param i  a scalar index (usually row of a matrix)
+#' @param j  a scalar index (usually column of a matrix)
 #'
 #' @author Christina Harvey
 #'
-#' @return If i and j are equal dirac returns 1 otherwise returns 0
+#' @return a scalar value. Returns 1 if i and j are equal otherwise returns 0
 #'
 #' @examples
 #'
 #'  # should return 1
-#'  dirac_delta(7,7)
+#'  kronecker_delta(7,7)
 #'
 #'  # should return 0
-#'  dirac_delta(5,4)
+#'  kronecker_delta(5,4)
 #'
 #' @export
 #'
-dirac_delta <- function(i,j){
+kronecker_delta <- function(i,j){
 
   if (i == j) {
     return(1)
@@ -33,13 +33,14 @@ dirac_delta <- function(i,j){
 }
 
 # ---------------------- Rotation about the x axis ---------------------------
-#' Rotation matrix (x-axis)
+#' A 3x3 rotation matrix allowing rotation about the x-axis. Constructed using a cosine rotation matrix where the rotation angle in degrees
+#' is measured counterclockwise allowing positive rotation under the right hand rule.
 #'
-#' @param angle angle to rotate
+#' @param angle a scalar representing the angle to rotate (degrees)
 #'
 #' @author Christina Harvey
 #'
-#' @return
+#' @return a 3x3 matrix representing the rotation about the x-axis by the given angle
 #' @export
 #'
 #' @examples
@@ -55,21 +56,18 @@ rotx <- function(angle){
 }
 
 # ---------------------- Calculate a unit vector --------------------------
-#' Unit vector
-#'
 #' Determine the unit vector of any input vector
 #'
-#' @param vector
+#' @param vector any vector or array with only one dimension
 #'
 #' @author Christina Harvey
 #'
-#' @return This function returns the unit vector of any input vector
+#' @return the unit vector in the size of the input vector
 #'
 #' @examples
 #'
-#' output = unit_vector(c(2,6,5))
-#' #should equal one if a unit vector
-#' length_output = pracma::Norm(output)
+#' output = calc_univec(c(2,6,5))
+#' length_output = pracma::Norm(output) #should equal 1 if a unit vector
 #'
 #' @export
 
@@ -80,14 +78,14 @@ calc_univec <- function(vector){
 
 
 # ---------------------- Calculate a rotation matrices ---------------------------
-#' Rotation matrix based on unit vectors
+#' A 3x3 rotation matrix constructed by projecting the new axes onto the original system. Likely results in rotation about all axes.
 #'
 #' @param z_vector
 #' @param x_vector
 #'
 #' @author Christina Harvey
 #'
-#' @return Function returns the cosine rotation matrices to transform between VRP frame and object frame
+#' @return a 3x3 matrix representing the rotation matrix that transforms between VRP frame and object frame
 #'
 #' @examples
 #'
@@ -119,15 +117,14 @@ calc_rot <- function(z_vector, x_vector){
 #' Reads in an initial tensor and an offset to compute the transformed tensor.
 #' Will be in the same frame of reference as the input tensor.
 #'
-#' @param I_CG
-#' @param offset_vec Should always point from the CG to the arbitrary point A
-#' @param m
+#' @param I_CG Moment of intertia tensor (3x3) about the center of gravity of the object (kg-m^2)
+#' @param offset_vec Distance between the objects CG and the arbitrary pt A. (m) Should always point from the CG to the arbitrary point A
+#' @param m Mass of the object (kg)
 #' @param cg_a If input I is about the CG enter "CG" or if I is about an arbitrary axis enter "A".
 #'
 #' @author Christina Harvey
 #'
-#' @return Function returns the transformed tensor after a solid body translation
-#'
+#' @return a 3x3 matrix representing the transformed moment of inertia tensor after a solid body translation
 #'
 #' @examples
 #'
@@ -151,7 +148,7 @@ parallelaxis <- function(I, offset_vec, m, cg_a){
 
   for (i in 1:3){
     for (j in 1:3){
-      I_new[i,j] = I[i,j] + sign*m*((dirac_delta(i,j)*pracma::dot(offset_vec,offset_vec)) - (offset_vec[i]*offset_vec[j]))
+      I_new[i,j] = I[i,j] + sign*m*((kronecker_delta(i,j)*pracma::dot(offset_vec,offset_vec)) - (offset_vec[i]*offset_vec[j]))
     }
   }
   return(I_new)
@@ -166,13 +163,13 @@ parallelaxis <- function(I, offset_vec, m, cg_a){
 # ---------------------- Mass Properties - Solid cylinder -------------------------------
 #' Moment of inertia tensor of a solid cylinder
 #'
-#' @param r radius of the cylinder
-#' @param h height of the cylinder
-#' @param m mass of the cylinder
+#' @param r radius of the cylinder (m)
+#' @param h height of the cylinder (m)
+#' @param m mass of the cylinder (kg)
 #'
 #' @author Christina Harvey
 #'
-#' @return Function returns the moment of inertia tensor of a solid cylinder about
+#' @return a 3x3 matrix representing the moment of inertia tensor of a solid cylinder about
 #' its center of gravity with z oriented through it's major axis
 #'
 #'
@@ -194,14 +191,14 @@ calc_inertia_cylsolid <- function(r, h, m){
 # ---------------------- Mass Properties - Hollow cylinder -------------------------------
 #' Moment of inertia tensor of a hollow cylinder
 #'
-#' @param r_out outer radius of the cylinder
-#' @param r_in inner radius of the cylinder
-#' @param h height of the cylinder
-#' @param m mass of the cylinder
+#' @param r_out outer radius of the cylinder (m)
+#' @param r_in inner radius of the cylinder (m)
+#' @param h height of the cylinder (m)
+#' @param m mass of the cylinder (kg)
 #'
 #' @author Christina Harvey
 #'
-#' @return Function returns the moment of inertia tensor of a hollow cylinder about
+#' @return a 3x3 matrix representing the moment of inertia tensor of a hollow cylinder about
 #' its center of gravity with z oriented through it's major axis
 #'
 #'
@@ -227,13 +224,13 @@ calc_inertia_cylhollow <- function(r_out, r_in, h, m){
 #'
 #' All outputs are based on an origin at the centered point on the base
 #'
-#' @param w_2 half width of one side of the pyramid base
-#' @param h height of the pyramid
-#' @param m mass of the pyramid
+#' @param w_2 half width of one side of the pyramid base (m)
+#' @param h height of the pyramid (m)
+#' @param m mass of the pyramid (kg)
 #'
 #' @author Christina Harvey
 #'
-#' @return Function returns the moment of inertia tensor of a solid square pyramid cylinder about
+#' @return a 3x3 matrix representing the moment of inertia tensor of a solid square pyramid cylinder about
 #' its center of gravity with z oriented through it's major axis. Origin is NOT at the center of gravity but at the center of the base.
 #'
 #' @examples
@@ -254,13 +251,13 @@ calc_inertia_pyrasolid <- function(w_2, h, m){
 # -------------------- Mass Properties - flat rectangular plate  -------------------------------
 #' Moment of inertia tensor of a flat rectangular plate
 #'
-#' @param w full width of one side of the plate
-#' @param h height of the plate
-#' @param m mass of the plate
+#' @param w full width of one side of the plate (m)
+#' @param h height of the plate (m)
+#' @param m mass of the plate (kg)
 #'
 #' @author Christina Harvey
 #'
-#' @return Function returns the moment of inertia tensor of a flat plate about
+#' @return a 3x3 matrix representing the moment of inertia tensor of a flat plate about
 #' its center of gravity with z oriented parallel with it's long edge
 #'
 #'
@@ -290,14 +287,14 @@ calc_inertia_platerect <- function(w, h, m){
 #' pt2x, pt1y, pt2z
 #' pt3x, pt3y, pt3z
 #'
-#' @param a  area of the triangular plate
-#' @param rho density of the material
-#' @param t  thickness of the plate
-#' @param desired_prop either "I" or "CG" depending on the desired output
+#' @param a  area of the triangular plate (m)
+#' @param rho density of the material (kg/m^3)
+#' @param t  thickness of the plate (m)
+#' @param desired_prop a string containing either "I" or "CG" depending on the desired output
 #'
 #' @author Christina Harvey
 #'
-#' @return Function returns the moment of inertia tensor of a flat triangular plate about
+#' @return a 3x3 matrix representing the moment of inertia tensor of a flat triangular plate about
 #' its center of gravity z axis defined by the input pts
 #'
 #' @section Warning:
@@ -369,20 +366,22 @@ calc_inertia_platetri <- function(pts, A, rho, t, desired_prop){
 #'
 #' Code that returns the orientation of each primary and secondary feather on the wing.
 #'
-#' @param no_pri Amount of primary feathers
-#' @param no_sec Amount of secondary feathers
-#' @param Pt1 Point on the shoulder joint
-#' @param Pt2 Point on the elbow joint
-#' @param Pt3 Point on the wrist joint
-#' @param Pt4 Point on the end of carpometacarpus
-#' @param Pt9 Point on tip of most distal primary
-#' @param Pt10 Point on tip of last primary to model as if on the end of the carpometacarpus
-#' @param Pt11 Point on tip of most proximal feather (wing root trailing edge)
+#' @param no_pri a scalar representing the amount of primary feathers
+#' @param no_sec a scalar representing the amount of secondary feathers
+#' @param Pt1 a matrix of 3 values representing the point on the shoulder joint (m)
+#' @param Pt2 a matrix of 3 values representing the point on the elbow joint (m)
+#' @param Pt3 a matrix of 3 values representing the point on the wrist joint (m)
+#' @param Pt4 a matrix of 3 values representing the point on the end of carpometacarpus (m)
+#' @param Pt9 a matrix of 3 values representing the point on tip of most distal primary (m)
+#' @param Pt10 a matrix of 3 values representing the point on tip of last primary to model as if on the end of the carpometacarpus (m)
+#' @param Pt11 a matrix of 3 values representing the point on tip of most proximal feather (wing root trailing edge) (m)
 #'
 #' @author Christina Harvey
 #'
-#' @return This function returns the point where each feather starts and ends as well as the
-#' vector that defines the normal to each feather plane.
+#' @return a list called "feather". This contains three matrices.
+#' 1. "loc_start" a matrix defining the 3D point where each feather starts. Rows are the different feathers and columns are x, y, z coordinates respectively.
+#' 2. "loc_end" a matrix defining the 3D point where each feather end. Rows are the different feathers and columns are x, y, z coordinates respectively.
+#' 3. "normal" a matrix that gives the vector that defines the normal to each feather plane.  Rows are the different feathers and columns are x, y, z vector directions respectively.
 #'
 #' @export
 #'

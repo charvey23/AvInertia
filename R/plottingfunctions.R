@@ -28,12 +28,12 @@ plot_CGloc <- function(clean_pts,mass_properties,mass_properties_skin,mass_prope
 
   CGplot <- ggplot() +
     #add in data
-    geom_point(aes(x=subset(mass_properties_skin, object == "CGy")$value, y=subset(mass_properties_skin, object == "CGz")$value), col = "gray") +
-    geom_point(aes(x=subset(mass_properties_bone, object == "CGy")$value, y=subset(mass_properties_bone, object == "CGz")$value), col = "yellow") +
-    geom_point(aes(x=subset(mass_properties_feathers, object == "CGy")$value, y=subset(mass_properties_feathers, object == "CGz")$value), col = "blue") +
-    geom_point(aes(x=subset(mass_properties_muscle, object == "CGy")$value, y=subset(mass_properties_muscle, object == "CGz")$value), col = "red") +
-    geom_point(aes(x=subset(mass_properties, object == "CGy")$value, y=subset(mass_properties, object == "CGz")$value), col = "green") +
-    geom_point(aes(x=clean_pts[,2], y=clean_pts[,3]), col = "black")
+    geom_point(aes(x=subset(mass_properties_skin, object == "CGy")$value, y=subset(mass_properties_skin, object == "CGx")$value), col = "gray") +
+    geom_point(aes(x=subset(mass_properties_bone, object == "CGy")$value, y=subset(mass_properties_bone, object == "CGx")$value), col = "yellow") +
+    geom_point(aes(x=subset(mass_properties_feathers, object == "CGy")$value, y=subset(mass_properties_feathers, object == "CGx")$value), col = "blue") +
+    geom_point(aes(x=subset(mass_properties_muscle, object == "CGy")$value, y=subset(mass_properties_muscle, object == "CGx")$value), col = "red") +
+    geom_point(aes(x=subset(mass_properties, object == "CGy")$value, y=subset(mass_properties, object == "CGx")$value), col = "green") +
+    geom_point(aes(x=clean_pts[,2], y=clean_pts[,1]), col = "black")
     #theme
     #th +
     #axis control

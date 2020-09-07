@@ -66,6 +66,10 @@
 #'
 #' @examples
 #'
+#' library(birdmoment)
+#'
+#'
+#'
 #'
 #' @export
 #'
