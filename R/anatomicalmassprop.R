@@ -271,9 +271,9 @@ massprop_pm <- function(m,pt){
 #' @param w_vp Width of proximal (closest to body) vane (m)
 #' @param w_vd Width of distal (closest to wing tip) vane (m)
 #' @param angle Angle between calamus and the vane
-#' @param start 3D point where feather starts. Frame of reference: VRP | Origin: VRP}
-#' @param end 3D point where feather ends Frame of reference: VRP | Origin: VRP}
-#' @param normal Vector that defines the normal to each feather plane. Frame of reference: VRP | Origin: VRP}
+#' @param start 3D point where feather starts. (Frame of reference: VRP | Origin: VRP)
+#' @param end 3D point where feather ends (Frame of reference: VRP | Origin: VRP)
+#' @param normal Vector that defines the normal to each feather plane. (Frame of reference: VRP | Origin: VRP)
 #' @author Christina Harvey
 #'
 #' @section Warning:

@@ -2,18 +2,20 @@
 % Please edit documentation in R/mathematicalfunctions.R
 \name{rotx}
 \alias{rotx}
-\title{x-axis rotation matrix}
+\title{A 3x3 rotation matrix allowing rotation about the x-axis. Constructed using a cosine rotation matrix where the rotation angle in degrees
+is measured counterclockwise allowing positive rotation under the right hand rule.}
 \usage{
 rotx(angle)
 }
 \arguments{
-\item{angle}{angle to rotate}
+\item{angle}{a scalar representing the angle to rotate (degrees)}
 }
 \value{
-
+a 3x3 matrix representing the rotation about the x-axis by the given angle
 }
 \description{
-x-axis rotation matrix
+A 3x3 rotation matrix allowing rotation about the x-axis. Constructed using a cosine rotation matrix where the rotation angle in degrees
+is measured counterclockwise allowing positive rotation under the right hand rule.
 }
 \examples{
 

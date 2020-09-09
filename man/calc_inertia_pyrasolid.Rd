@@ -2,23 +2,23 @@
 % Please edit documentation in R/mathematicalfunctions.R
 \name{calc_inertia_pyrasolid}
 \alias{calc_inertia_pyrasolid}
-\title{Moment of inertia tensor of a solid square pyramid about the centered point on the base}
+\title{Moment of inertia tensor of a solid square pyramid}
 \usage{
 calc_inertia_pyrasolid(w_2, h, m)
 }
 \arguments{
-\item{w_2}{half width of one side of the pyramid base}
+\item{w_2}{half width of one side of the pyramid base (m)}
 
-\item{h}{height of the pyramid}
+\item{h}{height of the pyramid (m)}
 
-\item{m}{mass of the pyramid}
+\item{m}{mass of the pyramid (kg)}
 }
 \value{
-Function returns the moment of inertia tensor of a solid square pyramid cylinder about
-its center of gravity with z oriented through it's major axis
+a 3x3 matrix representing the moment of inertia tensor of a solid square pyramid cylinder about
+its center of gravity with z oriented through it's major axis. Origin is NOT at the center of gravity but at the center of the base.
 }
 \description{
-Moment of inertia tensor of a solid square pyramid about the centered point on the base
+All outputs are based on an origin at the centered point on the base
 }
 \examples{
 

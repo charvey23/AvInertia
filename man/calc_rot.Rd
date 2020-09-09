@@ -2,7 +2,7 @@
 % Please edit documentation in R/mathematicalfunctions.R
 \name{calc_rot}
 \alias{calc_rot}
-\title{Title}
+\title{A 3x3 rotation matrix constructed by projecting the new axes onto the original system. Likely results in rotation about all axes.}
 \usage{
 calc_rot(z_vector, x_vector)
 }
@@ -10,10 +10,10 @@ calc_rot(z_vector, x_vector)
 \item{x_vector}{}
 }
 \value{
-Function returns the cosine rotation matrices to transform between VRP frame and object frame
+a 3x3 matrix representing the rotation matrix that transforms between VRP frame and object frame
 }
 \description{
-Title
+A 3x3 rotation matrix constructed by projecting the new axes onto the original system. Likely results in rotation about all axes.
 }
 \examples{
 

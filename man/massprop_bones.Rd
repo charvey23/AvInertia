@@ -2,33 +2,46 @@
 % Please edit documentation in R/anatomicalmassprop.R
 \name{massprop_bones}
 \alias{massprop_bones}
-\title{Calculate the moment of inertia of a bone modelled as a hollow cylinder with two solid end caps}
+\title{Bone mass properties}
 \usage{
 massprop_bones(m, l, r_out, r_in, rho, start, end)
 }
 \arguments{
-\item{m}{full mass of the bone}
+\item{m}{Mass of bone (kg)}
 
-\item{l}{full length of the bone}
+\item{l}{Length of bone (kg)}
 
-\item{r_out}{outer radius of bone}
+\item{r_out}{Outer radius of bone (m)}
 
-\item{r_in}{inner radius of bone}
+\item{r_in}{Inner radius of bone (m)}
 
-\item{rho}{density of the bone (kg/m^3)}
+\item{rho}{Density of the bone (kg/m^3)}
 
 \item{start}{3D point where bone starts. Frame of reference: VRP | Origin: VRP}
 
 \item{end}{3D point where bone ends. Frame of reference: VRP | Origin: VRP}
 }
 \value{
-
+This function returns a list that includes:
+\item{I}{a 3x3 matrix representing the moment of inertia tensor of a bone modelled as a hollow cylinder with two solid end caps}
+\item{CG}{a 1x3 vector representing the center of gravity position of a bone modelled as a hollow cylinder with two solid end caps}
 }
 \description{
 Calculate the moment of inertia of a bone modelled as a hollow cylinder with two solid end caps
 }
 \section{Warning}{
 
-the parallel axis theorem only works if the moment of inertia is calculated about components centroidal axis
+Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
 }
 
+\examples{
+
+# This example takes the humerus data contained within the package to predict
+# the humerus moment of inertia and center of gravity with the origin at the VRP and in the VRP frame of reference.
+
+library(birdmoment)
+
+massprop_bones(m,l,r_out,r_in,rho,start,end)
+
+
+}
