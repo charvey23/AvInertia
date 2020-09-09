@@ -80,8 +80,8 @@ calc_univec <- function(vector){
 # ---------------------- Calculate a rotation matrices ---------------------------
 #' A 3x3 rotation matrix constructed by projecting the new axes onto the original system. Likely results in rotation about all axes.
 #'
-#' @param z_vector
-#' @param x_vector
+#' @param z_vector a 1x3 vector representing the direction for the desired z axis of the new frame of reference.
+#' @param x_vector a 1x3 vector representing the direction for the desired x axis of the new frame of reference.
 #'
 #' @author Christina Harvey
 #'
