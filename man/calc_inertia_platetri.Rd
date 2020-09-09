@@ -2,7 +2,7 @@
 % Please edit documentation in R/mathematicalfunctions.R
 \name{calc_inertia_platetri}
 \alias{calc_inertia_platetri}
-\title{Moment of inertia tensor of a solid square pyramid}
+\title{Moment of inertia tensor of a flat triangular plate}
 \usage{
 calc_inertia_platetri(pts, A, rho, t, desired_prop)
 }
@@ -14,20 +14,20 @@ pt1x, pt1y, pt1z
 pt2x, pt1y, pt2z
 pt3x, pt3y, pt3z}
 
-\item{rho}{density of the material}
+\item{rho}{density of the material (kg/m^3)}
 
-\item{t}{thickness of the plate}
+\item{t}{thickness of the plate (m)}
 
-\item{desired_prop}{either "I" or "CG" depending on the desired output}
+\item{desired_prop}{a string containing either "I" or "CG" depending on the desired output}
 
-\item{a}{area of the triangular plate}
+\item{a}{area of the triangular plate (m)}
 }
 \value{
-Function returns the moment of inertia tensor of a flat triangular plate about
+a 3x3 matrix representing the moment of inertia tensor of a flat triangular plate about
 its center of gravity z axis defined by the input pts
 }
 \description{
-Moment of inertia tensor of a solid square pyramid
+Moment of inertia tensor of a flat triangular plate
 }
 \section{Warning}{
 

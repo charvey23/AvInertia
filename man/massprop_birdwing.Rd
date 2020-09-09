@@ -2,10 +2,10 @@
 % Please edit documentation in R/mainrunfunctions.R
 \name{massprop_birdwing}
 \alias{massprop_birdwing}
-\title{Function that reads in anatomical data and returns the moment of inertia tensor and center
-of gravity of a wing one side of the bird}
+\title{Halfspan bird wing mass properties}
 \usage{
 massprop_birdwing(
+  dat_wingID_curr,
   dat_bird_curr,
   dat_bone_curr,
   dat_feat_curr,
@@ -14,16 +14,76 @@ massprop_birdwing(
 )
 }
 \arguments{
-\item{clean_pts}{data frame of the key positions of the bird as follows:
-pt1x, pt1y, pt1z - Point that defines the shoulder joint
-pt2x, pt1y, pt2z - Point that defines the elbow joint
-pt3x, pt3y, pt3z - Point that defines the wrist joint
-pt4x, pt4y, pt4z - Point that defines the end of carpometacarpus}
+\item{dat_wingID_curr}{Dataframe related to the current bird wing ID info that must include the following columns:
+\item{species}{Species ID code as a string}
+\item{WingID}{Wing ID code as a string}
+\item{TestID}{Test ID code as a string}
+\item{frameID}{Video frame ID code as a string}}
+
+\item{dat_bird_curr}{Dataframe related to the current bird wing that must include the following columns:
+\item{total_bird_mass}{Mass of full bird for the current wing (kg)}
+\item{wing_mass}{Mass of one wing, should be the current wing (kg)}
+\item{barb_radius}{Radius of feather barb  for current species (m)}
+\item{barb_distance}{Distance between feather barbs for current species (m)}
+\item{brachial_muscle_mass}{Mass of all muscles in the brachial region of the wing (kg)}
+\item{antebrachial_muscle_mass}{Mass of all muscles in the antebrachial region of the wing (kg)}
+\item{manus_muscle_mass}{Mass of all muscles in the manus region of the wing (kg)}}
+
+\item{dat_bone_curr}{Dataframe related to the current bird wing bones that must include the following columns:
+\item{bone}{Bone ID code. Must include: "Humerus","Ulna","Radius","Carpometacarpus,"Ulnare" and "Radiale".}
+\item{bone_mass}{Mass of bone in the same row as the appropriate bone ID code (kg)}
+\item{bone_len}{Length of bone in the same row as the appropriate bone ID code (m)}
+\item{bone_out_rad}{Outer radius of bone in the same row as the appropriate bone ID code (m)}
+\item{bone_in_rad}{Inner radius of bone in the same row as the appropriate bone ID code (m)}}
+
+\item{dat_feat_curr}{Dataframe related to the current bird wing feathers input as a dataframe with the following structure:
+\item{feather}{Feather ID code. Must be in standard format i.e. 1st primary is "P1", third secondary is "S3", etc.
+Alula feathers should be grouped and named "alula".}
+\item{m_f}{Mass of feather in the same row as the appropriate feather ID code (kg)}
+\item{l_cal}{Length of calamus in the same row as the appropriate feather ID code (m)}
+\item{l_vane}{Length of rachis/vane in the same row as the appropriate feather ID code (m)}
+\item{w_cal}{Width (diameter) of calamus in the same row as the appropriate feather ID code (m)}
+\item{w_vp}{Width of proximal vane (average value) in the same row as the appropriate feather ID code (m)}
+\item{w_vd}{Width of distal vane (average value)  in the same row as the appropriate feather ID code (m)}
+NOTE: Alula feathers will be treated as point mass so only the mass of the feathers is required. Other columns can be left blank.}
+
+\item{dat_mat_curr}{Dataframe related to the current species input as a dataframe with the following structure:
+\item{material}{Material information. Must include the following: "Bone","Skin","Muscle","Cortex", "Medullary"}
+\item{density}{Density of each material (kg/m^3)}}
+
+\item{clean_pts}{Dataframe of the key positions of the bird as follows:
+\item{pt1x, pt1y, pt1z}{Point on the shoulder joint}
+\item{pt2x, pt1y, pt2z}{Point on the elbow joint}
+\item{pt3x, pt3y, pt3z}{Point on the wrist joint}
+\item{pt4x, pt4y, pt4z}{Point on the end of carpometacarpus}
+\item{pt8x, pt8y, pt8z}{Point on tip of most distal primary}
+\item{pt9x, pt9y, pt9z}{Point that defines the end of carpometacarpus}
+\item{pt10x, pt10y, pt10z}{Point on tip of last primary to model as if on the end of the carpometacarpus}
+\item{pt11x, pt11y, pt11z}{Point on tip of most proximal feather (wing root trailing edge)}}
 }
 \value{
-
+Function returns a dataframe that includes the moment of inertia and center of gravity of
+one wing about the VRP in the VRP frame and that of each major anatomical group i.e. skin, feathers, bones, muscles.
 }
 \description{
 Function that reads in anatomical data and returns the moment of inertia tensor and center
 of gravity of a wing one side of the bird
+}
+\section{CAUTION}{
+
+All points must all have the vehicle reference point (VRP) as their origin
+and the vehicle major axes as their frame of reference. This is normally selected so that
+the VRP is in line with the body center of gravity. Ensure the axes used represent a right-handed axis system.
+}
+
+\examples{
+
+library(birdmoment)
+
+
+
+
+}
+\author{
+Christina Harvey
 }

@@ -2,23 +2,23 @@
 % Please edit documentation in R/mathematicalfunctions.R
 \name{calc_inertia_platerect}
 \alias{calc_inertia_platerect}
-\title{Moment of inertia tensor of a solid square pyramid}
+\title{Moment of inertia tensor of a flat rectangular plate}
 \usage{
 calc_inertia_platerect(w, h, m)
 }
 \arguments{
-\item{w}{full width of one side of the plate}
+\item{w}{full width of one side of the plate (m)}
 
-\item{h}{height of the plate}
+\item{h}{height of the plate (m)}
 
-\item{m}{mass of the plate}
+\item{m}{mass of the plate (kg)}
 }
 \value{
-Function returns the moment of inertia tensor of a flat plate about
+a 3x3 matrix representing the moment of inertia tensor of a flat plate about
 its center of gravity with z oriented parallel with it's long edge
 }
 \description{
-Moment of inertia tensor of a solid square pyramid
+Moment of inertia tensor of a flat rectangular plate
 }
 \examples{
 

@@ -2,24 +2,32 @@
 % Please edit documentation in R/mainrunfunctions.R
 \name{store_data}
 \alias{store_data}
-\title{Function to store moment of inertia tensor and center of gravity vector components in long format}
+\title{Store data}
 \usage{
-store_data(species_curr, alldat_row, dat_mass, mass_properties, name)
+store_data(dat_wingID_curr, dat_mass, mass_properties, name)
 }
 \arguments{
-\item{species_curr}{current species code}
+\item{dat_wingID_curr}{Dataframe related to the current bird wing ID info that must include the following columns:
+\item{species}{Species ID code as a string}
+\item{WingID}{Wing ID code as a string}
+\item{TestID}{Test ID code as a string}
+\item{frameID}{Video frame ID code as a string}}
 
-\item{alldat_row}{current dataframe containing the necessary identifying information for the wing shape}
+\item{dat_mass}{Dataframe containing the new MOI and CG data to add to mass_properties as new rows. Must include:
+\item{I}{Moment of inertia tensor (kg-m^2)}
+\item{CG}{Center of gravity with three location components (m)}}
 
-\item{dat_mass}{new MOI and CG data to add to mass_properties as new rows}
+\item{mass_properties}{Dataframe containing any previously saved data.
+Must have the following columns: "species","WingID","TestID","FrameID","prop_type","component","value".}
 
-\item{mass_properties}{current master data fram that saves the data}
-
-\item{name}{name of the component}
+\item{name}{Name of the component for which the moment of inertia and center of gravity were computed.}
 }
 \value{
-
+This function returns mass_properties as an updated dataframe with a new row corresponding to the dat_mass information
 }
 \description{
 Function to store moment of inertia tensor and center of gravity vector components in long format
+}
+\examples{
+
 }

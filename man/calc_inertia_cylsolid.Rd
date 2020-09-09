@@ -7,14 +7,14 @@
 calc_inertia_cylsolid(r, h, m)
 }
 \arguments{
-\item{r}{radius of the cylinder}
+\item{r}{radius of the cylinder (m)}
 
-\item{h}{height of the cylinder}
+\item{h}{height of the cylinder (m)}
 
-\item{m}{mass of the cylinder}
+\item{m}{mass of the cylinder (kg)}
 }
 \value{
-Function returns the moment of inertia tensor of a solid cylinder about
+a 3x3 matrix representing the moment of inertia tensor of a solid cylinder about
 its center of gravity with z oriented through it's major axis
 }
 \description{

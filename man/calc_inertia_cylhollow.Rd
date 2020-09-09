@@ -2,25 +2,25 @@
 % Please edit documentation in R/mathematicalfunctions.R
 \name{calc_inertia_cylhollow}
 \alias{calc_inertia_cylhollow}
-\title{Moment of inertia tensor of a solid cylinder}
+\title{Moment of inertia tensor of a hollow cylinder}
 \usage{
 calc_inertia_cylhollow(r_out, r_in, h, m)
 }
 \arguments{
-\item{r_out}{outer radius of the cylinder}
+\item{r_out}{outer radius of the cylinder (m)}
 
-\item{r_in}{inner radius of the cylinder}
+\item{r_in}{inner radius of the cylinder (m)}
 
-\item{h}{height of the cylinder}
+\item{h}{height of the cylinder (m)}
 
-\item{m}{mass of the cylinder}
+\item{m}{mass of the cylinder (kg)}
 }
 \value{
-Function returns the moment of inertia tensor of a hollow cylinder about
+a 3x3 matrix representing the moment of inertia tensor of a hollow cylinder about
 its center of gravity with z oriented through it's major axis
 }
 \description{
-Moment of inertia tensor of a solid cylinder
+Moment of inertia tensor of a hollow cylinder
 }
 \examples{
 

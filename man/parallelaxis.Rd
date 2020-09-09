@@ -2,16 +2,21 @@
 % Please edit documentation in R/mathematicalfunctions.R
 \name{parallelaxis}
 \alias{parallelaxis}
-\title{Reads in an initial tensor and an offset to compute the transformed tensor.
-Will be in the same frame of reference as the input tensor.}
+\title{Parallel axis theory}
 \usage{
-parallelaxis(I_CG, offset_vec, m)
+parallelaxis(I, offset_vec, m, cg_a)
 }
 \arguments{
-\item{m}{}
+\item{offset_vec}{Distance between the objects CG and the arbitrary pt A. (m) Should always point from the CG to the arbitrary point A}
+
+\item{m}{Mass of the object (kg)}
+
+\item{cg_a}{If input I is about the CG enter "CG" or if I is about an arbitrary axis enter "A".}
+
+\item{I_CG}{Moment of intertia tensor (3x3) about the center of gravity of the object (kg-m^2)}
 }
 \value{
-Function returns the transformed tensor after a solid body translation
+a 3x3 matrix representing the transformed moment of inertia tensor after a solid body translation
 }
 \description{
 Reads in an initial tensor and an offset to compute the transformed tensor.

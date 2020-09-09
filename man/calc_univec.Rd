@@ -7,19 +7,18 @@
 calc_univec(vector)
 }
 \arguments{
-\item{vector}{}
+\item{vector}{any vector or array with only one dimension}
 }
 \value{
-This function returns the unit vector of any input vector
+the unit vector in the size of the input vector
 }
 \description{
 Determine the unit vector of any input vector
 }
 \examples{
 
-output = unit_vector(c(2,6,5))
-#should equal one if a unit vector
-length_output = pracma::Norm(output)
+output = calc_univec(c(2,6,5))
+length_output = pracma::Norm(output) #should equal 1 if a unit vector
 
 }
 \author{

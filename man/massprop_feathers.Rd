@@ -2,13 +2,13 @@
 % Please edit documentation in R/anatomicalmassprop.R
 \name{massprop_feathers}
 \alias{massprop_feathers}
-\title{Calculate the moment of inertia of skin modelled as a flat triangular plate}
+\title{Feather mass properties}
 \usage{
 massprop_feathers(
   m_f,
   l_c,
   l_r_cor,
-  w_r,
+  w_cal,
   r_b,
   d_b,
   rho_cor,
@@ -16,52 +16,51 @@ massprop_feathers(
   w_vp,
   w_vd,
   angle,
-  normal,
   start,
-  end
+  end,
+  normal
 )
 }
 \arguments{
-\item{m_f}{mass of the entire feather}
+\item{m_f}{Mass of the entire feather (kg)}
 
-\item{l_c}{length of the calamus - start of vane to end of calamus(m)}
+\item{l_c}{Length of the calamus - start of vane to end of calamus(m)}
 
-\item{l_r_cor}{length of rachis/vane - tip to start of vane (m)}
+\item{l_r_cor}{Length of rachis/vane - tip to start of vane (m)}
 
-\item{w_r}{width (diameter) of the cortex part of the calamus (m)}
+\item{w_cal}{Width (diameter) of the cortex part of the calamus (m)}
 
-\item{r_b}{barb radius (m)}
+\item{r_b}{Radius of feather barbs (m)}
 
-\item{d_b}{barb distance (m)}
+\item{d_b}{Distance between barbs (m)}
 
-\item{rho_cor}{density of the cortex (kg/m^3)}
+\item{rho_cor}{Density of the cortex (kg/m^3)}
 
-\item{rho_med}{density of the medullary (kg/m^3)}
+\item{rho_med}{Density of the medullary (kg/m^3)}
 
-\item{w_vp}{width of proximal (closest to body) vane (m)}
+\item{w_vp}{Width of proximal (closest to body) vane (m)}
 
-\item{w_vd}{width of distal (closest to wing tip) vane (m)}
+\item{w_vd}{Width of distal (closest to wing tip) vane (m)}
 
-\item{angle}{angle between l_c and l_r}
+\item{angle}{Angle between calamus and the vane}
 
-\item{start}{3D point where feather starts. Frame of reference: VRP | Origin: VRP}
+\item{start}{3D point where feather starts. (Frame of reference: VRP | Origin: VRP)}
 
-\item{end}{3D point where feather ends Frame of reference: VRP | Origin: VRP}
+\item{end}{3D point where feather ends (Frame of reference: VRP | Origin: VRP)}
 
-\item{n_pts}{the pts that define the plane that the feather lies flat on.
-Order counterclockwise so that the normal will pointing downwards from the ventral surface of the feather.
-Frame of reference: VRP | Origin: VRP}
+\item{normal}{Vector that defines the normal to each feather plane. (Frame of reference: VRP | Origin: VRP)}
 }
 \value{
-
+This function returns a list that includes:
+\item{I}{a 3x3 matrix representing the moment of inertia tensor of a simplified feather}
+\item{CG}{a 1x3 vector representing the center of gravity position of a simplified feather}
 }
 \description{
 Calculate the moment of inertia of skin modelled as a flat triangular plate
 }
 \section{Warning}{
 
-Parallel axis theorem is only valid if relocating an object between it's CG and an arbitrary pt. I_arbitrary = I_CG + md^2
-Cannot be used between two arbitrary points.
+Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
 }
 
 \author{
