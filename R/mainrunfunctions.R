@@ -54,7 +54,9 @@
 #' \item{pt9x, pt9y, pt9z}{Point that defines the end of carpometacarpus}
 #' \item{pt10x, pt10y, pt10z}{Point on tip of last primary to model as if on the end of the carpometacarpus}
 #' \item{pt11x, pt11y, pt11z}{Point on tip of most proximal feather (wing root trailing edge)}
-#' CAUTION: These points must all have the vehicle reference point (VRP) as their origin
+#'
+#' @section CAUTION:
+#'          All points must all have the vehicle reference point (VRP) as their origin
 #'          and the vehicle major axes as their frame of reference. This is normally selected so that
 #'          the VRP is in line with the body center of gravity. Ensure the axes used represent a right-handed axis system.
 #'

@@ -23,25 +23,23 @@ plot_CGloc <- function(clean_pts,mass_properties,mass_properties_skin,mass_prope
       plot.background = element_rect(fill = "transparent", color = NA)
     )
 
-  label_elb = "Elbow angle (?)"
-  label_man = "Wrist angle (?)"
-
   CGplot <- ggplot() +
     #add in data
-    geom_point(aes(x=subset(mass_properties_skin, object == "CGy")$value, y=subset(mass_properties_skin, object == "CGx")$value), col = "gray") +
-    geom_point(aes(x=subset(mass_properties_bone, object == "CGy")$value, y=subset(mass_properties_bone, object == "CGx")$value), col = "yellow") +
-    geom_point(aes(x=subset(mass_properties_feathers, object == "CGy")$value, y=subset(mass_properties_feathers, object == "CGx")$value), col = "blue") +
-    geom_point(aes(x=subset(mass_properties_muscle, object == "CGy")$value, y=subset(mass_properties_muscle, object == "CGx")$value), col = "red") +
-    geom_point(aes(x=subset(mass_properties, object == "CGy")$value, y=subset(mass_properties, object == "CGx")$value), col = "green") +
-    geom_point(aes(x=clean_pts[,2], y=clean_pts[,1]), col = "black")
+    geom_point(aes(x=subset(mass_properties_skin, object == "CGy")$value, y=subset(mass_properties_skin, object == "CGx")$value), col = "#05B805") +
+    geom_point(aes(x=subset(mass_properties_bone, object == "CGy")$value, y=subset(mass_properties_bone, object == "CGx")$value), col = "#BB0000") +
+    geom_point(aes(x=subset(mass_properties_feathers, object == "CGy")$value, y=subset(mass_properties_feathers, object == "CGx")$value), col = "#249494") +
+    geom_point(aes(x=subset(mass_properties_muscle, object == "CGy")$value, y=subset(mass_properties_muscle, object == "CGx")$value), col = "#BB0000") +
+    geom_point(aes(x=subset(mass_properties, component == "wing" & object == "CGy")$value, y=subset(mass_properties, component == "wing" & object == "CGx")$value), col = "black", size  = 3) +
+    geom_point(aes(x=clean_pts[,2], y=clean_pts[,1]), col = "gray") +
     #theme
-    #th +
+    th +
     #axis control
-    #scale_x_continuous(name = label_elb,limits = c(30,170), breaks = c(30,50,70,90,110,130,150,170)) +
-    #scale_y_continuous(name = label_man, limits = c(100,180), breaks = c(100,120,140,160,180)) +
-    #geom_rangeframe() +
-    #annotate(geom = "segment", x = 0, xend = 0, y = 100, yend = 180) +
-    #annotate(geom = "segment", x = 30, xend = 170, y = 0, yend = 0)
+    scale_y_continuous(name = "y (m)",limits = c(-0.4,0.01)) +
+    scale_x_continuous(name = "x (m)", limits = c(0,0.6), position = "top") +
+    geom_rangeframe() +
+    coord_fixed() +
+    annotate(geom = "segment", x = log(0), xend = log(0), y = -0.4, yend = 0) +
+    annotate(geom = "segment", x = 0, xend = 0.6, y = -log(0), yend = -log(0))
 
   return(CGplot)
 }

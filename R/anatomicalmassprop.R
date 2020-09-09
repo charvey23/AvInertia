@@ -19,8 +19,8 @@
 #' @param end 3D point where bone ends. Frame of reference: VRP | Origin: VRP
 #'
 #' @return This function returns a list that includes:
-#' \item{I}{the moment of inertia tensor of a bone modelled as a hollow cylinder with two solid end caps}
-#' \item{CG}{the center of gravity position of a bone modelled as a hollow cylinder with two solid end caps}
+#' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a bone modelled as a hollow cylinder with two solid end caps}
+#' \item{CG}{a 1x3 vector representing the center of gravity position of a bone modelled as a hollow cylinder with two solid end caps}
 #'
 #' @section Warning:
 #' Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
@@ -103,8 +103,8 @@ massprop_bones <- function(m,l,r_out,r_in,rho,start,end){
 #' @author Christina Harvey
 #'
 #' @return This function returns a list that includes:
-#' \item{I}{the moment of inertia tensor of a muscle modelled as a solid cylinder distributed along the bone length}
-#' \item{CG}{the center of gravity position of a muscle modelled as a solid cylinder distributed along the bone length}
+#' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a muscle modelled as a solid cylinder distributed along the bone length}
+#' \item{CG}{a 1x3 vector representing the center of gravity position of a muscle modelled as a solid cylinder distributed along the bone length}
 #'
 #' @section Warning:
 #' Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
@@ -168,8 +168,9 @@ massprop_muscles <- function(m,rho,start,end){
 #' @author Christina Harvey
 #'
 #' @return This function returns a list that includes:
-#' \item{I}{the moment of inertia tensor of skin modelled as a flat triangular plate}
-#' \item{CG}{the center of gravity position of skin modelled as a flat triangular plate}
+#' point mass
+#' \item{I}{a 3x3 matrix representing the moment of inertia tensor of skin modelled as a flat triangular plate}
+#' \item{CG}{a 1x3 vector representing the center of gravity position of skin modelled as a flat triangular plate}
 #'
 #' @section Warning:
 #' Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
@@ -231,8 +232,8 @@ massprop_skin <- function(m,rho,pts){
 #' @author Christina Harvey
 #'
 #' @return This function returns a list that includes:
-#' \item{I}{the moment of inertia tensor of a point mass}
-#' \item{CG}{the center of gravity position of a point mass}
+#' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a point mass}
+#' \item{CG}{a 1x3 vector representing the center of gravity position of a point mass}
 #'
 #' @section Warning:
 #' Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
@@ -282,8 +283,8 @@ massprop_pm <- function(m,pt){
 #' Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
 #'
 #' @return This function returns a list that includes:
-#' \item{I}{the moment of inertia tensor of a simplified feather}
-#' \item{CG}{the center of gravity position of a simplified feather}
+#' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a simplified feather}
+#' \item{CG}{a 1x3 vector representing the center of gravity position of a simplified feather}
 #'
 #' @export
 #'
