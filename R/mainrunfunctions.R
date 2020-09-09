@@ -66,10 +66,6 @@
 #' one wing about the VRP in the VRP frame and that of each major anatomical group i.e. skin, feathers, bones, muscles.
 #'
 #'
-#' @examples
-#'
-#' library(birdmoment)
-#'
 #'
 #'
 #'
@@ -311,8 +307,6 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
 #' @param name Name of the component for which the moment of inertia and center of gravity were computed.
 #'
 #' @return This function returns mass_properties as an updated dataframe with a new row corresponding to the dat_mass information
-#'
-#' @examples
 #'
 #' @export
 store_data <- function(dat_wingID_curr,dat_mass,mass_properties,name){

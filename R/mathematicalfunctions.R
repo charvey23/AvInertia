@@ -87,8 +87,6 @@ calc_univec <- function(vector){
 #'
 #' @return a 3x3 matrix representing the rotation matrix that transforms between VRP frame and object frame
 #'
-#' @examples
-#'
 #' @export
 #'
 calc_rot <- function(z_vector, x_vector){
@@ -125,8 +123,6 @@ calc_rot <- function(z_vector, x_vector){
 #' @author Christina Harvey
 #'
 #' @return a 3x3 matrix representing the transformed moment of inertia tensor after a solid body translation
-#'
-#' @examples
 #'
 #' @export
 #'
@@ -173,8 +169,6 @@ parallelaxis <- function(I, offset_vec, m, cg_a){
 #' its center of gravity with z oriented through it's major axis
 #'
 #'
-#' @examples
-#'
 #' @export
 #'
 calc_inertia_cylsolid <- function(r, h, m){
@@ -200,9 +194,6 @@ calc_inertia_cylsolid <- function(r, h, m){
 #'
 #' @return a 3x3 matrix representing the moment of inertia tensor of a hollow cylinder about
 #' its center of gravity with z oriented through it's major axis
-#'
-#'
-#' @examples
 #'
 #' @export
 #'
@@ -233,8 +224,6 @@ calc_inertia_cylhollow <- function(r_out, r_in, h, m){
 #' @return a 3x3 matrix representing the moment of inertia tensor of a solid square pyramid cylinder about
 #' its center of gravity with z oriented through it's major axis. Origin is NOT at the center of gravity but at the center of the base.
 #'
-#' @examples
-#'
 #' @export
 #'
 calc_inertia_pyrasolid <- function(w_2, h, m){
@@ -259,9 +248,6 @@ calc_inertia_pyrasolid <- function(w_2, h, m){
 #'
 #' @return a 3x3 matrix representing the moment of inertia tensor of a flat plate about
 #' its center of gravity with z oriented parallel with it's long edge
-#'
-#'
-#' @examples
 #'
 #' @export
 #'
@@ -301,9 +287,6 @@ calc_inertia_platerect <- function(w, h, m){
 #' The input points should be defined in a counterclockwise direction around the plate
 #' in the triangular plate frame of reference
 #' i.e. all z components should be equal
-#'
-#'
-#' @examples
 #'
 #' @export
 #'
@@ -384,8 +367,7 @@ calc_inertia_platetri <- function(pts, A, rho, t, desired_prop){
 #' 3. "normal" a matrix that gives the vector that defines the normal to each feather plane.  Rows are the different feathers and columns are x, y, z vector directions respectively.
 #'
 #' @export
-#'
-#' @examples
+
 orient_feather <- function(no_pri,no_sec,Pt1,Pt2,Pt3,Pt4,Pt9,Pt10,Pt11){
 
   # pre-define variables

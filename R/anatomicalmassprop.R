@@ -110,8 +110,7 @@ massprop_bones <- function(m,l,r_out,r_in,rho,start,end){
 #' Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
 #'
 #' @export
-#'
-#' @examples
+
 massprop_muscles <- function(m,rho,start,end){
 
   l = norm((end - start), type = "2")
@@ -176,8 +175,7 @@ massprop_muscles <- function(m,rho,start,end){
 #' Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
 #'
 #' @export
-#'
-#' @examples
+
 massprop_skin <- function(m,rho,pts){
   # ------------------ Determine the geometry of the skin ---------------------------
   temp_cross = pracma::cross((pts[3,]-pts[1,]),(pts[3,]-pts[2,]))
@@ -239,8 +237,7 @@ massprop_skin <- function(m,rho,pts){
 #' Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
 #'
 #' @export
-#'
-#' @examples
+
 massprop_pm <- function(m,pt){
 
   emtpy_I = matrix(0, nrow = 3, ncol = 3) # 0 tensor for point mass about it's own CG
@@ -287,8 +284,7 @@ massprop_pm <- function(m,pt){
 #' \item{CG}{a 1x3 vector representing the center of gravity position of a simplified feather}
 #'
 #' @export
-#'
-#' @examples
+
 massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp,w_vd,angle,start,end,normal){
   # ------------------ Determine the geometry of feathers ---------------------------
   r_cor = 0.5*w_cal # radius of the cortex part of the calamus
