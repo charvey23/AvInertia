@@ -56,7 +56,7 @@ This function returns a list that includes:
 \item{CG}{a 1x3 vector representing the center of gravity position of a simplified feather}
 }
 \description{
-Calculate the moment of inertia of skin modelled as a flat triangular plate
+Calculate the moment of inertia of skin modeled as a flat triangular plate
 }
 \section{Warning}{
 

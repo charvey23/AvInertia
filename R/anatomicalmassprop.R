@@ -8,7 +8,7 @@
 
 #' Bone mass properties
 #'
-#' Calculate the moment of inertia of a bone modelled as a hollow cylinder with two solid end caps
+#' Calculate the moment of inertia of a bone modeled as a hollow cylinder with two solid end caps
 #'
 #' @param m Mass of bone (kg)
 #' @param l Length of bone (kg)
@@ -19,8 +19,8 @@
 #' @param end 3D point where bone ends. Frame of reference: VRP | Origin: VRP
 #'
 #' @return This function returns a list that includes:
-#' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a bone modelled as a hollow cylinder with two solid end caps}
-#' \item{CG}{a 1x3 vector representing the center of gravity position of a bone modelled as a hollow cylinder with two solid end caps}
+#' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a bone modeled as a hollow cylinder with two solid end caps}
+#' \item{CG}{a 1x3 vector representing the center of gravity position of a bone modeled as a hollow cylinder with two solid end caps}
 #'
 #' @section Warning:
 #' Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
@@ -93,7 +93,7 @@ massprop_bones <- function(m,l,r_out,r_in,rho,start,end){
 
 #' Muscle mass properties
 #'
-#' Calculate the moment of inertia of a muscle modelled as a solid cylinder distributed along the bone length
+#' Calculate the moment of inertia of a muscle modeled as a solid cylinder distributed along the bone length
 #'
 #' @param m Mass of muscle (kg)
 #' @param rho Density of muscle (kg/m^3)
@@ -103,8 +103,8 @@ massprop_bones <- function(m,l,r_out,r_in,rho,start,end){
 #' @author Christina Harvey
 #'
 #' @return This function returns a list that includes:
-#' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a muscle modelled as a solid cylinder distributed along the bone length}
-#' \item{CG}{a 1x3 vector representing the center of gravity position of a muscle modelled as a solid cylinder distributed along the bone length}
+#' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a muscle modeled as a solid cylinder distributed along the bone length}
+#' \item{CG}{a 1x3 vector representing the center of gravity position of a muscle modeled as a solid cylinder distributed along the bone length}
 #'
 #' @section Warning:
 #' Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
@@ -151,7 +151,7 @@ massprop_muscles <- function(m,rho,start,end){
 
 #' Skin mass properties
 #'
-#' Calculate the moment of inertia of skin modelled as a flat triangular plate
+#' Calculate the moment of inertia of skin modeled as a flat triangular plate
 #'
 #' @param m Mass of skin (kg)
 #' @param rho Density of skin (kg/m^3)
@@ -170,8 +170,8 @@ massprop_muscles <- function(m,rho,start,end){
 #'
 #' @return This function returns a list that includes:
 #' point mass
-#' \item{I}{a 3x3 matrix representing the moment of inertia tensor of skin modelled as a flat triangular plate}
-#' \item{CG}{a 1x3 vector representing the center of gravity position of skin modelled as a flat triangular plate}
+#' \item{I}{a 3x3 matrix representing the moment of inertia tensor of skin modeled as a flat triangular plate}
+#' \item{CG}{a 1x3 vector representing the center of gravity position of skin modeled as a flat triangular plate}
 #'
 #' @section Warning:
 #' Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
@@ -260,7 +260,7 @@ massprop_pm <- function(m,pt){
 
 #' Feather mass properties
 #'
-#' Calculate the moment of inertia of skin modelled as a flat triangular plate
+#' Calculate the moment of inertia of skin modeled as a flat triangular plate
 #'
 #' @param m_f Mass of the entire feather (kg)
 #' @param l_c Length of the calamus - start of vane to end of calamus(m)
@@ -375,7 +375,7 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   I_vp1  = calc_inertia_platerect(w_vp, l_r_cor, m_vp)    # Frame of reference: Feather Proximal Vane | Origin: Proximal Vane CG
   CG_vp1 = c(0,0.5*w_vp,0.5*l_r_cor)                      # Frame of reference: Feather Proximal Vane | Origin: Start of the vane (proximal edge)
 
-  # 2. Rotate postive angle is a ccw rotation about x (normal to the feather plane) ** all angles should be negative for bird feathers
+  # 2. Rotate positive angle is a ccw rotation about x (normal to the feather plane) ** all angles should be negative for bird feathers
   rot_vd = rotx(-pracma::atand(r_cor/l_r_cor))
   rot_vp = rotx(pracma::atand(r_cor/l_r_cor))
   I_vd2  = rot_vd %*% I_vd1 %*% t(rot_vd)                 # Frame of reference: Feather Rachis | Origin: Distal Vane CG
@@ -427,7 +427,7 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   I_3     = t(VRP2object) %*% I_2 %*% VRP2object         # Frame of reference: VRP | Origin: Start of Feather
   CG_3    = t(VRP2object) %*% CG_2                       # Frame of reference: VRP | Origin: Start of Feather
 
-  # To properly use parallel axis firt, return the origin to the center of gravity of the full feather
+  # To properly use parallel axis first, return the origin to the center of gravity of the full feather
   I_fCG    = parallelaxis(I_3,-CG_3,m_f,"A")             # Frame of reference: VRP | Origin: Feather CG
 
   # 10. Return the origin to the VRP

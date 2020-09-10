@@ -17,11 +17,11 @@ massprop_muscles(m, rho, start, end)
 }
 \value{
 This function returns a list that includes:
-\item{I}{a 3x3 matrix representing the moment of inertia tensor of a muscle modelled as a solid cylinder distributed along the bone length}
-\item{CG}{a 1x3 vector representing the center of gravity position of a muscle modelled as a solid cylinder distributed along the bone length}
+\item{I}{a 3x3 matrix representing the moment of inertia tensor of a muscle modeled as a solid cylinder distributed along the bone length}
+\item{CG}{a 1x3 vector representing the center of gravity position of a muscle modeled as a solid cylinder distributed along the bone length}
 }
 \description{
-Calculate the moment of inertia of a muscle modelled as a solid cylinder distributed along the bone length
+Calculate the moment of inertia of a muscle modeled as a solid cylinder distributed along the bone length
 }
 \section{Warning}{
 
