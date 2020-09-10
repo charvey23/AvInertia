@@ -14,9 +14,11 @@ massprop_skin(m, rho, pts)
 \item{pts}{Three points that define the vertices of the triangle. Frame of reference: VRP | Origin: VRP
 Must be numbered in a counterclockwise direction for positive area, otherwise signs will be reversed.
 each point should be a different row as follows:
+\itemize{
 \item{pt1x, pt1y, pt1z}
 \item{pt2x, pt1y, pt2z}
 \item{pt3x, pt3y, pt3z}
+}
 For inner skin: Pt1 - Shoulder, Pt2 - Wrist, Pt3 - Elbow * ensures CCW ordering
 For outer skin: Pt1 - Wrist, Pt2 - Finger, Pt3 - Elbow * ensures CCW ordering}
 }

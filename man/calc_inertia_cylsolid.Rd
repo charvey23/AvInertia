@@ -20,9 +20,6 @@ its center of gravity with z oriented through it's major axis
 \description{
 Moment of inertia tensor of a solid cylinder
 }
-\examples{
-
-}
 \author{
 Christina Harvey
 }

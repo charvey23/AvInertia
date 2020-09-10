@@ -76,14 +76,6 @@ and the vehicle major axes as their frame of reference. This is normally selecte
 the VRP is in line with the body center of gravity. Ensure the axes used represent a right-handed axis system.
 }
 
-\examples{
-
-library(birdmoment)
-
-
-
-
-}
 \author{
 Christina Harvey
 }

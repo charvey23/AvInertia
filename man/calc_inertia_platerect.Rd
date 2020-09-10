@@ -20,9 +20,6 @@ its center of gravity with z oriented parallel with it's long edge
 \description{
 Moment of inertia tensor of a flat rectangular plate
 }
-\examples{
-
-}
 \author{
 Christina Harvey
 }

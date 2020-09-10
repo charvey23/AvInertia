@@ -28,6 +28,3 @@ This function returns mass_properties as an updated dataframe with a new row cor
 \description{
 Function to store moment of inertia tensor and center of gravity vector components in long format
 }
-\examples{
-
-}

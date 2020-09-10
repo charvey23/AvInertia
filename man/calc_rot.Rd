@@ -7,16 +7,15 @@
 calc_rot(z_vector, x_vector)
 }
 \arguments{
-\item{x_vector}{}
+\item{z_vector}{a 1x3 vector representing the direction for the desired z axis of the new frame of reference.}
+
+\item{x_vector}{a 1x3 vector representing the direction for the desired x axis of the new frame of reference.}
 }
 \value{
 a 3x3 matrix representing the rotation matrix that transforms between VRP frame and object frame
 }
 \description{
 A 3x3 rotation matrix constructed by projecting the new axes onto the original system. Likely results in rotation about all axes.
-}
-\examples{
-
 }
 \author{
 Christina Harvey

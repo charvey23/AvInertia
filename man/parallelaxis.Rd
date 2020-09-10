@@ -22,9 +22,6 @@ a 3x3 matrix representing the transformed moment of inertia tensor after a solid
 Reads in an initial tensor and an offset to compute the transformed tensor.
 Will be in the same frame of reference as the input tensor.
 }
-\examples{
-
-}
 \author{
 Christina Harvey
 }

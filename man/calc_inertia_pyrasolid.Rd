@@ -20,9 +20,6 @@ its center of gravity with z oriented through it's major axis. Origin is NOT at 
 \description{
 All outputs are based on an origin at the centered point on the base
 }
-\examples{
-
-}
 \author{
 Christina Harvey
 }

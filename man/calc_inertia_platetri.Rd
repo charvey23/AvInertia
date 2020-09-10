@@ -36,9 +36,6 @@ in the triangular plate frame of reference
 i.e. all z components should be equal
 }
 
-\examples{
-
-}
 \author{
 Christina Harvey
 }
