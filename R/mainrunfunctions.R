@@ -9,12 +9,15 @@
 #' of gravity of a wing one side of the bird
 #'
 #' @param dat_wingID_curr Dataframe related to the current bird wing ID info that must include the following columns:
+#' \itemize{
 #' \item{species}{Species ID code as a string}
 #' \item{WingID}{Wing ID code as a string}
 #' \item{TestID}{Test ID code as a string}
 #' \item{frameID}{Video frame ID code as a string}
+#' }
 #'
 #' @param dat_bird_curr Dataframe related to the current bird wing that must include the following columns:
+#' \itemize{
 #' \item{total_bird_mass}{Mass of full bird for the current wing (kg)}
 #' \item{wing_mass}{Mass of one wing, should be the current wing (kg)}
 #' \item{barb_radius}{Radius of feather barb  for current species (m)}
@@ -22,15 +25,19 @@
 #' \item{brachial_muscle_mass}{Mass of all muscles in the brachial region of the wing (kg)}
 #' \item{antebrachial_muscle_mass}{Mass of all muscles in the antebrachial region of the wing (kg)}
 #' \item{manus_muscle_mass}{Mass of all muscles in the manus region of the wing (kg)}
+#' }
 #'
 #' @param dat_bone_curr Dataframe related to the current bird wing bones that must include the following columns:
+#' \itemize{
 #' \item{bone}{Bone ID code. Must include: "Humerus","Ulna","Radius","Carpometacarpus,"Ulnare" and "Radiale".}
 #' \item{bone_mass}{Mass of bone in the same row as the appropriate bone ID code (kg)}
 #' \item{bone_len}{Length of bone in the same row as the appropriate bone ID code (m)}
 #' \item{bone_out_rad}{Outer radius of bone in the same row as the appropriate bone ID code (m)}
 #' \item{bone_in_rad}{Inner radius of bone in the same row as the appropriate bone ID code (m)}
+#' }
 #'
 #' @param dat_feat_curr Dataframe related to the current bird wing feathers input as a dataframe with the following structure:
+#' \itemize{
 #' \item{feather}{Feather ID code. Must be in standard format i.e. 1st primary is "P1", third secondary is "S3", etc.
 #' Alula feathers should be grouped and named "alula".}
 #' \item{m_f}{Mass of feather in the same row as the appropriate feather ID code (kg)}
@@ -39,13 +46,17 @@
 #' \item{w_cal}{Width (diameter) of calamus in the same row as the appropriate feather ID code (m)}
 #' \item{w_vp}{Width of proximal vane (average value) in the same row as the appropriate feather ID code (m)}
 #' \item{w_vd}{Width of distal vane (average value)  in the same row as the appropriate feather ID code (m)}
+#' }
 #' NOTE: Alula feathers will be treated as point mass so only the mass of the feathers is required. Other columns can be left blank.
 #'
 #' @param dat_mat_curr Dataframe related to the current species input as a dataframe with the following structure:
+#' \itemize{
 #' \item{material}{Material information. Must include the following: "Bone","Skin","Muscle","Cortex", "Medullary"}
 #' \item{density}{Density of each material (kg/m^3)}
+#' }
 #'
 #' @param clean_pts Dataframe of the key positions of the bird as follows:
+#' \itemize{
 #' \item{pt1x, pt1y, pt1z}{Point on the shoulder joint}
 #' \item{pt2x, pt1y, pt2z}{Point on the elbow joint}
 #' \item{pt3x, pt3y, pt3z}{Point on the wrist joint}
@@ -54,6 +65,7 @@
 #' \item{pt9x, pt9y, pt9z}{Point that defines the end of carpometacarpus}
 #' \item{pt10x, pt10y, pt10z}{Point on tip of last primary to model as if on the end of the carpometacarpus}
 #' \item{pt11x, pt11y, pt11z}{Point on tip of most proximal feather (wing root trailing edge)}
+#' }
 #'
 #' @section CAUTION:
 #'          All points must all have the vehicle reference point (VRP) as their origin
@@ -293,14 +305,18 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
 #' Function to store moment of inertia tensor and center of gravity vector components in long format
 #'
 #' @param dat_wingID_curr Dataframe related to the current bird wing ID info that must include the following columns:
+#' \itemize{
 #' \item{species}{Species ID code as a string}
 #' \item{WingID}{Wing ID code as a string}
 #' \item{TestID}{Test ID code as a string}
 #' \item{frameID}{Video frame ID code as a string}
+#' }
 #'
 #' @param dat_mass Dataframe containing the new MOI and CG data to add to mass_properties as new rows. Must include:
+#' \itemize{
 #' \item{I}{Moment of inertia tensor (kg-m^2)}
 #' \item{CG}{Center of gravity with three location components (m)}
+#' }
 #'
 #' @param mass_properties Dataframe containing any previously saved data.
 #' Must have the following columns: "species","WingID","TestID","FrameID","prop_type","component","value".
