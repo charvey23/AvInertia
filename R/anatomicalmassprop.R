@@ -273,8 +273,8 @@ massprop_pm <- function(m,pt){
 #' Calculate the moment of inertia of skin modeled as a flat triangular plate
 #'
 #' @param m_f Mass of the entire feather (kg)
-#' @param l_c Length of the calamus - start of vane to end of calamus(m)
-#' @param l_r_cor Length of rachis/vane - tip to start of vane (m)
+#' @param l_c Length of the calamus; start of vane to end of calamus(m)
+#' @param l_r_cor Length of rachis/vane; tip to start of vane (m)
 #' @param w_cal Width (diameter) of the cortex part of the calamus (m)
 #' @param r_b Radius of feather barbs (m)
 #' @param d_b Distance between barbs (m)

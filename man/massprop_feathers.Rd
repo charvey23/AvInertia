@@ -24,9 +24,9 @@ massprop_feathers(
 \arguments{
 \item{m_f}{Mass of the entire feather (kg)}
 
-\item{l_c}{Length of the calamus - start of vane to end of calamus(m)}
+\item{l_c}{Length of the calamus; start of vane to end of calamus(m)}
 
-\item{l_r_cor}{Length of rachis/vane - tip to start of vane (m)}
+\item{l_r_cor}{Length of rachis/vane; tip to start of vane (m)}
 
 \item{w_cal}{Width (diameter) of the cortex part of the calamus (m)}
 
