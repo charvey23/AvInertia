@@ -15,12 +15,14 @@
 #' @param r_out Outer radius of bone (m)
 #' @param r_in Inner radius of bone (m)
 #' @param rho Density of the bone (kg/m^3)
-#' @param start 3D point where bone starts. Frame of reference: VRP | Origin: VRP
-#' @param end 3D point where bone ends. Frame of reference: VRP | Origin: VRP
+#' @param start a 1x3 vector (x,y,z) representing the 3D point where bone starts. Frame of reference: VRP | Origin: VRP
+#' @param end a 1x3 vector (x,y,z) representing the 3D point where bone ends. Frame of reference: VRP | Origin: VRP
 #'
 #' @return This function returns a list that includes:
+#' \itemize{
 #' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a bone modeled as a hollow cylinder with two solid end caps}
 #' \item{CG}{a 1x3 vector representing the center of gravity position of a bone modeled as a hollow cylinder with two solid end caps}
+#' }
 #'
 #' @section Warning:
 #' Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
@@ -97,14 +99,16 @@ massprop_bones <- function(m,l,r_out,r_in,rho,start,end){
 #'
 #' @param m Mass of muscle (kg)
 #' @param rho Density of muscle (kg/m^3)
-#' @param start 3D point where bone starts. Frame of reference: VRP | Origin: VRP
-#' @param end 3D point where bone ends. Frame of reference: VRP | Origin: VRP
+#' @param start a 1x3 vector (x,y,z) representing the 3D point where bone starts. Frame of reference: VRP | Origin: VRP
+#' @param end a 1x3 vector (x,y,z) representing the 3D point where bone ends. Frame of reference: VRP | Origin: VRP
 #'
 #' @author Christina Harvey
 #'
 #' @return This function returns a list that includes:
+#' \itemize{
 #' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a muscle modeled as a solid cylinder distributed along the bone length}
 #' \item{CG}{a 1x3 vector representing the center of gravity position of a muscle modeled as a solid cylinder distributed along the bone length}
+#' }
 #'
 #' @section Warning:
 #' Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
@@ -155,23 +159,27 @@ massprop_muscles <- function(m,rho,start,end){
 #'
 #' @param m Mass of skin (kg)
 #' @param rho Density of skin (kg/m^3)
-#' @param pts Three points that define the vertices of the triangle. Frame of reference: VRP | Origin: VRP
+#' @param pts a 3x3 matrix that represent three points that define the vertices of the triangle. Frame of reference: VRP | Origin: VRP
 #' Must be numbered in a counterclockwise direction for positive area, otherwise signs will be reversed.
-#' each point should be a different row as follows:
+#' each point should be a different of the matrix as follows:
 #' \itemize{
 #' \item{pt1x, pt1y, pt1z}
 #' \item{pt2x, pt1y, pt2z}
 #' \item{pt3x, pt3y, pt3z}
 #' }
-#' For inner skin: Pt1 - Shoulder, Pt2 - Wrist, Pt3 - Elbow * ensures CCW ordering
-#' For outer skin: Pt1 - Wrist, Pt2 - Finger, Pt3 - Elbow * ensures CCW ordering
 #'
 #' @author Christina Harvey
 #'
 #' @return This function returns a list that includes:
 #' point mass
+#' \itemize{
 #' \item{I}{a 3x3 matrix representing the moment of inertia tensor of skin modeled as a flat triangular plate}
 #' \item{CG}{a 1x3 vector representing the center of gravity position of skin modeled as a flat triangular plate}
+#' }
+#'
+#' @section Suggested ordering:
+#' For inner skin: Pt1 - Shoulder, Pt2 - Wrist, Pt3 - Elbow * ensures CCW ordering
+#' For outer skin: Pt1 - Wrist, Pt2 - Finger, Pt3 - Elbow * ensures CCW ordering
 #'
 #' @section Warning:
 #' Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
@@ -227,13 +235,15 @@ massprop_skin <- function(m,rho,pts){
 #'
 #' @param m Mass of skin (kg)
 #' @param pt Density of skin (kg/m^3)
-#' @param pt The location of the point mass as c(pt1x, pt1y, pt1z). Frame of reference: VRP | Origin: VRP
+#' @param pt a 1x3 vector (x,y,z) representing the  location of the point mass. Frame of reference: VRP | Origin: VRP
 #'
 #' @author Christina Harvey
 #'
 #' @return This function returns a list that includes:
+#' \itemize{
 #' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a point mass}
 #' \item{CG}{a 1x3 vector representing the center of gravity position of a point mass}
+#' }
 #'
 #' @section Warning:
 #' Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
@@ -273,8 +283,8 @@ massprop_pm <- function(m,pt){
 #' @param w_vp Width of proximal (closest to body) vane (m)
 #' @param w_vd Width of distal (closest to wing tip) vane (m)
 #' @param angle Angle between calamus and the vane
-#' @param start 3D point where feather starts. (Frame of reference: VRP | Origin: VRP)
-#' @param end 3D point where feather ends (Frame of reference: VRP | Origin: VRP)
+#' @param start a 1x3 vector (x,y,z) representing the 3D point where feather starts. (Frame of reference: VRP | Origin: VRP)
+#' @param end a 1x3 vector (x,y,z) representing the 3D point where feather ends (Frame of reference: VRP | Origin: VRP)
 #' @param normal Vector that defines the normal to each feather plane. (Frame of reference: VRP | Origin: VRP)
 #' @author Christina Harvey
 #'
@@ -282,8 +292,10 @@ massprop_pm <- function(m,pt){
 #' Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
 #'
 #' @return This function returns a list that includes:
+#' \itemize{
 #' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a simplified feather}
 #' \item{CG}{a 1x3 vector representing the center of gravity position of a simplified feather}
+#' }
 #'
 #' @export
 
