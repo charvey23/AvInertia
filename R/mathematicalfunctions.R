@@ -1,6 +1,6 @@
 # Script containing all basic mathematical functions
 # all written by Christina Harvey
-# last updated: 2020-08-03
+# last updated: 2020-09-10
 
 # ---------------------- Kroneckerdelta function ---------------------------
 #' Kroneckerdelta function

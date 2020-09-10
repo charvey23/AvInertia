@@ -1,6 +1,6 @@
 # This script contains all applicable plotting functions
 
-plot_CGloc <- function(clean_pts,mass_properties,mass_properties_skin,mass_properties_bones,mass_properties_feathers,mass_properties_muscles){
+plot_CGloc <- function(clean_pts,mass_properties,mass_properties_skin,mass_properties_bone,mass_properties_feathers,mass_properties_muscle){
 
 
   #--- Predfine the main theme ----

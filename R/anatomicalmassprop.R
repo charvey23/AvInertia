@@ -1,6 +1,6 @@
 # Script containing the functions to calculate the moment of inertia and CG of different anatomical components
 # all written by Christina Harvey
-# last updated: 2020-08-11
+# last updated: 2020-09-10
 
 # ---------------------------------------------------------------------------------------
 ##### ------------------------ Mass properties of Bone ---------------------------- #####
