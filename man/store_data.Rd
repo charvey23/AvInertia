@@ -8,14 +8,18 @@ store_data(dat_wingID_curr, dat_mass, mass_properties, name)
 }
 \arguments{
 \item{dat_wingID_curr}{Dataframe related to the current bird wing ID info that must include the following columns:
+\itemize{
 \item{species}{Species ID code as a string}
 \item{WingID}{Wing ID code as a string}
 \item{TestID}{Test ID code as a string}
-\item{frameID}{Video frame ID code as a string}}
+\item{frameID}{Video frame ID code as a string}
+}}
 
 \item{dat_mass}{Dataframe containing the new MOI and CG data to add to mass_properties as new rows. Must include:
+\itemize{
 \item{I}{Moment of inertia tensor (kg-m^2)}
-\item{CG}{Center of gravity with three location components (m)}}
+\item{CG}{Center of gravity with three location components (m)}
+}}
 
 \item{mass_properties}{Dataframe containing any previously saved data.
 Must have the following columns: "species","WingID","TestID","FrameID","prop_type","component","value".}
