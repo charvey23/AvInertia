@@ -4,8 +4,8 @@ plot_CGloc <- function(clean_pts,mass_properties,mass_properties_skin,mass_prope
 
 
   #--- Predfine the main theme ----
-  th <- theme_classic() +
-    theme(
+  th <- ggplot2::theme_classic() +
+    ggplot2::theme(
       # Text
       axis.title = element_text(size = 10),
       axis.text = element_text(size = 10, colour = "black"),
@@ -23,7 +23,7 @@ plot_CGloc <- function(clean_pts,mass_properties,mass_properties_skin,mass_prope
       plot.background = element_rect(fill = "transparent", color = NA)
     )
 
-  CGplot <- ggplot() +
+  CGplot <- ggplot2::ggplot() +
     #add in data
     geom_point(aes(x=subset(mass_properties_skin, object == "CGy")$value, y=subset(mass_properties_skin, object == "CGx")$value), col = "#05B805") +
     geom_point(aes(x=subset(mass_properties_bone, object == "CGy")$value, y=subset(mass_properties_bone, object == "CGx")$value), col = "#BB0000") +

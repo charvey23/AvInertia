@@ -44,16 +44,18 @@ massprop_feathers(
 
 \item{angle}{Angle between calamus and the vane}
 
-\item{start}{3D point where feather starts. (Frame of reference: VRP | Origin: VRP)}
+\item{start}{a 1x3 vector (x,y,z) representing the 3D point where feather starts. (Frame of reference: VRP | Origin: VRP)}
 
-\item{end}{3D point where feather ends (Frame of reference: VRP | Origin: VRP)}
+\item{end}{a 1x3 vector (x,y,z) representing the 3D point where feather ends (Frame of reference: VRP | Origin: VRP)}
 
 \item{normal}{Vector that defines the normal to each feather plane. (Frame of reference: VRP | Origin: VRP)}
 }
 \value{
 This function returns a list that includes:
+\itemize{
 \item{I}{a 3x3 matrix representing the moment of inertia tensor of a simplified feather}
 \item{CG}{a 1x3 vector representing the center of gravity position of a simplified feather}
+}
 }
 \description{
 Calculate the moment of inertia of skin modeled as a flat triangular plate

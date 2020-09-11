@@ -11,14 +11,16 @@ massprop_muscles(m, rho, start, end)
 
 \item{rho}{Density of muscle (kg/m^3)}
 
-\item{start}{3D point where bone starts. Frame of reference: VRP | Origin: VRP}
+\item{start}{a 1x3 vector (x,y,z) representing the 3D point where bone starts. Frame of reference: VRP | Origin: VRP}
 
-\item{end}{3D point where bone ends. Frame of reference: VRP | Origin: VRP}
+\item{end}{a 1x3 vector (x,y,z) representing the 3D point where bone ends. Frame of reference: VRP | Origin: VRP}
 }
 \value{
 This function returns a list that includes:
+\itemize{
 \item{I}{a 3x3 matrix representing the moment of inertia tensor of a muscle modeled as a solid cylinder distributed along the bone length}
 \item{CG}{a 1x3 vector representing the center of gravity position of a muscle modeled as a solid cylinder distributed along the bone length}
+}
 }
 \description{
 Calculate the moment of inertia of a muscle modeled as a solid cylinder distributed along the bone length

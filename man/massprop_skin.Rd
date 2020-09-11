@@ -11,26 +11,32 @@ massprop_skin(m, rho, pts)
 
 \item{rho}{Density of skin (kg/m^3)}
 
-\item{pts}{Three points that define the vertices of the triangle. Frame of reference: VRP | Origin: VRP
+\item{pts}{a 3x3 matrix that represent three points that define the vertices of the triangle. Frame of reference: VRP | Origin: VRP
 Must be numbered in a counterclockwise direction for positive area, otherwise signs will be reversed.
-each point should be a different row as follows:
+each point should be a different of the matrix as follows:
 \itemize{
 \item{pt1x, pt1y, pt1z}
 \item{pt2x, pt1y, pt2z}
 \item{pt3x, pt3y, pt3z}
-}
-For inner skin: Pt1 - Shoulder, Pt2 - Wrist, Pt3 - Elbow * ensures CCW ordering
-For outer skin: Pt1 - Wrist, Pt2 - Finger, Pt3 - Elbow * ensures CCW ordering}
+}}
 }
 \value{
 This function returns a list that includes:
 point mass
+\itemize{
 \item{I}{a 3x3 matrix representing the moment of inertia tensor of skin modeled as a flat triangular plate}
 \item{CG}{a 1x3 vector representing the center of gravity position of skin modeled as a flat triangular plate}
+}
 }
 \description{
 Calculate the moment of inertia of skin modeled as a flat triangular plate
 }
+\section{Suggested ordering}{
+
+For inner skin: Pt1 - Shoulder, Pt2 - Wrist, Pt3 - Elbow * ensures CCW ordering
+For outer skin: Pt1 - Wrist, Pt2 - Finger, Pt3 - Elbow * ensures CCW ordering
+}
+
 \section{Warning}{
 
 Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
