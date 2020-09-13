@@ -1,0 +1,48 @@
+---
+title: "How to analyze data in birdmoment"
+author: "Christina Harvey"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{How to analyze data in birdmoment}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Hi Christina! This is a large header
+
+## This is a smaller header
+
+### Keep adding "#" in the Rmd file to continually decrease header size if you'd like
+
+You can write text as you'd like. Then to inject code, use "```" to enclose
+blocks of code and also use "{r}" to specify that is is R code. Like this:
+
+```{r setup}
+library(birdmoment)
+```
+
+These code "chunks" should have names. The one above is named "setup".
+
+Here's another example:
+
+```{r plot_some_stuff, fig.height=5, fig.width=5}
+plot(1:10)
+```
+
+In the above chunk, I named the chunk "plot_some_stuff" and specified the figure's
+height and width (in inches, I think?)
+
+Emojis work too: 🐢
+(But probably not in the code block!)
+
+Whenever you would like to see the output of this file, hit the "Knit" button
+above. It will "knit" an html file that will either show up in the "Viewer" pane
+inside RStudio or in your web browser (you can set this however you'd like)

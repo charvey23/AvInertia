@@ -18,3 +18,7 @@ Imports:
     pracma,
     readxl,
     ggplot2
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
