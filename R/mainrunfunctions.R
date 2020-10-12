@@ -1,6 +1,11 @@
-# Script containing the overarching function that calculates the moment of inertia and CG for an entire wing.
+# Script containing the overarching function that calculates the moment of inertia and CG for an entire bird
 # all written by Christina Harvey
-# last updated: 2020-08-11
+# last updated: 2020-10-13
+
+# -------------------- Mass Properties - Head  -------------------------------
+massprop_head <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat_curr, clean_pts){
+}
+
 
 # -------------------- Mass Properties - Halfspan bird wing  -------------------------------
 #' Halfspan bird wing mass properties

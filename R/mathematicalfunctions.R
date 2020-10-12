@@ -210,6 +210,33 @@ calc_inertia_cylhollow <- function(r_out, r_in, h, m){
   return(I)
 }
 
+# -------------------- Mass Properties - solid cone   -------------------------------
+#' Moment of inertia tensor of a solid cone pyramid
+#'
+#' All outputs are based on an origin at the centered point on the base
+#'
+#' @param r radius of the cone base (m)
+#' @param h height of the cone (m)
+#' @param m mass of the cone (kg)
+#'
+#' @author Christina Harvey
+#'
+#' @return a 3x3 matrix representing the moment of inertia tensor of a solid cone about
+#' its center of gravity with z oriented through it's major axis. Origin is NOT at the center of gravity but at the center of the base.
+#'
+#' @export
+#'
+calc_inertia_conesolid <- function(r, h, m){
+
+  I = matrix(0, nrow = 3, ncol = 3)
+  I[1,1] = ((1.5*r^2)+h^2) # Ixx
+  I[2,2] = ((1.5*r^2)+h^2) # Iyy
+  I[3,3] = 3*(r^2)         # Izz
+  I = (1/10)*m*I
+
+  return(I)
+}
+
 # -------------------- Mass Properties - solid square pyramid  -------------------------------
 #' Moment of inertia tensor of a solid square pyramid
 #'
@@ -221,7 +248,7 @@ calc_inertia_cylhollow <- function(r_out, r_in, h, m){
 #'
 #' @author Christina Harvey
 #'
-#' @return a 3x3 matrix representing the moment of inertia tensor of a solid square pyramid cylinder about
+#' @return a 3x3 matrix representing the moment of inertia tensor of a solid square pyramid about
 #' its center of gravity with z oriented through it's major axis. Origin is NOT at the center of gravity but at the center of the base.
 #'
 #' @export
