@@ -2,8 +2,38 @@
 # all written by Christina Harvey
 # last updated: 2020-10-13
 
-# -------------------- Mass Properties - Head  -------------------------------
-massprop_head <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat_curr, clean_pts){
+# -------------------- Mass Properties - Head and neck -------------------------------
+massprop_headneck <- function(dat_wingID_curr, dat_bird_curr){
+  # pre-define storage matrices
+  mass_properties = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
+  column_names = c("species","WingID","TestID","FrameID","prop_type","component","value")
+
+  neck_start = c(0,0,0)
+  neck_end   = c(-dat_bird_curr$neck_length,0,0)
+  head_end   = neck_start - c(dat_bird_curr$head_length,0,0)
+  # Calculate the effects of the head
+  head  = massprop_head(dat_bird_curr$head_mass,dat_bird_curr$head_base_radius,dat_bird_curr$head_length,neck_end,head_end)
+  # Calculate the effects of the neck
+  neck  = massprop_neck(dat_bird_curr$neck_mass,dat_bird_curr$neck_radius,dat_bird_curr$neck_length,neck_start,neck_end)
+
+
+  # add data to bone specific data frame
+  mass_properties = store_data(dat_wingID_curr,head,mass_properties,"head")
+  # save the final head mass used for the analysis
+  new_row = data.frame(species = dat_wingID_curr$species, WingID = as.character(dat_wingID_curr$WingID),
+                       TestID = as.character(dat_wingID_curr$TestID), FrameID = as.character(dat_wingID_curr$frameID),
+                       component = "head", object = "m", value = dat_bird_curr$head_mass) # saves the name and value of the tensor component
+
+  mass_properties = rbind(mass_properties,new_row)
+  mass_properties = store_data(dat_wingID_curr,neck,mass_properties,"neck")
+  # save the final neck mass used for the analysis
+  new_row = data.frame(species = dat_wingID_curr$species, WingID = as.character(dat_wingID_curr$WingID),
+                       TestID = as.character(dat_wingID_curr$TestID), FrameID = as.character(dat_wingID_curr$frameID),
+                       component = "neck", object = "m", value = dat_bird_curr$neck_mass) # saves the name and value of the tensor component
+
+  mass_properties = rbind(mass_properties,new_row)
+
+  return(mass_properties)
 }
 
 
@@ -283,16 +313,16 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
   mass_properties      = store_data(dat_wingID_curr,prop_feathers,mass_properties,"feathers")
 
   # save all wing data
-  prop_bird    = list()
-  prop_bird$I  = prop_bone$I + prop_muscles$I + prop_skin$I + prop_feathers$I
-  prop_bird$m  = prop_bone$m + prop_muscles$m + prop_skin$m + prop_feathers$m
-  prop_bird$CG = (prop_bone$CG*prop_bone$m + prop_muscles$CG*prop_muscles$m + prop_skin$CG*prop_skin$m + prop_feathers$CG*prop_feathers$m)/prop_bird$m
-  mass_properties  = store_data(dat_wingID_curr,prop_bird,mass_properties,"wing")
+  prop_wing    = list()
+  prop_wing$I  = prop_bone$I + prop_muscles$I + prop_skin$I + prop_feathers$I
+  prop_wing$m  = prop_bone$m + prop_muscles$m + prop_skin$m + prop_feathers$m
+  prop_wing$CG = (prop_bone$CG*prop_bone$m + prop_muscles$CG*prop_muscles$m + prop_skin$CG*prop_skin$m + prop_feathers$CG*prop_feathers$m)/prop_wing$m
+  mass_properties  = store_data(dat_wingID_curr,prop_wing,mass_properties,"wing")
 
   # save the final mass used for the analysis
   new_row = data.frame(species = dat_wingID_curr$species, WingID = as.character(dat_wingID_curr$WingID),
                        TestID = as.character(dat_wingID_curr$TestID), FrameID = as.character(dat_wingID_curr$frameID),
-                       component = "wing", object = "m", value = prop_bird$m) # saves the name and valueof the tensor component
+                       component = "wing", object = "m", value = prop_wing$m) # saves the name and value of the tensor component
 
   mass_properties = rbind(mass_properties,new_row)
 

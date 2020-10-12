@@ -89,6 +89,8 @@ massprop_bones <- function(m,l,r_out,r_in,rho,start,end){
   return(mass_prop)
 }
 
+
+
 # ---------------------------------------------------------------------------------------
 ##### ------------------------ Mass properties of Muscle -------------------------- #####
 # ---------------------------------------------------------------------------------------
@@ -450,3 +452,118 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   return(mass_prop)
 }
 
+
+# ---------------------------------------------------------------------------------------
+##### ------------------------ Mass properties of Neck -------------------------- #####
+# ---------------------------------------------------------------------------------------
+
+#' Neck mass properties
+#'
+#' Calculate the moment of inertia of a neck modeled as a solid cylinder
+#'
+#' @param m Mass of muscle (kg)
+#' @param rho Density of muscle (kg/m^3)
+#' @param start a 1x3 vector (x,y,z) representing the 3D point where neck starts. Frame of reference: VRP | Origin: VRP
+#' @param end a 1x3 vector (x,y,z) representing the 3D point where neck ends. Frame of reference: VRP | Origin: VRP
+#'
+#' @author Christina Harvey
+#'
+#' @return This function returns a list that includes:
+#' \itemize{
+#' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a neck modeled as a solid cylinder}
+#' \item{CG}{a 1x3 vector representing the center of gravity position of a neck modeled as a solid cylinder}
+#' }
+#'
+#' @section Warning:
+#' Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
+#'
+#' @export
+
+massprop_neck <- function(m,r,l,start,end){
+
+  # ------------------------------- Adjust axis -------------------------------------
+  z_axis = end-start
+  temp_vec = c(1,1,1) # arbitrary vector as long as it's not the z-axis
+  x_axis = pracma::cross(z_axis,temp_vec/norm(temp_vec, type = "2"))
+  # doesn't matter where the x axis points as long as:1. we know what it is 2. it's orthogonal to z
+  # calculate the rotation matrix between VRP frame of reference and the object
+  VRP2object = calc_rot(z_axis,x_axis)
+
+  # -------------------------- Moment of inertia --------------------------------
+
+  I_n = calc_inertia_cylsolid(r, l, m)                    # Frame of reference: Neck | Origin: Neck CG
+
+  # want to move origin from CG to VRP but need to know where the bone is relative to the VRP origin
+  off = VRP2object %*% start                               # Frame of reference: Neck | Origin: VRP
+
+  # determine the offset vector for each component
+  I_n_off  = c(0,0,0.5*l)+ off                             # Frame of reference: Neck | Origin: VRP
+
+  # need to adjust the moment of inertia tensor
+  I_n_vrp   = parallelaxis(I_n,-I_n_off,m,"CG")            # Frame of reference: Neck | Origin: VRP
+
+  mass_prop = list() # pre-define
+  # Adjust frame to VRP axes
+  mass_prop$I  = t(VRP2object) %*% I_n_vrp %*% VRP2object  # Frame of reference: VRP | Origin: VRP
+  mass_prop$CG = 0.5*(start + end)                         # Frame of reference: VRP | Origin: VRP
+
+  return(mass_prop)
+}
+
+
+# ---------------------------------------------------------------------------------------
+##### ------------------------ Mass properties of Head -------------------------- #####
+# ---------------------------------------------------------------------------------------
+
+#' Head mass properties
+#'
+#' Calculate the moment of inertia of a head modeled as a solid cone
+#'
+#' @param m Mass of muscle (kg)
+#' @param rho Density of muscle (kg/m^3)
+#' @param start a 1x3 vector (x,y,z) representing the 3D point where head starts. Frame of reference: VRP | Origin: VRP
+#' @param end a 1x3 vector (x,y,z) representing the 3D point where head ends. Frame of reference: VRP | Origin: VRP
+#'
+#' @author Christina Harvey
+#'
+#' @return This function returns a list that includes:
+#' \itemize{
+#' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a head modeled as a solid cone}
+#' \item{CG}{a 1x3 vector representing the center of gravity position of a head modeled as a solid cone}
+#' }
+#'
+#' @section Warning:
+#' Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
+#'
+#' @export
+
+massprop_head <- function(m,r,l,start,end){
+
+  # ------------------------------- Adjust axis -------------------------------------
+  z_axis = end-start
+  temp_vec = c(1,1,1) # arbitrary vector as long as it's not the z-axis
+  x_axis = pracma::cross(z_axis,temp_vec/norm(temp_vec, type = "2"))
+  # doesn't matter where the x axis points as long as:1. we know what it is 2. it's orthogonal to z
+  # calculate the rotation matrix between VRP frame of reference and the object
+  VRP2object = calc_rot(z_axis,x_axis)
+
+  # -------------------------- Moment of inertia --------------------------------
+
+  I_h = calc_inertia_conesolid(r, l, m)                    # Frame of reference: Head | Origin: Head CG
+
+  # want to move origin from CG to VRP but need to know where the bone is relative to the VRP origin
+  off = VRP2object %*% start                               # Frame of reference: Head | Origin: VRP
+
+  # determine the offset vector for each component
+  I_h_off  = c(0,0,0.25*l)+ off                             # Frame of reference: Head | Origin: VRP
+
+  # need to adjust the moment of inertia tensor
+  I_h_vrp   = parallelaxis(I_h,-I_h_off,m,"CG")            # Frame of reference: Head | Origin: VRP
+
+  mass_prop = list() # pre-define
+  # Adjust frame to VRP axes
+  mass_prop$I  = t(VRP2object) %*% I_h_vrp %*% VRP2object  # Frame of reference: VRP | Origin: VRP
+  mass_prop$CG = 0.5*(start + end)                         # Frame of reference: VRP | Origin: VRP
+
+  return(mass_prop)
+}
