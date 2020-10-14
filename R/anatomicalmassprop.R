@@ -595,7 +595,18 @@ massprop_head <- function(m,r,l,start,end){
 #'
 #' @export
 
-massprop_torsotail <- function(m, w_max, h_max, l_bmax, w_leg, l_leg, l_tot, CG_true, m_true, start, end){
+massprop_torsotail <- function(m_true, w_max, h_max, l_bmax, w_leg, l_leg, l_tot, CG_true, start, end){
+  w_max  = 0.118
+  h_max  = 0.09
+  l_bmax = 0.088
+  w_leg  = 0.098
+  l_leg  = 0.138
+  l_tot  = 0.301
+  CG_true = 0.109
+  m_true  = 0.87778
+  m_legs  = 0.5*(0.05355+0.0552)
+  end     = c(l_tot,0,0)
+  start   = c(0,0,0)
 
   # ------------------------------- Adjust axis -------------------------------------
   z_axis = end-start
@@ -606,28 +617,22 @@ massprop_torsotail <- function(m, w_max, h_max, l_bmax, w_leg, l_leg, l_tot, CG_
   VRP2object = calc_rot(z_axis,x_axis)
 
   # -------------------------- Moment of inertia --------------------------------
-
-  # need to determine the correct density difference between the front and the back
-
-  x0 = as.matrix(c(800,800,800))
-  w_max  = 0.118
-  h_max  = 0.09
-  l_bmax = 0.088
-  w_leg  = 0.098
-  l_leg  = 0.138
-  l_tot  = 0.301
-  CG_true = 0.109
-  m_true  = 0.87778
-
   # pre-define info about the partial elliptic cone
   h_leg  = w_leg*h_max/w_max
   l_par  = (l_leg-l_bmax)
   l_full = l_par/(1-(w_leg/w_max))
   l_end  = l_tot - l_leg
 
+  # --------------- Legs - point mass -------------------------
+  CG_leg_right = c(0,-0.5*w_leg, l_leg)                 # Frame of reference: Torso | Origin: VRP
+  CG_leg_left  = c(0, 0.5*w_leg, l_leg)                 # Frame of reference: Torso | Origin: VRP
+  leg_right = massprop_pm(0.5*m_legs, CG_leg_right)     # Frame of reference: Torso | Origin: VRP
+  leg_left  = massprop_pm(0.5*m_legs, CG_leg_left)      # Frame of reference: Torso | Origin: VRP
+
+  # ----------- Estimate the density in each section of the body -----------------
   # initial guess for the densities - in the order: emiellipsoid, Partial cone, end cone
-  x0        = as.matrix(c(800,800,800))
-  densities = lsqnonlin(density_optimizer, x0, options=list(tolx=1e-12, tolg=1e-12), w_max, h_max, l_bmax, w_leg, h_leg, l_leg, l_full, l_par, l_end, CG_true, m_true)
+  x0        = as.matrix(c(2000,2000,2000))
+  densities = pracma::lsqnonlin(density_optimizer, x0, options=list(tolx=1e-12, tolg=1e-12), w_max, h_max, l_bmax, w_leg, h_leg, l_leg, m_legs, l_full, l_par, l_end, CG_true, m_true)
   rho_ell   = abs(densities$x[1])
   rho_par   = abs(densities$x[2])
   rho_back  = abs(densities$x[3])
@@ -689,8 +694,8 @@ massprop_torsotail <- function(m, w_max, h_max, l_bmax, w_leg, l_leg, l_tot, CG_
   I_end_vrp = parallelaxis(I_endCG,-CG_end2,m_end,"CG")                    # Frame of reference: Torso | Origin: VRP
 
   # -------------- Sum data and adjust axes -------------------
-  I_torso_vrp  = I_ell_vrp + I_par_vrp + I_end_vrp
-  CG_torso_vrp = (1/m_true)*(m_ell*CG_ell2 + m_par*CG_par2 + m_end*CG_end2)
+  I_torso_vrp  = I_ell_vrp + I_par_vrp + I_end_vrp + leg_right$I + leg_left$I
+  CG_torso_vrp = (1/m_true)*(m_ell*CG_ell2 + m_par*CG_par2 + m_end*CG_end2 + 0.5*m_legs*CG_leg_left + 0.5*m_legs*CG_leg_right)
 
   mass_prop = list() # pre-define
   # Adjust frame to VRP axes
@@ -701,7 +706,8 @@ massprop_torsotail <- function(m, w_max, h_max, l_bmax, w_leg, l_leg, l_tot, CG_
 }
 
 
-density_optimizer <- function(x, w_max, h_max, l_bmax, w_leg, h_leg, l_leg, l_full, l_par, l_end, CG_true, m_true){
+density_optimizer <- function(x, w_max, h_max, l_bmax, w_leg, h_leg, l_leg, m_legs, l_full, l_par, l_end, CG_true, m_true){
+
   # NOTE: all CG locations only include the position only the length of the body as the z and y axes are symmetrical
   rho_ell  = abs(x[1])
   rho_par  = abs(x[2])
@@ -724,10 +730,12 @@ density_optimizer <- function(x, w_max, h_max, l_bmax, w_leg, h_leg, l_leg, l_fu
   m_end   = (1/12)*pi*rho_back*w_leg*h_leg*l_end
   CG_end  = l_leg+0.25*l_end                              # Frame of reference: Torso | Origin: VRP
 
-  m_pred  = m_ell+m_par+m_end
-  CG_pred = (1/m_true)*(m_ell*CG_ell + m_par*CG_par + m_end*CG_end) # Frame of reference: Torso | Origin: VRP
-  #also try to minimize the difference between each variable
-  err_mean = (abs(rho_par-rho_ell) + abs(rho_back-rho_ell) + abs(rho_par-rho_back))/mean(c(x[1],x[2]))
+  # compute the error between predicted mass and CG and the true values
+  m_pred  = m_ell+m_par+m_end+m_legs
+  CG_pred = (1/m_true)*(m_ell*CG_ell + m_par*CG_par + m_end*CG_end + m_legs*l_leg) # Frame of reference: Torso | Origin: VRP
+  rho_front = mean(c(rho_par,rho_ell))
+  err_mean = (abs(rho_par-rho_front) + abs(rho_ell-rho_front))/rho_front
+
   # calculates the summation of the absolute total error of the mass and the CG - need to minimize both
   tot_err = abs(m_pred-m_true)/m_true + abs(CG_pred-CG_true)/CG_true + 0.05*err_mean
 

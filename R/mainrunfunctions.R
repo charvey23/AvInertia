@@ -3,7 +3,7 @@
 # last updated: 2020-10-13
 
 # -------------------- Mass Properties - Head and neck -------------------------------
-massprop_headneck <- function(dat_wingID_curr, dat_bird_curr){
+massprop_restbody <- function(dat_wingID_curr, dat_bird_curr){
   # --------------------- Initialize variables -----------------------
   # pre-define storage matrices
   mass_properties = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
@@ -20,6 +20,14 @@ massprop_headneck <- function(dat_wingID_curr, dat_bird_curr){
   head  = massprop_head(dat_bird_curr$head_mass,dat_bird_curr$head_base_radius,dat_bird_curr$head_length,neck_end,head_end)
   # Calculate the effects of the neck
   neck  = massprop_neck(dat_bird_curr$neck_mass,dat_bird_curr$neck_radius,dat_bird_curr$neck_length,neck_start,neck_end)
+
+  # -------------------------------------------------------------
+  # ------------------- Torso/tail data -------------------------
+  # -------------------------------------------------------------
+  tail_end = c(0,0,dat_bird_curr$torsotail_length_m)
+  torsotail  = massprop_torsotail(dat_bird_curr$head_torsotail_mass_kg, dat_bird_curr$body_width_max_m, dat_bird_curr$body_height_max_m,
+                                  dat_bird_curr$torsotail_length_m, dat_bird_curr$body_width_at_leg_insert_m, dat_bird_curr$x_loc_leg_insertion_m,
+                                  dat_bird_curr$x_loc_of_body_max_m, CG_true, neck_start, end)
 
   # ----------------------------------------------------
   # ----------------- Save Data ------------------------
