@@ -4,9 +4,14 @@
 
 # -------------------- Mass Properties - Head and neck -------------------------------
 massprop_headneck <- function(dat_wingID_curr, dat_bird_curr){
+  # --------------------- Initialize variables -----------------------
   # pre-define storage matrices
   mass_properties = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
   column_names = c("species","WingID","TestID","FrameID","prop_type","component","value")
+
+  # -------------------------------------------------------------
+  # ----------------- Head and neck data ------------------------
+  # -------------------------------------------------------------
 
   neck_start = c(0,0,0)
   neck_end   = c(-dat_bird_curr$neck_length,0,0)
@@ -16,6 +21,9 @@ massprop_headneck <- function(dat_wingID_curr, dat_bird_curr){
   # Calculate the effects of the neck
   neck  = massprop_neck(dat_bird_curr$neck_mass,dat_bird_curr$neck_radius,dat_bird_curr$neck_length,neck_start,neck_end)
 
+  # ----------------------------------------------------
+  # ----------------- Save Data ------------------------
+  # ----------------------------------------------------
 
   # add data to bone specific data frame
   mass_properties = store_data(dat_wingID_curr,head,mass_properties,"head")
@@ -383,6 +391,49 @@ store_data <- function(dat_wingID_curr,dat_mass,mass_properties,name){
                          object = prop_type_list[6+i], value = dat_mass$CG[i]) # saves the name and value of the CG component
     mass_properties = rbind(mass_properties,new_row)
   }
+
+  return(mass_properties)
+}
+
+
+# -------------------- Mass Properties - Torso and tail -------------------------------
+
+massprop_torsotail <- function(dat_wingID_curr, dat_bird_curr){
+  # pre-define storage matrices
+  mass_properties = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
+  column_names = c("species","WingID","TestID","FrameID","prop_type","component","value")
+
+  torso_start  = c(0,0,0)
+  tail_end     = c(dat_bird_curr$torsotail_length_m,0,0)
+  leg_position_left  = c(dat_bird_curr$x_loc_leg_insertion_m,dat_bird_curr$body_width_at_leg_insert_m,0)
+  leg_position_right = c(dat_bird_curr$x_loc_leg_insertion_m,-dat_bird_curr$body_width_at_leg_insert_m,0)
+
+  # Calculate the effects of the legs - modelled as a point mass
+  leg_left = massprop_pm(dat_bird_curr$left_leg_mass_kg, leg_position_left)
+  leg_left = massprop_pm(dat_bird_curr$right_leg_mass_kg, leg_position_right)
+
+  # Calculate the effects of the torso tail
+  torsotail  = massprop_torsotail(dat_bird_curr$neck_mass,dat_bird_curr$neck_radius,dat_bird_curr$torsotail_length_m,torso_start,tail_end)
+
+  # ----------------------------------------------------
+  # ----------------- Save Data ------------------------
+  # ----------------------------------------------------
+
+  # add data to bone specific data frame
+  mass_properties = store_data(dat_wingID_curr,head,mass_properties,"head")
+  # save the final head mass used for the analysis
+  new_row = data.frame(species = dat_wingID_curr$species, WingID = as.character(dat_wingID_curr$WingID),
+                       TestID = as.character(dat_wingID_curr$TestID), FrameID = as.character(dat_wingID_curr$frameID),
+                       component = "head", object = "m", value = dat_bird_curr$head_mass) # saves the name and value of the tensor component
+
+  mass_properties = rbind(mass_properties,new_row)
+  mass_properties = store_data(dat_wingID_curr,neck,mass_properties,"neck")
+  # save the final neck mass used for the analysis
+  new_row = data.frame(species = dat_wingID_curr$species, WingID = as.character(dat_wingID_curr$WingID),
+                       TestID = as.character(dat_wingID_curr$TestID), FrameID = as.character(dat_wingID_curr$frameID),
+                       component = "neck", object = "m", value = dat_bird_curr$neck_mass) # saves the name and value of the tensor component
+
+  mass_properties = rbind(mass_properties,new_row)
 
   return(mass_properties)
 }

@@ -210,8 +210,38 @@ calc_inertia_cylhollow <- function(r_out, r_in, h, m){
   return(I)
 }
 
-# -------------------- Mass Properties - solid cone   -------------------------------
-#' Moment of inertia tensor of a solid cone pyramid
+
+# -------------------- Mass Properties - solid ellipse   -------------------------------
+#' Moment of inertia tensor of solid ellipse CG or a half ellipse centered on the base
+#'
+#' All outputs are based on an origin at the centered point on the base
+#'
+#' @param a half the height along the x direction (m)
+#' @param b half the width along the y direction  (m)
+#' @param c half the length along the z direction (m)
+#' @param m mass of the ellipse (kg)
+#'
+#' @author Christina Harvey
+#'
+#' @return a 3x3 matrix representing the moment of inertia tensor of a solid ellipse about
+#' its center of gravity with the major axes aligned. Origin is at the center of gravity for
+#' a full ellipse or at the center of the base if modelling a half ellipse.
+#'
+#' @export
+#'
+calc_inertia_ellipse <- function(a, b, c, m){
+
+  I = matrix(0, nrow = 3, ncol = 3)
+  I[1,1] = (b^2 + c^2) # Ixx
+  I[2,2] = (a^2 + c^2) # Iyy
+  I[3,3] = (a^2 + b^2) # Izz
+  I = (1/5)*m*I
+
+  return(I)
+}
+
+# -------------------- Mass Properties - solid circular cone   -------------------------------
+#' Moment of inertia tensor of a solid circular cone pyramid
 #'
 #' All outputs are based on an origin at the centered point on the base
 #'
@@ -221,7 +251,7 @@ calc_inertia_cylhollow <- function(r_out, r_in, h, m){
 #'
 #' @author Christina Harvey
 #'
-#' @return a 3x3 matrix representing the moment of inertia tensor of a solid cone about
+#' @return a 3x3 matrix representing the moment of inertia tensor of a solid circular cone about
 #' its center of gravity with z oriented through it's major axis. Origin is NOT at the center of gravity but at the center of the base.
 #'
 #' @export
@@ -236,6 +266,36 @@ calc_inertia_conesolid <- function(r, h, m){
 
   return(I)
 }
+
+# -------------------- Mass Properties - partial solid elliptical cone  -------------------------------
+#' Moment of inertia tensor of a partial solid elliptical cone
+#'
+#' @param w   full width of the wide base (m)
+#' @param h   full width of the wide base (m)
+#' @param lp  length of the partial cone (m)
+#' @param lf  length of the full cone as if it had not been cut (m)
+#' @param rho density of the partial cone (kg/m^3)
+#'
+#' @author Christina Harvey
+#'
+#' @return a 3x3 matrix representing the moment of inertia tensor of a partial solid elliptical cone about
+#' the center of the wider base with z oriented towards the end
+#'
+#' @export
+#'
+calc_inertia_ellcone <- function(w, h, lp, lf, rho){
+
+  I = matrix(0, nrow = 3, ncol = 3)
+  tmpxy = (((lp-lf)^5/lf^4)+lf)
+  tmpz  = (lp^3/(3*lf^2))*((6*lp^2)-(15*lp*lf)+(10*lf^2))
+  I[1,1] = rho*w*h*pi*(tmpxy*(w^2/8) + tmpz) # Ixx
+  I[2,2] = rho*w*h*pi*(tmpxy*(h^2/8) + tmpz) # Iyy
+  I[3,3] = (1/8)*rho*w*h*pi*tmpxy*(w^2+h^2)  # Izz
+  I = (1/40)*I
+
+  return(I)
+}
+
 
 # -------------------- Mass Properties - solid square pyramid  -------------------------------
 #' Moment of inertia tensor of a solid square pyramid
