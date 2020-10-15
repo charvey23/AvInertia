@@ -604,7 +604,7 @@ massprop_torsotail <- function(m_true, w_max, h_max, l_bmax, w_leg, l_leg, l_tot
   l_tot  = 0.301
   CG_true = 0.109
   m_true  = 0.87778
-  m_legs  = 0.5*(0.05355+0.0552)
+  m_legs  = 0.05355+0.0552
   end     = c(l_tot,0,0)
   start   = c(0,0,0)
 
@@ -629,17 +629,36 @@ massprop_torsotail <- function(m_true, w_max, h_max, l_bmax, w_leg, l_leg, l_tot
   leg_right = massprop_pm(0.5*m_legs, CG_leg_right)     # Frame of reference: Torso | Origin: VRP
   leg_left  = massprop_pm(0.5*m_legs, CG_leg_left)      # Frame of reference: Torso | Origin: VRP
 
+  # -------------- Calculate the body volume to have an estimate for the density --------------
+  # volume of the hemiellipsoid
+  v_ell = (1/6)*(pi*w_max*h_max*l_bmax)
+
+  # volume as if the interior cone went to full length
+  v_full = (1/12)*(pi*w_max*h_max*l_full)
+  # volume of the ghost part of the cone
+  v_cut  = (1/12)*(pi*w_leg*h_leg*(l_full-l_par))
+  # volume of the partial cone
+  v_par  = v_full - v_cut
+
+  # volume of the full end cone
+  v_end  = (1/12)*(pi*w_leg*h_leg*l_end)
+
+  v_body  = v_ell + v_par + v_end
+  rho_avg = (m_true-m_legs)/v_body
+
   # ----------- Estimate the density in each section of the body -----------------
   # initial guess for the densities - in the order: emiellipsoid, Partial cone, end cone
-  x0        = as.matrix(c(2000,2000,2000))
-  densities = pracma::lsqnonlin(density_optimizer, x0, options=list(tolx=1e-12, tolg=1e-12), w_max, h_max, l_bmax, w_leg, h_leg, l_leg, m_legs, l_full, l_par, l_end, CG_true, m_true)
+  x0        = as.matrix(c(rho_avg,rho_avg,rho_avg))
+  # solve the non-linear equations
+  densities = pracma::lsqnonlin(density_optimizer, x0, options=list(tolx=1e-12, tolg=1e-12),  v_ell, v_par, v_full, v_cut, v_end, m_legs, l_bmax, l_leg, l_full, l_par, l_end, CG_true, m_true)
+  # save the results
   rho_ell   = abs(densities$x[1])
   rho_par   = abs(densities$x[2])
   rho_back  = abs(densities$x[3])
 
   # -------------- Hemiellipsoid -------------------
-  # Determine the mass of the front
-  m_ell   = (1/6)*(pi*rho_ell*w_max*h_max*l_bmax)
+  # mass of the front
+  m_ell   = rho_ell*v_ell
 
   # MOI about the base
   I_ell1  = calc_inertia_ellipse(h_max/2, w_max/2, l_bmax, m_ell)   # Frame of reference: Torso | Origin: Hemiellipsoid base
@@ -654,19 +673,15 @@ massprop_torsotail <- function(m_true, w_max, h_max, l_bmax, w_leg, l_leg, l_tot
   I_ell_vrp = parallelaxis(I_ellCG,-CG_ell2,m_ell,"CG")             # Frame of reference: Torso | Origin: VRP
 
   # -------------- Partial elliptic cone -------------------
-  # mass as if the interior cone went to full length
-  m_full = (1/12)*(pi*rho_par*w_max*h_max*l_full)
-  # mass of the ghost part of the cone
-  m_cut  = (1/12)*(pi*rho_par*w_leg*h_leg*(l_full-l_par))
   # mass of the partial cone
-  m_par  = m_full - m_cut
+  m_par  = rho_par*v_par
 
   # CG as if the interior cone went to full length
   CG_full = c(0,0,0.25*l_full)                                      # Frame of reference: Torso | Origin: Hemiellipsoid base
   # CG of the ghost part of the cone
   CG_cut  = c(0,0,l_par+0.25*(l_full-l_par))                        # Frame of reference: Torso | Origin: Hemiellipsoid base
   # CG of the partial cone
-  CG_par1 = (1/m_par)*(m_full*CG_full - m_cut*CG_cut)               # Frame of reference: Torso | Origin: Hemiellipsoid base
+  CG_par1 = (1/v_par)*(v_full*CG_full - v_cut*CG_cut)               # Frame of reference: Torso | Origin: Hemiellipsoid base
 
   # MOI of the partial cone about the wide base
   I_par1  = calc_inertia_ellcone(w_max, h_max, l_par, l_full, rho_par)  # Frame of reference: Torso | Origin: Hemiellipsoid base
@@ -679,7 +694,7 @@ massprop_torsotail <- function(m_true, w_max, h_max, l_bmax, w_leg, l_leg, l_tot
 
   # -------------- Full elliptic cone -------------------
   # mass of the end cone
-  m_end  = (1/12)*(pi*rho_back*w_leg*h_leg*l_end)
+  m_end  = rho_back*v_end
 
   # CG of the end cone
   CG_end1 = c(0,0,0.25*l_end)                                              # Frame of reference: Torso | Origin: Base of the end cone
@@ -706,7 +721,7 @@ massprop_torsotail <- function(m_true, w_max, h_max, l_bmax, w_leg, l_leg, l_tot
 }
 
 
-density_optimizer <- function(x, w_max, h_max, l_bmax, w_leg, h_leg, l_leg, m_legs, l_full, l_par, l_end, CG_true, m_true){
+density_optimizer <- function(x, v_ell, v_par, v_full, v_cut, v_end, m_legs, l_bmax, l_leg, l_full, l_par, l_end, CG_true, m_true){
 
   # NOTE: all CG locations only include the position only the length of the body as the z and y axes are symmetrical
   rho_ell  = abs(x[1])
@@ -714,24 +729,22 @@ density_optimizer <- function(x, w_max, h_max, l_bmax, w_leg, h_leg, l_leg, m_le
   rho_back = abs(x[3])
 
   # hemiellipsoid
-  m_ell  = (1/6)*(pi*rho_ell*w_max*h_max*l_bmax)
+  m_ell  = rho_ell*v_ell
   CG_ell = (5/8)*l_bmax                                   # Frame of reference: Torso | Origin: VRP
 
   # partial elliptic cone
-  m_full = (1/12)*(pi*rho_par*w_max*h_max*l_full) # mass as if the interior cone went to full length
-  m_cut  = (1/12)*(pi*rho_par*w_leg*h_leg*(l_full-l_par))
-  m_par  = m_full - m_cut # mass of the partial cone
+  m_par  = rho_par*v_par
 
   CG_full = l_bmax+0.25*l_full
   CG_cut  = l_bmax+l_par+0.25*(l_full-l_par)
-  CG_par  = (1/m_par)*(m_full*CG_full - m_cut*CG_cut)     # Frame of reference: Torso | Origin: VRP
+  CG_par  = (1/v_par)*(v_full*CG_full - v_cut*CG_cut)     # Frame of reference: Torso | Origin: VRP
 
   # end elliptic cone
-  m_end   = (1/12)*pi*rho_back*w_leg*h_leg*l_end
+  m_end   = rho_back*v_end
   CG_end  = l_leg+0.25*l_end                              # Frame of reference: Torso | Origin: VRP
 
   # compute the error between predicted mass and CG and the true values
-  m_pred  = m_ell+m_par+m_end+m_legs
+  m_pred  = m_ell + m_par + m_end + m_legs
   CG_pred = (1/m_true)*(m_ell*CG_ell + m_par*CG_par + m_end*CG_end + m_legs*l_leg) # Frame of reference: Torso | Origin: VRP
   rho_front = mean(c(rho_par,rho_ell))
   err_mean = (abs(rho_par-rho_front) + abs(rho_ell-rho_front))/rho_front
