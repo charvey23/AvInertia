@@ -12,7 +12,6 @@ massprop_restbody <- function(dat_wingID_curr, dat_bird_curr){
   # -------------------------------------------------------------
   # ----------------- Head and neck data ------------------------
   # -------------------------------------------------------------
-
   neck_start = c(0,0,0)
   neck_end   = c(-dat_bird_curr$neck_length,0,0)
   head_end   = neck_start - c(dat_bird_curr$head_length,0,0)
@@ -26,8 +25,9 @@ massprop_restbody <- function(dat_wingID_curr, dat_bird_curr){
   # -------------------------------------------------------------
   tail_end = c(0,0,dat_bird_curr$torsotail_length_m)
   torsotail  = massprop_torsotail(dat_bird_curr$head_torsotail_mass_kg, dat_bird_curr$body_width_max_m, dat_bird_curr$body_height_max_m,
-                                  dat_bird_curr$torsotail_length_m, dat_bird_curr$body_width_at_leg_insert_m, dat_bird_curr$x_loc_leg_insertion_m,
-                                  dat_bird_curr$x_loc_of_body_max_m, CG_true, neck_start, end)
+                                  dat_bird_curr$x_loc_of_body_max_m, dat_bird_curr$body_width_at_leg_insert_m, dat_bird_curr$x_loc_leg_insertion_m,
+                                  dat_bird_curr$torsotail_length_m, dat_bird_curr$x_loc_TorsotailCoG_m, dat_bird_curr$z_loc_TorsotailCoG_m,
+                                  neck_start, tail_end)
 
   # ----------------------------------------------------
   # ----------------- Save Data ------------------------

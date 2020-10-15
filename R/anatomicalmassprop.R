@@ -584,7 +584,8 @@ massprop_head <- function(m,r,l,start,end){
 #' @param w_leg width of the body at leg insertion (m)
 #' @param l_leg x location of the leg insertion point (m)
 #' @param l_tot length of body from clavicle to end of the tail (m)
-#' @param CG_true x location of the CG for the torso, tail and legs (m)
+#' @param CG_true_x x location of the CG for the torso, tail and legs, origin is at the VRP  (m)
+#' @param CG_true_z z location of the CG for the torso, tail and legs, origin is at the VRP (m)
 #' @param start a 1x3 vector (x,y,z) representing the 3D point where torso starts. Frame of reference: VRP | Origin: VRP
 #' @param end a 1x3 vector (x,y,z) representing the 3D point where tail ends. Frame of reference: VRP | Origin: VRP
 #'
@@ -601,7 +602,8 @@ massprop_head <- function(m,r,l,start,end){
 #'
 #' @export
 
-massprop_torsotail <- function(m_true, w_max, h_max, l_bmax, w_leg, l_leg, l_tot, CG_true, start, end){
+massprop_torsotail <- function(m_true, w_max, h_max, l_bmax, w_leg, l_leg, l_tot, CG_true_x, CG_true_z, start, end){
+
   # ------------------------------- Adjust axis -------------------------------------
   z_axis = end-start
   temp_vec = c(0,1,0) # arbitrary vector as long as it's not the z-axis
@@ -618,8 +620,8 @@ massprop_torsotail <- function(m_true, w_max, h_max, l_bmax, w_leg, l_leg, l_tot
   l_end  = l_tot - l_leg
 
   # --------------- Legs - point mass -------------------------
-  CG_leg_right = c(0,-0.5*w_leg, l_leg)                 # Frame of reference: Torso | Origin: VRP
-  CG_leg_left  = c(0, 0.5*w_leg, l_leg)                 # Frame of reference: Torso | Origin: VRP
+  CG_leg_right = c(CG_true_z,-0.5*w_leg, l_leg)         # Frame of reference: Torso | Origin: VRP
+  CG_leg_left  = c(CG_true_z, 0.5*w_leg, l_leg)         # Frame of reference: Torso | Origin: VRP
   leg_right = massprop_pm(0.5*m_legs, CG_leg_right)     # Frame of reference: Torso | Origin: VRP
   leg_left  = massprop_pm(0.5*m_legs, CG_leg_left)      # Frame of reference: Torso | Origin: VRP
 
@@ -644,7 +646,7 @@ massprop_torsotail <- function(m_true, w_max, h_max, l_bmax, w_leg, l_leg, l_tot
   # initial guess for the densities - in the order: emiellipsoid, Partial cone, end cone
   x0        = as.matrix(c(rho_avg,rho_avg,rho_avg))
   # solve the non-linear equations
-  densities = pracma::lsqnonlin(density_optimizer, x0, options=list(tolx=1e-12, tolg=1e-12),  v_ell, v_par, v_full, v_cut, v_end, m_legs, l_bmax, l_leg, l_full, l_par, l_end, CG_true, m_true)
+  densities = pracma::lsqnonlin(density_optimizer, x0, options=list(tolx=1e-12, tolg=1e-12),  v_ell, v_par, v_full, v_cut, v_end, m_legs, l_bmax, l_leg, l_full, l_par, l_end, CG_true_x, m_true)
   # save the results
   rho_ell   = abs(densities$x[1])
   rho_par   = abs(densities$x[2])
@@ -662,7 +664,8 @@ massprop_torsotail <- function(m_true, w_max, h_max, l_bmax, w_leg, l_leg, l_tot
   # Adjust the moment of inertia to be about the center of gravity of the hemiellipsoid
   I_ellCG = parallelaxis(I_ell1,CG_ell1,m_ell,"A")                  # Frame of reference: Torso | Origin: Hemiellipsoid CG
   # Define center of gravity wrt to VRP origin
-  CG_ell2 = c(0,0,(5/8)*l_bmax)                                     # Frame of reference: Torso | Origin: VRP
+  # NOTE: we need to offset the body from the x axis to ensure that the VRP z-location of the CG is correct in the Torso frame of ref this is the positive x direction
+  CG_ell2 = c(CG_true_z,0,(5/8)*l_bmax)                             # Frame of reference: Torso | Origin: VRP
   # Adjust the MOI to be about the VRP
   I_ell_vrp = parallelaxis(I_ellCG,-CG_ell2,m_ell,"CG")             # Frame of reference: Torso | Origin: VRP
 
@@ -682,7 +685,8 @@ massprop_torsotail <- function(m_true, w_max, h_max, l_bmax, w_leg, l_leg, l_tot
   # Adjust the moment of inertia to be about the center of gravity of the partial cone
   I_parCG = parallelaxis(I_par1,CG_par1,m_par,"A")                      # Frame of reference: Torso | Origin: Partial Cone CG
   # Define CG wrt to VRP origin
-  CG_par2 = CG_par1 + c(0,0,l_bmax)                                     # Frame of reference: Torso | Origin: VRP
+  # NOTE: we need to offset the body from the x axis to ensure that the VRP z-location of the CG is correct in the Torso frame of ref this is the positive x direction
+  CG_par2 = CG_par1 + c(CG_true_z,0,l_bmax)                             # Frame of reference: Torso | Origin: VRP
   # Adjust the MOI to be about the VRP
   I_par_vrp = parallelaxis(I_parCG,-CG_par2,m_par,"CG")                 # Frame of reference: Torso | Origin: VRP
 
@@ -698,7 +702,8 @@ massprop_torsotail <- function(m_true, w_max, h_max, l_bmax, w_leg, l_leg, l_tot
   # Adjust the moment of inertia to be about the center of gravity of the partial cone
   I_endCG = parallelaxis(I_end1,CG_end1,m_end,"A")                         # Frame of reference: Torso | Origin: End Cone CG
   # Define CG wrt to VRP origin
-  CG_end2 = CG_end1 + c(0,0,(l_bmax + l_par))                              # Frame of reference: Torso | Origin: VRP
+  # NOTE: we need to offset the body from the x axis to ensure that the VRP z-location of the CG is correct in the Torso frame of ref this is the positive x direction
+  CG_end2 = CG_end1 + c(CG_true_z,0,(l_bmax + l_par))                      # Frame of reference: Torso | Origin: VRP
   # Adjust the MOI to be about the VRP
   I_end_vrp = parallelaxis(I_endCG,-CG_end2,m_end,"CG")                    # Frame of reference: Torso | Origin: VRP
 
@@ -706,10 +711,13 @@ massprop_torsotail <- function(m_true, w_max, h_max, l_bmax, w_leg, l_leg, l_tot
   I_torso_vrp  = I_ell_vrp + I_par_vrp + I_end_vrp + leg_right$I + leg_left$I
   CG_torso_vrp = (1/m_true)*(m_ell*CG_ell2 + m_par*CG_par2 + m_end*CG_end2 + 0.5*m_legs*CG_leg_left + 0.5*m_legs*CG_leg_right)
 
+  # we need to offset the body from the x axis to ensure that the VRP z-location of the CG is correct in the Torso frame of ref this is the positive x direction
+
   mass_prop = list() # pre-define
   # Adjust frame to VRP axes
   mass_prop$I  = t(VRP2object) %*% I_torso_vrp %*% VRP2object               # Frame of reference: VRP | Origin: VRP
   mass_prop$CG = t(VRP2object) %*% CG_torso_vrp                             # Frame of reference: VRP | Origin: VRP
+
 
   return(mass_prop)
 }
@@ -737,10 +745,19 @@ massprop_torsotail <- function(m_true, w_max, h_max, l_bmax, w_leg, l_leg, l_tot
 #' @param CG_true x location of the CG for the torso, tail and legs (m)
 #' @param m_true Mass of the torso, tail and legs (kg)
 #'
-#' @return
+#' @return the summed relative error of the difference between the true and predicted values of mass and density.
+#' It also includes a minor optimization to keep the densities in the front two sections of the body as close as possible.
+#' This function is intended to be used within pracmas optimization protocols.
+#'
 #' @export
 #'
 #' @examples
+#'
+#' # initial guess for the densities - in the order: emiellipsoid, Partial cone, end cone
+#' x0        = as.matrix(c(1000,1000,1000))
+#' # solve the non-linear equations
+#' densities = pracma::lsqnonlin(density_optimizer, x0, options=list(tolx=1e-12, tolg=1e-12),  v_ell, v_par, v_full, v_cut, v_end, m_legs, l_bmax, l_leg, l_full, l_par, l_end, CG_true, m_true)
+
 density_optimizer <- function(x, v_ell, v_par, v_full, v_cut, v_end, m_legs, l_bmax, l_leg, l_full, l_par, l_end, CG_true, m_true){
 
   # NOTE: all CG locations only include the position only the length of the body as the z and y axes are symmetrical
