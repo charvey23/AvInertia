@@ -577,17 +577,23 @@ massprop_head <- function(m,r,l,start,end){
 #'
 #' Calculate the moment of inertia of a head modeled as a solid cone
 #'
-#' @param m Mass of muscle (kg)
-#' @param rho Density of muscle (kg/m^3)
-#' @param start a 1x3 vector (x,y,z) representing the 3D point where head starts. Frame of reference: VRP | Origin: VRP
-#' @param end a 1x3 vector (x,y,z) representing the 3D point where head ends. Frame of reference: VRP | Origin: VRP
+#' @param m_true Mass of the torso, tail and legs (kg)
+#' @param w_max Maximum width of the body (m)
+#' @param h_max Maximum height of the body (m)
+#' @param l_bmax x location of the maximum width of the body (m)
+#' @param w_leg width of the body at leg insertion (m)
+#' @param l_leg x location of the leg insertion point (m)
+#' @param l_tot length of body from clavicle to end of the tail (m)
+#' @param CG_true x location of the CG for the torso, tail and legs (m)
+#' @param start a 1x3 vector (x,y,z) representing the 3D point where torso starts. Frame of reference: VRP | Origin: VRP
+#' @param end a 1x3 vector (x,y,z) representing the 3D point where tail ends. Frame of reference: VRP | Origin: VRP
 #'
 #' @author Christina Harvey
 #'
 #' @return This function returns a list that includes:
 #' \itemize{
-#' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a head modeled as a solid cone}
-#' \item{CG}{a 1x3 vector representing the center of gravity position of a head modeled as a solid cone}
+#' \item{I}{a 3x3 matrix representing the moment of inertia tensor of the torso, tail and leg composite body}
+#' \item{CG}{a 1x3 vector representing the center of gravity position of the torso, tail and leg composite body}
 #' }
 #'
 #' @section Warning:
@@ -596,18 +602,6 @@ massprop_head <- function(m,r,l,start,end){
 #' @export
 
 massprop_torsotail <- function(m_true, w_max, h_max, l_bmax, w_leg, l_leg, l_tot, CG_true, start, end){
-  w_max  = 0.118
-  h_max  = 0.09
-  l_bmax = 0.088
-  w_leg  = 0.098
-  l_leg  = 0.138
-  l_tot  = 0.301
-  CG_true = 0.109
-  m_true  = 0.87778
-  m_legs  = 0.05355+0.0552
-  end     = c(l_tot,0,0)
-  start   = c(0,0,0)
-
   # ------------------------------- Adjust axis -------------------------------------
   z_axis = end-start
   temp_vec = c(0,1,0) # arbitrary vector as long as it's not the z-axis
@@ -721,6 +715,32 @@ massprop_torsotail <- function(m_true, w_max, h_max, l_bmax, w_leg, l_leg, l_tot
 }
 
 
+# ---------------------------------------------------------------------------------------
+##### -------------------- Body component density optimizer ----------------------- #####
+# ---------------------------------------------------------------------------------------
+
+
+#' Body density optimizer
+#'
+#' @param x a 1x3 matrix that represents the densities that are being optimized. Entries are in the order: hemiellipsoid, partial cone, end cone (kg/m^3)
+#' @param v_ell volume of the hemiellipsoid (m^3)
+#' @param v_par volume of the partial cone (m^3)
+#' @param v_full volume of the partial cone as if it was full length (m^3)
+#' @param v_cut volume of the tip of the cone that is cut off to make it partial length (m^3)
+#' @param v_end volume of the end cone (m^3)
+#' @param m_legs mass of both legs (kg)
+#' @param l_bmax x location of the maximum width of the body (m)
+#' @param l_leg x location of the leg insertion point (m)
+#' @param l_full length of the partial cone as if it was full length (m)
+#' @param l_par true length of the partial cone (m)
+#' @param l_end length of the end cone (m)
+#' @param CG_true x location of the CG for the torso, tail and legs (m)
+#' @param m_true Mass of the torso, tail and legs (kg)
+#'
+#' @return
+#' @export
+#'
+#' @examples
 density_optimizer <- function(x, v_ell, v_par, v_full, v_cut, v_end, m_legs, l_bmax, l_leg, l_full, l_par, l_end, CG_true, m_true){
 
   # NOTE: all CG locations only include the position only the length of the body as the z and y axes are symmetrical
