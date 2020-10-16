@@ -17,9 +17,16 @@ dat_feat$w_vp   = 0.01*dat_feat$w_vp
 dat_feat$w_vd   = 0.01*dat_feat$w_vd
 dat_feat$m_f    = 0.001*dat_feat$m_f
 
+# --------------------- Initialize variables -----------------------
+all_data = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
+column_names = c("species","WingID","TestID","FrameID","prop_type","component","value")
+colnames(all_data) = column_names
+
+# ----------- Iterate through each species ---------
 no_species = unique(dat_bird$species)
-# eventually replace with length(dat_bird$species)
-for (species in 1:1){
+
+for (species in 1:1){ # eventually replace with length(dat_bird$species)
+
   # ----------- Filter the data to the current species ---------
   species_curr  = dat_bird$species[species]
   alldat_curr   = subset(alldat, species == species_curr & sweep == 0 & dihedral == 0)
@@ -34,20 +41,24 @@ for (species in 1:1){
   #            It is critical that the data is given in the structural
   #            frame of reference with the origin at the vehicle reference
   #            point (VRP). VRP is assumed to be in the center of the body
-  #            on the y axis between the two humerus bones
-  w_sk = 0.045*(dat_bird_curr$total_bird_mass^0.37); # predicted distance between humerus heads (Nudds & Rayner)
+  #            on the y axis between the two humerus bones at the clavicle point
 
   for (i in 1:length(colnames(dat_pt))){
+    # x position
+    if (grepl("X",colnames(dat_pt)[i],fixed=TRUE)){
+      dat_pt[,i] = dat_pt[,i] + dat_bird_curr$x_loc_of_humeral_insert_m
+    }
+    # y position - CAUTION THE WING IS ASSUMED TO BE THE RIGHT SIDE WING HENCE THE POSITIVE ADDITION
     if (grepl("Y",colnames(dat_pt)[i],fixed=TRUE)){
-      dat_pt[,i] = dat_pt[,i] + w_sk/2
+      dat_pt[,i] = dat_pt[,i] + dat_bird_curr$y_loc_of_humeral_insert_m
+    }
+    # z position
+    if (grepl("Z",colnames(dat_pt)[i],fixed=TRUE)){
+      dat_pt[,i] = dat_pt[,i] + dat_bird_curr$z_loc_of_humeral_insert_m
     }
   }
-  # --------------------- Initialize variables -----------------------
-  all_data = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
-  column_names = c("species","WingID","TestID","FrameID","prop_type","component","value")
-  colnames(all_data) = column_names
 
-  # -------------- Begin iteration through the wings of this species ------------------------------
+  # -------------- Iterate through the wings of this species ------------------------------
 
   for (ind_wing in 1:length(alldat_curr$frameID)){
 
@@ -59,16 +70,45 @@ for (species in 1:1){
     Pt3  = c(dat_pt_curr$Pt3X, dat_pt_curr$Pt3Y, dat_pt_curr$Pt3Z) # Wrist
     Pt4  = c(dat_pt_curr$Pt4X, dat_pt_curr$Pt4Y, dat_pt_curr$Pt4Z) # End of carpometacarpus
 
-    Pt8  = c(dat_pt_curr$Pt8X, dat_pt_curr$Pt8Y, dat_pt_curr$Pt8Z) # Tip of most distal primary
-    Pt9  = c(dat_pt_curr$Pt9X, dat_pt_curr$Pt9Y, dat_pt_curr$Pt9Z) # Tip of last primary to model as if on the end of the carpometacarpus
+    Pt8  = c(dat_pt_curr$Pt8X, dat_pt_curr$Pt8Y, dat_pt_curr$Pt8Z)    # Tip of most distal primary
+    Pt9  = c(dat_pt_curr$Pt9X, dat_pt_curr$Pt9Y, dat_pt_curr$Pt9Z)    # Tip of last primary to model as if on the end of the carpometacarpus
     Pt10 = c(dat_pt_curr$Pt10X, dat_pt_curr$Pt10Y, dat_pt_curr$Pt10Z) # S1
     Pt11 = c(dat_pt_curr$Pt11X, dat_pt_curr$Pt11Y, dat_pt_curr$Pt11Z) # Wing root trailing edge
-    clean_pts = rbind(Pt1,Pt2,Pt3,Pt4,Pt8,Pt9,Pt10,Pt11)
+    Pt12 = c(dat_pt_curr$Pt12X, dat_pt_curr$Pt12Y, dat_pt_curr$Pt12Z) # Wing root leading edge
+    clean_pts = rbind(Pt1,Pt2,Pt3,Pt4,Pt8,Pt9,Pt10,Pt11,Pt12)
 
+    # solve the data
+    curr_wing_data      = massprop_birdwing(alldat_curr[ind_wing,], dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts)
+    curr_torsotail_data = massprop_restbody(alldat_curr[ind_wing,], dat_bird_curr)
 
-    curr_data = massprop_birdwing(alldat_curr[ind_wing,], dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts)
+    # Compute the full bird results
+    fullbird = list()
+    fullbird$I = matrix(0, nrow = 3, ncol = 3)
+    fullbird$CG = matrix(0, nrow = 3, ncol = 1)
+    # --- Mass ---
+    m_full = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "m")]) + 2*curr_wing_data$value[which(curr_wing_data$object == "m" & curr_wing_data$component == "wing")]
+    # --- Moment of Inertia tensor ---
+    fullbird$I[1,1] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Ixx")]) + 2*curr_wing_data$value[which(curr_wing_data$object == "Ixx" & curr_wing_data$component == "wing")]
+    fullbird$I[2,2] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Iyy")]) + 2*curr_wing_data$value[which(curr_wing_data$object == "Iyy" & curr_wing_data$component == "wing")]
+    fullbird$I[3,3] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Izz")]) + 2*curr_wing_data$value[which(curr_wing_data$object == "Izz" & curr_wing_data$component == "wing")]
+    fullbird$I[1,3] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Ixz")]) + 2*curr_wing_data$value[which(curr_wing_data$object == "Ixz" & curr_wing_data$component == "wing")]
+    fullbird$I[3,1] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Ixz")]) + 2*curr_wing_data$value[which(curr_wing_data$object == "Ixz" & curr_wing_data$component == "wing")]
 
-    all_data = rbind(all_data, curr_data)
+    fullbird$CG[1] = ((curr_torsotail_data$value[which(curr_torsotail_data$object == "CGx" & curr_torsotail_data$component == "head")]*curr_torsotail_data$value[which(curr_torsotail_data$object == "m" & curr_torsotail_data$component == "head")]) +
+                    (curr_torsotail_data$value[which(curr_torsotail_data$object == "CGx" & curr_torsotail_data$component == "neck")]*curr_torsotail_data$value[which(curr_torsotail_data$object == "m" & curr_torsotail_data$component == "neck")]) +
+                    (curr_torsotail_data$value[which(curr_torsotail_data$object == "CGx" & curr_torsotail_data$component == "torso")]*curr_torsotail_data$value[which(curr_torsotail_data$object == "m" & curr_torsotail_data$component == "torso")]) +
+                    2*(curr_wing_data$value[which(curr_wing_data$object == "CGx" & curr_wing_data$component == "wing")]*curr_wing_data$value[which(curr_wing_data$object == "m" & curr_wing_data$component == "wing")]))/m_full
+    fullbird$CG[2] = ((curr_torsotail_data$value[which(curr_torsotail_data$object == "CGy" & curr_torsotail_data$component == "head")]*curr_torsotail_data$value[which(curr_torsotail_data$object == "m" & curr_torsotail_data$component == "head")]) +
+                        (curr_torsotail_data$value[which(curr_torsotail_data$object == "CGy" & curr_torsotail_data$component == "neck")]*curr_torsotail_data$value[which(curr_torsotail_data$object == "m" & curr_torsotail_data$component == "neck")]) +
+                        (curr_torsotail_data$value[which(curr_torsotail_data$object == "CGy" & curr_torsotail_data$component == "torso")]*curr_torsotail_data$value[which(curr_torsotail_data$object == "m" & curr_torsotail_data$component == "torso")]) +
+                        (curr_wing_data$value[which(curr_wing_data$object == "CGy" & curr_wing_data$component == "wing")]*curr_wing_data$value[which(curr_wing_data$object == "m" & curr_wing_data$component == "wing")]) -
+                        (curr_wing_data$value[which(curr_wing_data$object == "CGy" & curr_wing_data$component == "wing")]*curr_wing_data$value[which(curr_wing_data$object == "m" & curr_wing_data$component == "wing")]))/m_full
+    fullbird$CG[3] = ((curr_torsotail_data$value[which(curr_torsotail_data$object == "CGz" & curr_torsotail_data$component == "head")]*curr_torsotail_data$value[which(curr_torsotail_data$object == "m" & curr_torsotail_data$component == "head")]) +
+                        (curr_torsotail_data$value[which(curr_torsotail_data$object == "CGz" & curr_torsotail_data$component == "neck")]*curr_torsotail_data$value[which(curr_torsotail_data$object == "m" & curr_torsotail_data$component == "neck")]) +
+                        (curr_torsotail_data$value[which(curr_torsotail_data$object == "CGz" & curr_torsotail_data$component == "torso")]*curr_torsotail_data$value[which(curr_torsotail_data$object == "m" & curr_torsotail_data$component == "torso")]) +
+                        2*(curr_wing_data$value[which(curr_wing_data$object == "CGz" & curr_wing_data$component == "wing")]*curr_wing_data$value[which(curr_wing_data$object == "m" & curr_wing_data$component == "wing")]))/m_full
+
+    all_data = rbind(all_data, curr_data, curr_torsotail_data)
 
   }
 }

@@ -13,18 +13,19 @@ massprop_restbody <- function(dat_wingID_curr, dat_bird_curr){
   # ----------------- Head and neck data ------------------------
   # -------------------------------------------------------------
   neck_start = c(0,0,0)
-  neck_end   = c(-dat_bird_curr$neck_length,0,0)
-  head_end   = neck_start - c(dat_bird_curr$head_length,0,0)
+  neck_end   = c(dat_bird_curr$neck_length_m,0,0)
+  head_end   = neck_end + c(dat_bird_curr$head_length_m,0,0)
   # Calculate the effects of the head
-  head  = massprop_head(dat_bird_curr$head_mass,dat_bird_curr$head_base_radius,dat_bird_curr$head_length,neck_end,head_end)
+  head       = massprop_head(dat_bird_curr$head_mass_kg,0.5*dat_bird_curr$head_height_m,dat_bird_curr$head_length_m,neck_end,head_end)
   # Calculate the effects of the neck
-  neck  = massprop_neck(dat_bird_curr$neck_mass,dat_bird_curr$neck_radius,dat_bird_curr$neck_length,neck_start,neck_end)
+  neck       = massprop_neck(dat_bird_curr$neck_mass_kg,0.5*dat_bird_curr$neck_width_m,dat_bird_curr$neck_length_m,neck_start,neck_end)
 
   # -------------------------------------------------------------
   # ------------------- Torso/tail data -------------------------
   # -------------------------------------------------------------
-  tail_end = c(0,0,dat_bird_curr$torsotail_length_m)
-  torsotail  = massprop_torsotail(dat_bird_curr$head_torsotail_mass_kg, dat_bird_curr$body_width_max_m, dat_bird_curr$body_height_max_m,
+  tail_end  = c(-dat_bird_curr$torsotail_length_m,0,0)
+  m_legs    = dat_bird_curr$right_leg_mass_kg + dat_bird_curr$left_leg_mass_kg
+  torsotail = massprop_torsotail(dat_bird_curr$torsotail_mass_kg, m_legs, dat_bird_curr$body_width_max_m, dat_bird_curr$body_height_max_m,
                                   dat_bird_curr$x_loc_of_body_max_m, dat_bird_curr$body_width_at_leg_insert_m, dat_bird_curr$x_loc_leg_insertion_m,
                                   dat_bird_curr$torsotail_length_m, dat_bird_curr$x_loc_TorsotailCoG_m, dat_bird_curr$z_loc_TorsotailCoG_m,
                                   neck_start, tail_end)
@@ -32,21 +33,28 @@ massprop_restbody <- function(dat_wingID_curr, dat_bird_curr){
   # ----------------------------------------------------
   # ----------------- Save Data ------------------------
   # ----------------------------------------------------
-
+  # ---- Head ----
   # add data to bone specific data frame
   mass_properties = store_data(dat_wingID_curr,head,mass_properties,"head")
   # save the final head mass used for the analysis
   new_row = data.frame(species = dat_wingID_curr$species, WingID = as.character(dat_wingID_curr$WingID),
                        TestID = as.character(dat_wingID_curr$TestID), FrameID = as.character(dat_wingID_curr$frameID),
-                       component = "head", object = "m", value = dat_bird_curr$head_mass) # saves the name and value of the tensor component
+                       component = "head", object = "m", value = dat_bird_curr$head_mass_kg) # saves the name and value of the tensor component
 
   mass_properties = rbind(mass_properties,new_row)
+  # ---- Neck ----
   mass_properties = store_data(dat_wingID_curr,neck,mass_properties,"neck")
   # save the final neck mass used for the analysis
   new_row = data.frame(species = dat_wingID_curr$species, WingID = as.character(dat_wingID_curr$WingID),
                        TestID = as.character(dat_wingID_curr$TestID), FrameID = as.character(dat_wingID_curr$frameID),
-                       component = "neck", object = "m", value = dat_bird_curr$neck_mass) # saves the name and value of the tensor component
-
+                       component = "neck", object = "m", value = dat_bird_curr$neck_mass_kg) # saves the name and value of the tensor component
+  mass_properties = rbind(mass_properties,new_row)
+  # ---- Torso/Tail/Legs ----
+  # save the final neck mass used for the analysis
+  mass_properties = store_data(dat_wingID_curr,torsotail,mass_properties,"torso")
+  new_row = data.frame(species = dat_wingID_curr$species, WingID = as.character(dat_wingID_curr$WingID),
+                       TestID = as.character(dat_wingID_curr$TestID), FrameID = as.character(dat_wingID_curr$frameID),
+                       component = "torso", object = "m", value = dat_bird_curr$torsotail_mass_kg) # saves the name and value of the tensor component
   mass_properties = rbind(mass_properties,new_row)
 
   return(mass_properties)
@@ -155,7 +163,7 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
   Pt9  = clean_pts[6,] # tip of last primary to model as if on the end of the carpometacarpus
   Pt10 = clean_pts[7,] # tip of S1
   Pt11 = clean_pts[8,] # tip of last secondary feather at wing root
-
+  Pt12 = clean_pts[9,] # leading edge where wing was removed from the body on the wing root
   # --------------------------------------------------
   # --------------- Bone Data ------------------------
   # --------------------------------------------------
@@ -202,19 +210,11 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
   # ---------------------------------------------------------
   # --------------- Skin/Covert Data ------------------------
   # ---------------------------------------------------------
-  rho_skin     = dat_mat$density[which(dat_mat$material == "Skin")]
-  mass_skin    = c()
-  mass_skin[1] = dat_bird_curr$propatagiale_skin_mass
-  mass_skin[2] = dat_bird_curr$manus_skin_mass
-  skin_prop    = massprop_skin(mass_skin[1],rho_skin,rbind(Pt1,Pt3,Pt2))
-  skin_man     = massprop_skin(mass_skin[2],rho_skin,rbind(Pt3,Pt4,Pt2))
-  # --- All Skin ---
-  prop_skin = list()
-  # simply addition as long as about the same origin in the same frame of reference (Frame of reference: VRP | Origin: VRP)
-  prop_skin$I  = skin_prop$I + skin_man$I
-  # weighted average of the individual center of mass (Frame of reference: VRP | Origin: VRP)
-  prop_skin$CG = (mass_skin[1]*skin_prop$CG + mass_skin[2]*skin_man$CG)/sum(mass_skin)
-  prop_skin$m  = sum(mass_skin)
+
+  rho_skin   = dat_mat$density[which(dat_mat$material == "Skin")]
+  mass_skin  = dat_bird_curr$all_skin_coverts_mass - dat_bird_curr$tertiary_mass
+  prop_skin  = massprop_skin(mass_skin,rho_skin,rbind(Pt1,Pt3,Pt2))
+  prop_skin$m = mass_skin
 
   # -------------------------------------------------------
   # ----------------- Feather Data ------------------------
@@ -242,7 +242,7 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
 
   # determine the orientation and normal of each feather
   feather_info = orient_feather(no_pri,no_sec,Pt1,Pt2,Pt3,Pt4,Pt9,Pt10,Pt11)
-  # --- Primaries ---
+  # --------------------------- Primaries -----------------------------------
   for (i in 1:no_pri){
     feather_name = paste("P",i,sep = "")
     pri_info = subset(dat_feat_curr,feather == feather_name) # subset data to be for this specific feather
@@ -258,7 +258,7 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
     res_pri$CGm[i,] = tmp$CG*pri_info$m_f
 
   }
-  # --- Secondaries ---
+  #  -----------------------------------Secondaries -----------------------------------
   for (i in 1:no_sec){
     feather_name = paste("S",i,sep = "")
     sec_info = subset(dat_feat_curr,feather == feather_name)  # subset data to be for this specific feather
@@ -274,15 +274,24 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
     res_sec$CGm[i,] = tmp$CG*sec_info$m_f
   }
 
-  # --- Alula ----
+  # ----------------------------------- Alula -----------------------------------
   m_alula = subset(dat_feat_curr,feather == "alula")$m_f
   alula   = massprop_pm(m_alula, Pt3)
 
+  # ----------------------------------- Tertiaries -----------------------------------
+  last_secondary_pos = feather_info$loc_end[which.min(feather_info$loc_end[,2]),]
+  prop_tertiary1 = massprop_skin(0.5*dat_bird_curr$tertiary_mass,rho_cor,rbind(Pt12,Pt2,Pt11))
+  prop_tertiary2 = massprop_skin(0.5*dat_bird_curr$tertiary_mass,rho_cor,rbind(Pt11,Pt2,last_secondary_pos))
+
   # --- All Feathers ---
   prop_feathers = list()
-  prop_feathers$I  = rbind(rowSums(res_pri$I[,1,]),rowSums(res_pri$I[,2,]),rowSums(res_pri$I[,3,]))
-  prop_feathers$CG = (colSums(res_pri$CGm) + colSums(res_sec$CGm) + alula$CG*m_alula)/sum(dat_feat_curr$m_f)
-  prop_feathers$m  = sum(dat_feat_curr$m_f)
+  I_feathers_pri = rbind(rowSums(res_pri$I[,1,]),rowSums(res_pri$I[,2,]),rowSums(res_pri$I[,3,]))
+  I_feathers_sec = rbind(rowSums(res_sec$I[,1,]),rowSums(res_sec$I[,2,]),rowSums(res_sec$I[,3,]))
+  prop_feathers$I  = I_feathers_pri + I_feathers_sec +alula$I + prop_tertiary1$I + prop_tertiary2$I
+  prop_feathers$m  = sum(dat_feat_curr$m_f) + dat_bird_curr$tertiary_mass
+  prop_feathers$CG = (colSums(res_pri$CGm) + colSums(res_sec$CGm) + alula$CG*m_alula +
+                        prop_tertiary1$CG*0.5*dat_bird_curr$tertiary_mass + prop_tertiary2$CG*0.5*dat_bird_curr$tertiary_mass)/prop_feathers$m
+
 
   # ----------------------------------------------------
   # ----------------- Save Data ------------------------
@@ -301,8 +310,7 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
   mass_properties_muscle = store_data(dat_wingID_curr,manus,mass_properties_muscle,"manus")
 
   # add data to muscle specific data frame
-  mass_properties_skin = store_data(dat_wingID_curr,skin_prop,mass_properties_skin,"skin_prop")
-  mass_properties_skin = store_data(dat_wingID_curr,skin_man,mass_properties_skin,"skin_man")
+  mass_properties_skin = store_data(dat_wingID_curr,prop_skin,mass_properties_skin,"skin_prop")
 
   # add data to bone specific data frame
   # --- Primaries ---
@@ -403,46 +411,4 @@ store_data <- function(dat_wingID_curr,dat_mass,mass_properties,name){
   return(mass_properties)
 }
 
-
-# -------------------- Mass Properties - Torso and tail -------------------------------
-
-massprop_torsotail <- function(dat_wingID_curr, dat_bird_curr){
-  # pre-define storage matrices
-  mass_properties = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
-  column_names = c("species","WingID","TestID","FrameID","prop_type","component","value")
-
-  torso_start  = c(0,0,0)
-  tail_end     = c(dat_bird_curr$torsotail_length_m,0,0)
-  leg_position_left  = c(dat_bird_curr$x_loc_leg_insertion_m,dat_bird_curr$body_width_at_leg_insert_m,0)
-  leg_position_right = c(dat_bird_curr$x_loc_leg_insertion_m,-dat_bird_curr$body_width_at_leg_insert_m,0)
-
-  # Calculate the effects of the legs - modelled as a point mass
-  leg_left = massprop_pm(dat_bird_curr$left_leg_mass_kg, leg_position_left)
-  leg_left = massprop_pm(dat_bird_curr$right_leg_mass_kg, leg_position_right)
-
-  # Calculate the effects of the torso tail
-  torsotail  = massprop_torsotail(dat_bird_curr$neck_mass,dat_bird_curr$neck_radius,dat_bird_curr$torsotail_length_m,torso_start,tail_end)
-
-  # ----------------------------------------------------
-  # ----------------- Save Data ------------------------
-  # ----------------------------------------------------
-
-  # add data to bone specific data frame
-  mass_properties = store_data(dat_wingID_curr,head,mass_properties,"head")
-  # save the final head mass used for the analysis
-  new_row = data.frame(species = dat_wingID_curr$species, WingID = as.character(dat_wingID_curr$WingID),
-                       TestID = as.character(dat_wingID_curr$TestID), FrameID = as.character(dat_wingID_curr$frameID),
-                       component = "head", object = "m", value = dat_bird_curr$head_mass) # saves the name and value of the tensor component
-
-  mass_properties = rbind(mass_properties,new_row)
-  mass_properties = store_data(dat_wingID_curr,neck,mass_properties,"neck")
-  # save the final neck mass used for the analysis
-  new_row = data.frame(species = dat_wingID_curr$species, WingID = as.character(dat_wingID_curr$WingID),
-                       TestID = as.character(dat_wingID_curr$TestID), FrameID = as.character(dat_wingID_curr$frameID),
-                       component = "neck", object = "m", value = dat_bird_curr$neck_mass) # saves the name and value of the tensor component
-
-  mass_properties = rbind(mass_properties,new_row)
-
-  return(mass_properties)
-}
 

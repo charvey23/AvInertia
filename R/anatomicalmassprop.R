@@ -157,7 +157,7 @@ massprop_muscles <- function(m,rho,start,end){
 
 #' Skin mass properties
 #'
-#' Calculate the moment of inertia of skin modeled as a flat triangular plate
+#' Calculate the moment of inertia of skin/ tertiaries modeled as a flat triangular plate
 #'
 #' @param m Mass of skin (kg)
 #' @param rho Density of skin (kg/m^3)
@@ -483,7 +483,7 @@ massprop_neck <- function(m,r,l,start,end){
 
   # ------------------------------- Adjust axis -------------------------------------
   z_axis = end-start
-  temp_vec = c(0,1,0) # arbitrary vector as long as it's not the z-axis
+  temp_vec = c(0,-1,0) # In this case this is not arbitrary and defines the y axis
   x_axis = pracma::cross(z_axis,temp_vec/norm(temp_vec, type = "2"))
   # doesn't matter where the x axis points as long as:1. we know what it is 2. it's orthogonal to z
   # calculate the rotation matrix between VRP frame of reference and the object
@@ -541,7 +541,7 @@ massprop_head <- function(m,r,l,start,end){
 
   # ------------------------------- Adjust axis -------------------------------------
   z_axis = end-start
-  temp_vec = c(0,1,0) # arbitrary vector as long as it's not the z-axis
+  temp_vec = c(0,-1,0) # In this case this is not arbitrary and defines the y axis
   x_axis = pracma::cross(z_axis,temp_vec/norm(temp_vec, type = "2"))
   # doesn't matter where the x axis points as long as:1. we know what it is 2. it's orthogonal to z
   # calculate the rotation matrix between VRP frame of reference and the object
@@ -573,11 +573,12 @@ massprop_head <- function(m,r,l,start,end){
 ##### ------------------------ Mass properties of Torsotail -------------------------- #####
 # ---------------------------------------------------------------------------------------
 
-#' Head mass properties
+#' Torso, tail and leg mass properties
 #'
 #' Calculate the moment of inertia of a head modeled as a solid cone
 #'
 #' @param m_true Mass of the torso, tail and legs (kg)
+#' @param m_legs Mass of the legs only (kg)
 #' @param w_max Maximum width of the body (m)
 #' @param h_max Maximum height of the body (m)
 #' @param l_bmax x location of the maximum width of the body (m)
@@ -602,11 +603,11 @@ massprop_head <- function(m,r,l,start,end){
 #'
 #' @export
 
-massprop_torsotail <- function(m_true, w_max, h_max, l_bmax, w_leg, l_leg, l_tot, CG_true_x, CG_true_z, start, end){
+massprop_torsotail <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, l_leg, l_tot, CG_true_x, CG_true_z, start, end){
 
   # ------------------------------- Adjust axis -------------------------------------
   z_axis = end-start
-  temp_vec = c(0,1,0) # arbitrary vector as long as it's not the z-axis
+  temp_vec = c(0,-1,0) # In this case this is not arbitrary and defines the y axis
   x_axis = pracma::cross(z_axis,temp_vec/norm(temp_vec, type = "2"))
   # doesn't matter where the x axis points as long as:1. we know what it is 2. it's orthogonal to z
   # calculate the rotation matrix between VRP frame of reference and the object
@@ -620,8 +621,8 @@ massprop_torsotail <- function(m_true, w_max, h_max, l_bmax, w_leg, l_leg, l_tot
   l_end  = l_tot - l_leg
 
   # --------------- Legs - point mass -------------------------
-  CG_leg_right = c(CG_true_z,-0.5*w_leg, l_leg)         # Frame of reference: Torso | Origin: VRP
-  CG_leg_left  = c(CG_true_z, 0.5*w_leg, l_leg)         # Frame of reference: Torso | Origin: VRP
+  CG_leg_right = c(CG_true_z,0.5*w_leg, l_leg)          # Frame of reference: Torso | Origin: VRP
+  CG_leg_left  = c(CG_true_z,-0.5*w_leg, l_leg)         # Frame of reference: Torso | Origin: VRP
   leg_right = massprop_pm(0.5*m_legs, CG_leg_right)     # Frame of reference: Torso | Origin: VRP
   leg_left  = massprop_pm(0.5*m_legs, CG_leg_left)      # Frame of reference: Torso | Origin: VRP
 
@@ -784,11 +785,9 @@ density_optimizer <- function(x, v_ell, v_par, v_full, v_cut, v_end, m_legs, l_b
   m_pred  = m_ell + m_par + m_end + m_legs
   CG_pred = (1/m_true)*(m_ell*CG_ell + m_par*CG_par + m_end*CG_end + m_legs*l_leg) # Frame of reference: Torso | Origin: VRP
   rho_front = mean(c(rho_par,rho_ell))
-  err_mean = (abs(rho_par-rho_front) + abs(rho_ell-rho_front))/rho_front
 
   # calculates the summation of the absolute total error of the mass and the CG - need to minimize both
-  tot_err = abs(m_pred-m_true)/m_true + abs(CG_pred-CG_true)/CG_true + 0.05*err_mean
-
+  tot_err = abs(m_pred-m_true)/m_true + abs(CG_pred-CG_true)/CG_true
   return(tot_err)
 }
 
