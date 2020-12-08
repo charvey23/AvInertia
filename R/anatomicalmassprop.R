@@ -22,6 +22,7 @@
 #' \itemize{
 #' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a bone modeled as a hollow cylinder with two solid end caps}
 #' \item{CG}{a 1x3 vector representing the center of gravity position of a bone modeled as a hollow cylinder with two solid end caps}
+#' \item{m}{a double that returns the input bone mass}
 #' }
 #'
 #' @section Warning:
@@ -85,6 +86,7 @@ massprop_bones <- function(m,l,r_out,r_in,rho,start,end){
   # Adjust frame to VRP axes
   mass_prop$I  = t(VRP2object) %*% I_boneaxis %*% VRP2object  # Frame of reference: VRP | Origin: VRP
   mass_prop$CG = 0.5*(start + end)                            # Frame of reference: VRP | Origin: VRP
+  mass_prop$m  = m
 
   return(mass_prop)
 }
@@ -110,6 +112,7 @@ massprop_bones <- function(m,l,r_out,r_in,rho,start,end){
 #' \itemize{
 #' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a muscle modeled as a solid cylinder distributed along the bone length}
 #' \item{CG}{a 1x3 vector representing the center of gravity position of a muscle modeled as a solid cylinder distributed along the bone length}
+#' \item{m}{a double that returns the input muscle mass}
 #' }
 #'
 #' @section Warning:
@@ -147,7 +150,7 @@ massprop_muscles <- function(m,rho,start,end){
   # Adjust frame to VRP axes
   mass_prop$I  = t(VRP2object) %*% I_m_vrp %*% VRP2object  # Frame of reference: VRP | Origin: VRP
   mass_prop$CG = 0.5*(start + end)                         # Frame of reference: VRP | Origin: VRP
-
+  mass_prop$m  = m
   return(mass_prop)
 }
 
@@ -177,6 +180,7 @@ massprop_muscles <- function(m,rho,start,end){
 #' \itemize{
 #' \item{I}{a 3x3 matrix representing the moment of inertia tensor of skin modeled as a flat triangular plate}
 #' \item{CG}{a 1x3 vector representing the center of gravity position of skin modeled as a flat triangular plate}
+#' \item{m}{a double that returns the input skin mass}
 #' }
 #'
 #' @section Suggested ordering:
@@ -222,7 +226,7 @@ massprop_skin <- function(m,rho,pts){
   # Adjust frames to VRP
   mass_prop$I  = t(VRP2object) %*% I_s_vrp %*% VRP2object # Frame of reference: VRP | Origin: VRP
   mass_prop$CG = t(VRP2object) %*% CG_s                   # Frame of reference: VRP | Origin: VRP
-
+  mass_prop$m  = m
   return(mass_prop)
 }
 
@@ -245,6 +249,7 @@ massprop_skin <- function(m,rho,pts){
 #' \itemize{
 #' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a point mass}
 #' \item{CG}{a 1x3 vector representing the center of gravity position of a point mass}
+#' \item{m}{a double that returns the input mass}
 #' }
 #'
 #' @section Warning:
@@ -261,6 +266,7 @@ massprop_pm <- function(m,pt){
   # Adjust frames to VRP
   mass_prop$I  = parallelaxis(emtpy_I,-pt,m,"CG")  # Frame of reference: VRP | Origin: VRP
   mass_prop$CG = pt                                # Frame of reference: VRP | Origin: VRP
+  mass_prop$m  = m
 
   return(mass_prop)
 }
@@ -297,6 +303,7 @@ massprop_pm <- function(m,pt){
 #' \itemize{
 #' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a simplified feather}
 #' \item{CG}{a 1x3 vector representing the center of gravity position of a simplified feather}
+#' \item{m}{a double that returns the feather mass}
 #' }
 #'
 #' @export
@@ -448,6 +455,7 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   mass_prop = list() # pre-define
   mass_prop$I  = parallelaxis(I_fCG,-(CG_3 + start),m_f,"CG")   # Frame of reference: VRP | Origin: VRP
   mass_prop$CG = CG_3 + start                           # Frame of reference: VRP | Origin: VRP
+  mass_prop$m  = m_f
 
   return(mass_prop)
 }
@@ -472,6 +480,7 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
 #' \itemize{
 #' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a neck modeled as a solid cylinder}
 #' \item{CG}{a 1x3 vector representing the center of gravity position of a neck modeled as a solid cylinder}
+#'\item{m}{a double that returns the neck mass}
 #' }
 #'
 #' @section Warning:
@@ -506,7 +515,7 @@ massprop_neck <- function(m,r,l,start,end){
   # Adjust frame to VRP axes
   mass_prop$I  = t(VRP2object) %*% I_n_vrp %*% VRP2object  # Frame of reference: VRP | Origin: VRP
   mass_prop$CG = 0.5*(start + end)                         # Frame of reference: VRP | Origin: VRP
-
+  mass_prop$m  = m
   return(mass_prop)
 }
 
@@ -530,6 +539,7 @@ massprop_neck <- function(m,r,l,start,end){
 #' \itemize{
 #' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a head modeled as a solid cone}
 #' \item{CG}{a 1x3 vector representing the center of gravity position of a head modeled as a solid cone}
+#'\item{m}{a double that returns the head mass}
 #' }
 #'
 #' @section Warning:
@@ -564,6 +574,7 @@ massprop_head <- function(m,r,l,start,end){
   # Adjust frame to VRP axes
   mass_prop$I  = t(VRP2object) %*% I_h_vrp %*% VRP2object  # Frame of reference: VRP | Origin: VRP
   mass_prop$CG = 0.5*(start + end)                         # Frame of reference: VRP | Origin: VRP
+  mass_prop$m  = m
 
   return(mass_prop)
 }
@@ -596,6 +607,7 @@ massprop_head <- function(m,r,l,start,end){
 #' \itemize{
 #' \item{I}{a 3x3 matrix representing the moment of inertia tensor of the torso, tail and leg composite body}
 #' \item{CG}{a 1x3 vector representing the center of gravity position of the torso, tail and leg composite body}
+#'  \item{m}{a double that returns the mass of the torso, tail and leg composite body}
 #' }
 #'
 #' @section Warning:
@@ -718,7 +730,7 @@ massprop_torsotail <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, l_le
   # Adjust frame to VRP axes
   mass_prop$I  = t(VRP2object) %*% I_torso_vrp %*% VRP2object               # Frame of reference: VRP | Origin: VRP
   mass_prop$CG = t(VRP2object) %*% CG_torso_vrp                             # Frame of reference: VRP | Origin: VRP
-
+  mass_prop$m  = m_true
 
   return(mass_prop)
 }
