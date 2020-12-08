@@ -94,19 +94,21 @@ for (species in 1:1){ # eventually replace with length(dat_bird$species)
     fullbird$I[1,3] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Ixz")]) + 2*curr_wing_data$value[which(curr_wing_data$object == "Ixz" & curr_wing_data$component == "wing")]
     fullbird$I[3,1] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Ixz")]) + 2*curr_wing_data$value[which(curr_wing_data$object == "Ixz" & curr_wing_data$component == "wing")]
 
-    fullbird$CG[1] = ((curr_torsotail_data$value[which(curr_torsotail_data$object == "CGx" & curr_torsotail_data$component == "head")]*curr_torsotail_data$value[which(curr_torsotail_data$object == "m" & curr_torsotail_data$component == "head")]) +
-                    (curr_torsotail_data$value[which(curr_torsotail_data$object == "CGx" & curr_torsotail_data$component == "neck")]*curr_torsotail_data$value[which(curr_torsotail_data$object == "m" & curr_torsotail_data$component == "neck")]) +
-                    (curr_torsotail_data$value[which(curr_torsotail_data$object == "CGx" & curr_torsotail_data$component == "torso")]*curr_torsotail_data$value[which(curr_torsotail_data$object == "m" & curr_torsotail_data$component == "torso")]) +
-                    2*(curr_wing_data$value[which(curr_wing_data$object == "CGx" & curr_wing_data$component == "wing")]*curr_wing_data$value[which(curr_wing_data$object == "m" & curr_wing_data$component == "wing")]))/fullbird$m
-    fullbird$CG[2] = ((curr_torsotail_data$value[which(curr_torsotail_data$object == "CGy" & curr_torsotail_data$component == "head")]*curr_torsotail_data$value[which(curr_torsotail_data$object == "m" & curr_torsotail_data$component == "head")]) +
-                        (curr_torsotail_data$value[which(curr_torsotail_data$object == "CGy" & curr_torsotail_data$component == "neck")]*curr_torsotail_data$value[which(curr_torsotail_data$object == "m" & curr_torsotail_data$component == "neck")]) +
-                        (curr_torsotail_data$value[which(curr_torsotail_data$object == "CGy" & curr_torsotail_data$component == "torso")]*curr_torsotail_data$value[which(curr_torsotail_data$object == "m" & curr_torsotail_data$component == "torso")]) +
-                        (curr_wing_data$value[which(curr_wing_data$object == "CGy" & curr_wing_data$component == "wing")]*curr_wing_data$value[which(curr_wing_data$object == "m" & curr_wing_data$component == "wing")]) -
-                        (curr_wing_data$value[which(curr_wing_data$object == "CGy" & curr_wing_data$component == "wing")]*curr_wing_data$value[which(curr_wing_data$object == "m" & curr_wing_data$component == "wing")]))/fullbird$m
-    fullbird$CG[3] = ((curr_torsotail_data$value[which(curr_torsotail_data$object == "CGz" & curr_torsotail_data$component == "head")]*curr_torsotail_data$value[which(curr_torsotail_data$object == "m" & curr_torsotail_data$component == "head")]) +
-                        (curr_torsotail_data$value[which(curr_torsotail_data$object == "CGz" & curr_torsotail_data$component == "neck")]*curr_torsotail_data$value[which(curr_torsotail_data$object == "m" & curr_torsotail_data$component == "neck")]) +
-                        (curr_torsotail_data$value[which(curr_torsotail_data$object == "CGz" & curr_torsotail_data$component == "torso")]*curr_torsotail_data$value[which(curr_torsotail_data$object == "m" & curr_torsotail_data$component == "torso")]) +
-                        2*(curr_wing_data$value[which(curr_wing_data$object == "CGz" & curr_wing_data$component == "wing")]*curr_wing_data$value[which(curr_wing_data$object == "m" & curr_wing_data$component == "wing")]))/fullbird$m
+    fullbird$CG[1] = (subset(curr_torsotail_data, object == "CGx" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
+                      subset(curr_torsotail_data, object == "CGx" & component == "neck")$value*subset(curr_torsotail_data, object == "m" & component == "neck")$value +
+                      subset(curr_torsotail_data, object == "CGx" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
+                      subset(curr_torsotail_data, object == "CGx" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
+                      2*subset(curr_wing_data, object == "CGx" & component == "wing")$value*subset(curr_torsotail_data, object == "m" & component == "wing")$value)/fullbird$m
+    fullbird$CG[2] = (subset(curr_torsotail_data, object == "CGy" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
+                        subset(curr_torsotail_data, object == "CGy" & component == "neck")$value*subset(curr_torsotail_data, object == "m" & component == "neck")$value +
+                        subset(curr_torsotail_data, object == "CGy" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
+                        subset(curr_torsotail_data, object == "CGy" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
+                        2*subset(curr_wing_data, object == "CGy" & component == "wing")$value*subset(curr_torsotail_data, object == "m" & component == "wing")$value)/fullbird$m
+    fullbird$CG[3] = (subset(curr_torsotail_data, object == "CGz" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
+                        subset(curr_torsotail_data, object == "CGz" & component == "neck")$value*subset(curr_torsotail_data, object == "m" & component == "neck")$value +
+                        subset(curr_torsotail_data, object == "CGz" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
+                        subset(curr_torsotail_data, object == "CGz" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
+                        2*subset(curr_wing_data, object == "CGz" & component == "wing")$value*subset(curr_torsotail_data, object == "m" & component == "wing")$value)/fullbird$m
 
     # save the full data
     mass_properties = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data

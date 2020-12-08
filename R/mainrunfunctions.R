@@ -20,15 +20,17 @@ massprop_restbody <- function(dat_wingID_curr, dat_bird_curr){
   # Calculate the effects of the neck
   neck       = massprop_neck(dat_bird_curr$neck_mass_kg,0.5*dat_bird_curr$neck_width_m,dat_bird_curr$neck_length_m,neck_start,neck_end)
   # -------------------------------------------------------------
-  # ------------------- Torso/tail data -------------------------
+  # ------------------- Torso and tail data -------------------------
   # -------------------------------------------------------------
-  tail_end  = c(-dat_bird_curr$torsotail_length_m,0,0)
+  tail_start  = c(-(dat_bird_curr$torsotail_length_m-dat_bird_curr$tail_length_m),0,0)
+  tail_end    = c(-dat_bird_curr$torsotail_length_m,0,0)
   m_legs    = dat_bird_curr$right_leg_mass_kg + dat_bird_curr$left_leg_mass_kg
-  torsotail = massprop_torsotail(dat_bird_curr$torsotail_mass_kg, m_legs, dat_bird_curr$body_width_max_m, dat_bird_curr$body_height_max_m,
+  torso     = massprop_torso(dat_bird_curr$torsotail_mass_kg, m_legs, dat_bird_curr$body_width_max_m, dat_bird_curr$body_height_max_m,
                                   dat_bird_curr$x_loc_of_body_max_m, dat_bird_curr$body_width_at_leg_insert_m, dat_bird_curr$x_loc_leg_insertion_m,
                                   dat_bird_curr$torsotail_length_m, dat_bird_curr$x_loc_TorsotailCoG_m, dat_bird_curr$z_loc_TorsotailCoG_m,
                                   neck_start, tail_end)
 
+  tail   = massprop_tail(dat_bird_curr$tail_mass_kg, dat_bird_curr$tail_length_m,dat_bird_curr$tail_width_m,dat_bird_curr$torsotail_length_m,tail_start,tail_end)
   # ----------------------------------------------------
   # ----------------- Save Data ------------------------
   # ----------------------------------------------------
@@ -36,8 +38,10 @@ massprop_restbody <- function(dat_wingID_curr, dat_bird_curr){
   mass_properties = store_data(dat_wingID_curr,head,mass_properties,"head")
   # ---- Neck ----
   mass_properties = store_data(dat_wingID_curr,neck,mass_properties,"neck")
-  # ---- Torso/Tail/Legs ----
-  mass_properties = store_data(dat_wingID_curr,torsotail,mass_properties,"torso")
+  # ---- Torso/Legs ----
+  mass_properties = store_data(dat_wingID_curr,torso,mass_properties,"torso")
+  # ---- Tail ----
+  mass_properties = store_data(dat_wingID_curr,tail,mass_properties,"tail")
 
   return(mass_properties)
 }

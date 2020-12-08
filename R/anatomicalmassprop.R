@@ -528,8 +528,9 @@ massprop_neck <- function(m,r,l,start,end){
 #'
 #' Calculate the moment of inertia of a head modeled as a solid cone
 #'
-#' @param m Mass of muscle (kg)
-#' @param rho Density of muscle (kg/m^3)
+#' @param m Mass of head (kg)
+#' @param r Maximum head radius (m)
+#' @param l Maximum head length (m)
 #' @param start a 1x3 vector (x,y,z) representing the 3D point where head starts. Frame of reference: VRP | Origin: VRP
 #' @param end a 1x3 vector (x,y,z) representing the 3D point where head ends. Frame of reference: VRP | Origin: VRP
 #'
@@ -579,16 +580,69 @@ massprop_head <- function(m,r,l,start,end){
   return(mass_prop)
 }
 
+# ---------------------------------------------------------------------------------------
+##### ------------------------- Mass properties of Tail -------------------------- #####
+# ---------------------------------------------------------------------------------------
+
+
+#' Head mass properties
+#'
+#' Calculate the moment of inertia of a tail modeled as a solid cone
+#'
+#' @param m Mass of muscle (kg)
+#' @param l Length of the tail (m)
+#' @param w Width of the tail (m)
+#' @param start a 1x3 vector (x,y,z) representing the 3D point where head starts. Frame of reference: VRP | Origin: VRP
+#' @param end a 1x3 vector (x,y,z) representing the 3D point where head ends. Frame of reference: VRP | Origin: VRP
+#'
+#' @author Christina Harvey
+#'
+#' @return This function returns a list that includes:
+#' \itemize{
+#' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a head modeled as a solid cone}
+#' \item{CG}{a 1x3 vector representing the center of gravity position of a head modeled as a solid cone}
+#'\item{m}{a double that returns the head mass}
+#' }
+#'
+#' @section Warning:
+#' Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
+#'
+#' @export
+
+massprop_tail <- function(m,l_tail,w_tail,l_torso,start,end){
+
+  # ------------------------------- Adjust axis -------------------------------------
+  z_axis = end-start
+  temp_vec = c(0,-1,0)
+  x_axis = pracma::cross(z_axis,temp_vec/norm(temp_vec, type = "2"))
+  # doesn't matter where the x axis points as long as:1. we know what it is 2. it's orthogonal to z
+  # calculate the rotation matrix between VRP frame of reference and the object
+  VRP2object = calc_rot(z_axis,x_axis)
+
+  # -------------------------- Moment of inertia --------------------------------
+
+  I_t1 = calc_inertia_platerect(w_tail, l_tail, m)         # Frame of reference: Tail | Origin: Tail CG
+  CG_t = c(0,0,l_torso + 0.5*l_tail)                       # Frame of reference: Tail | Origin: VRP
+  I_t2 = parallelaxis(I_t1,-CG_t,m,"CG")                   # Frame of reference: Tail | Origin: VRP
+
+  mass_prop = list() # pre-define
+  # Adjust frame to VRP axes
+  mass_prop$I  = t(VRP2object) %*% I_t1 %*% VRP2object     # Frame of reference: VRP | Origin: VRP
+  mass_prop$CG = t(VRP2object) %*% CG_t                    # Frame of reference: VRP | Origin: VRP
+  mass_prop$m  = m
+
+  return(mass_prop)
+}
 
 # ---------------------------------------------------------------------------------------
-##### ------------------------ Mass properties of Torsotail -------------------------- #####
+##### ------------------------- Mass properties of Torso -------------------------- #####
 # ---------------------------------------------------------------------------------------
 
-#' Torso, tail and leg mass properties
+#' Torso and leg mass properties
 #'
 #' Calculate the moment of inertia of a head modeled as a solid cone
 #'
-#' @param m_true Mass of the torso, tail and legs (kg)
+#' @param m_true Mass of the torso and legs (kg)
 #' @param m_legs Mass of the legs only (kg)
 #' @param w_max Maximum width of the body (m)
 #' @param h_max Maximum height of the body (m)
@@ -615,7 +669,7 @@ massprop_head <- function(m,r,l,start,end){
 #'
 #' @export
 
-massprop_torsotail <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, l_leg, l_tot, CG_true_x, CG_true_z, start, end){
+massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, l_leg, l_tot, CG_true_x, CG_true_z, start, end){
 
   # ------------------------------- Adjust axis -------------------------------------
   z_axis = end-start
