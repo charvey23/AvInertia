@@ -7,29 +7,10 @@
 #          3. Pt3 (Wrist) will be inline with Pt10 (S1) along the x axis
 
 # Created: Christina Harvey
-# Last updated: 25-May-2020
+# Last updated: 16-Dec-2020
 
-# Load required libraries
-
-#setwd("/Users/christinaharvey/Google Drive/ComparativeAvianStabilityStudy/CompStability(LLT&Digitize)/Code") #For Mac
-setwd("/Users/christinaharvey/Google Drive/DoctoralThesis/WingMorphology/") #For Windows
+setwd("/Users/christinaharvey/Google Drive/DoctoralThesis/WingMorphology/")
 source('jointangles.R')
-
-# Visualize the wings as required - For each calibration verify that the axis is RH
-m = 1:788
-max = 0.8
-plot(dat_clean$pt2_Y[m],dat_clean$pt2_X[m], xlim =c(-max,max), ylim = c(-max,max))
-points(dat_clean$pt3_Y[m],dat_clean$pt3_X[m],xlim =c(-max,max), ylim = c(-max,max),col = "blue")
-points(dat_clean$pt4_Y[m], dat_clean$pt4_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "green")
-points(dat_clean$pt1_Y[m],dat_clean$pt1_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "red")
-points(dat_clean$pt8_Y[m],dat_clean$pt8_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "purple")
-
-plot(dat_clean$pt2_Y[m],dat_clean$pt2_Z[m], xlim =c(-max,max), ylim = c(-max,max))
-points(dat_clean$pt3_Y[m],dat_clean$pt3_Z[m],xlim =c(-max,max), ylim = c(-max,max),col = "blue")
-points(dat_clean$pt4_Y[m], dat_clean$pt4_Z[m], xlim =c(-max,max), ylim = c(-max,max), col = "green")
-points(dat_clean$pt1_Y[m],dat_clean$pt1_Z[m], xlim =c(-max,max), ylim = c(-max,max), col = "red")
-points(dat_clean$pt8_Y[m],dat_clean$pt8_Z[m], xlim =c(-max,max), ylim = c(-max,max), col = "purple")
-
 
 # ------------------------- Set file directory -------------------------
 setwd("/Users/christinaharvey/Dropbox (University of Michigan)/Bird Mass Distribution/05_subsampled_optitrack")
@@ -47,6 +28,8 @@ dat_info   <- read.csv(file = "2020_12_15_IDfile.csv")
 for (i in 1:nrow(dat_info)){
   # Read in specific wing data
   filename <- paste("2020_12_15_",dat_info$species[i],"_",dat_info$birdid[i],"_00",dat_info$testid[i],"_subsampled.csv",sep = "")
+  wing = str_sub(dat_info$birdid[i],-1)
+
   rawdat   <- read.csv(filename, stringsAsFactors = FALSE, strip.white = TRUE, na.strings = c("NA") )
 
   if (i < 12){
@@ -58,15 +41,16 @@ for (i in 1:nrow(dat_info)){
   ## ------- Reorient Wings ---------
   dat_clean <- rawdat
   #------------------------------- Step 1 -------------------------------
+  ##### error doesn't adjust all points ######
   #Make pt 1 on humerus the beginning location
-  for (j in 1:11){
+  for (j in 2:11){
     for (k in 1:3){
       col_name = paste(point_list[j],dim_list[k],sep = "_")
       pt1_name = paste(point_list[1],dim_list[k],sep = "_")
       dat_clean[,col_name] <- dat_clean[,col_name] - dat_clean[,pt1_name]
     }
   }
-
+  dat_clean[,c("pt1_X","pt1_Y","pt1_Z")] <- 0
 
   #-------------------------------  Step 2 -------------------------------
   # Set pt 3 in line with Pt 1 along the wingspan
@@ -168,10 +152,12 @@ for (i in 1:nrow(dat_info)){
   # x = -x; y = y; z = -z:
   # ard_her_20_317L_001
 
-  for (j in 1:11){
-    for (k in c(1,3)){
-      col_name = paste(point_list[j],dim_list[k],sep = "_")
-      dat_clean[,col_name] <- -dat_clean[,col_name]
+  for (j in 1:11) {
+    col_name = paste(point_list[j], dim_list[1], sep = "_")
+    dat_clean[, col_name] <- -dat_clean[, col_name]
+    if (wing == "L") {
+      col_name = paste(point_list[j], dim_list[3], sep = "_")
+      dat_clean[, col_name] <- -dat_clean[, col_name]
     }
   }
 
@@ -182,3 +168,46 @@ for (i in 1:nrow(dat_info)){
 
 
 
+# Visualize the wings as required - For each calibration verify that the axis is RH
+m = 1:nrow(dat_clean)
+max = 0.5
+plot(dat_clean$pt2_Y[m],dat_clean$pt2_X[m], xlim =c(-max,max), ylim = c(-max,max))
+points(dat_clean$pt3_Y[m],dat_clean$pt3_X[m],xlim =c(-max,max), ylim = c(-max,max),col = "blue")
+points(dat_clean$pt4_Y[m], dat_clean$pt4_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "green")
+points(dat_clean$pt1_Y[m],dat_clean$pt1_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "red")
+points(dat_clean$pt8_Y[m],dat_clean$pt8_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "purple")
+points(dat_clean$pt11_Y[m],dat_clean$pt11_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "yellow")
+
+plot(dat_clean$pt2_Y[m],dat_clean$pt2_Z[m], xlim =c(-max,max), ylim = c(-max,max))
+points(dat_clean$pt3_Y[m],dat_clean$pt3_Z[m],xlim =c(-max,max), ylim = c(-max,max),col = "blue")
+points(dat_clean$pt4_Y[m], dat_clean$pt4_Z[m], xlim =c(-max,max), ylim = c(-max,max), col = "green")
+points(dat_clean$pt1_Y[m],dat_clean$pt1_Z[m], xlim =c(-max,max), ylim = c(-max,max), col = "red")
+points(dat_clean$pt8_Y[m],dat_clean$pt8_Z[m], xlim =c(-max,max), ylim = c(-max,max), col = "purple")
+points(dat_clean$pt10_Y[m],dat_clean$pt10_Z[m], xlim =c(-max,max), ylim = c(-max,max), col = "yellow")
+
+plot(dat_clean$pt2_Z[m],dat_clean$pt2_X[m], xlim =c(-max,max), ylim = c(-max,max))
+points(dat_clean$pt3_Z[m],dat_clean$pt3_X[m],xlim =c(-max,max), ylim = c(-max,max),col = "blue")
+points(dat_clean$pt4_Z[m], dat_clean$pt4_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "green")
+points(dat_clean$pt1_Z[m],dat_clean$pt1_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "red")
+points(dat_clean$pt8_Z[m],dat_clean$pt8_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "purple")
+points(dat_clean$pt10_Z[m],dat_clean$pt10_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "yellow")
+
+x = c(dat_clean$pt1_X[m],dat_clean$pt2_X[m],dat_clean$pt3_X[m],dat_clean$pt4_X[m],
+      dat_clean$pt6_X[m],dat_clean$pt7_X[m],dat_clean$pt8_X[m],dat_clean$pt9_X[m],
+      dat_clean$pt10_X[m],dat_clean$pt11_X[m],dat_clean$pt12_X[m])
+y = c(dat_clean$pt1_Y[m],dat_clean$pt2_Y[m],dat_clean$pt3_Y[m],dat_clean$pt4_Y[m],
+      dat_clean$pt6_Y[m],dat_clean$pt7_Y[m],dat_clean$pt8_Y[m],dat_clean$pt9_Y[m],
+      dat_clean$pt10_Y[m],dat_clean$pt11_Y[m],dat_clean$pt12_Y[m])
+z = c(dat_clean$pt1_Z[m],dat_clean$pt2_Z[m],dat_clean$pt3_Z[m],dat_clean$pt4_Z[m],
+      dat_clean$pt6_Z[m],dat_clean$pt7_Z[m],dat_clean$pt8_Z[m],dat_clean$pt9_Z[m],
+      dat_clean$pt10_Z[m],dat_clean$pt11_Z[m],dat_clean$pt12_Z[m])
+plot3d(x, y, z, col = c("black","gray20","gray50","gray70","red", "orange", "yellow", "green", "blue", "navy", "purple"))
+
+plot(dat_clean$elbow,dat_clean$manus)
+
+plot(rawdat$pt2_Z[m],rawdat$pt2_X[m], xlim =c(-max,max), ylim = c(-max,max))
+points(rawdat$pt3_Z[m],rawdat$pt3_X[m],xlim =c(-max,max), ylim = c(-max,max),col = "blue")
+points(rawdat$pt4_Z[m], rawdat$pt4_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "green")
+points(rawdat$pt1_Z[m],rawdat$pt1_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "red")
+points(rawdat$pt8_Z[m],rawdat$pt8_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "purple")
+points(rawdat$pt9_Z[m],rawdat$pt9_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "yellow")
