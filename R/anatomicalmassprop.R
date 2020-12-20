@@ -290,7 +290,7 @@ massprop_pm <- function(m,pt){
 #' @param rho_med Density of the medullary (kg/m^3)
 #' @param w_vp Width of proximal (closest to body) vane (m)
 #' @param w_vd Width of distal (closest to wing tip) vane (m)
-#' @param angle Angle between calamus and the vane
+#' @param angle Angle between calamus and the vane #ADD INFO
 #' @param start a 1x3 vector (x,y,z) representing the 3D point where feather starts. (Frame of reference: VRP | Origin: VRP)
 #' @param end a 1x3 vector (x,y,z) representing the 3D point where feather ends (Frame of reference: VRP | Origin: VRP)
 #' @param normal Vector that defines the normal to each feather plane. (Frame of reference: VRP | Origin: VRP)

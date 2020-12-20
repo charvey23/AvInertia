@@ -2,35 +2,74 @@
 # all written by Christina Harvey
 # last updated: 2020-10-13
 
+
+
 # -------------------- Mass Properties - Head and neck -------------------------------
+#' Title
+#'
+#' @param dat_wingID_curr Dataframe related to the current bird wing ID info that must include the following columns:
+#' \itemize{
+#' \item{species}{Species ID code as a string}
+#' \item{BirdID}{Bird ID code as a string}
+#' \item{TestID}{Test ID code as a string}
+#' \item{frameID}{Video frame ID code as a string}
+#' }
+#'
+#' @param dat_bird_curr Dataframe related to the current bird wing that must include the following columns:
+#' \itemize{
+#' \item{head_length}{Mass of full bird for the current wing (kg)}
+#' \item{head_mass}{Mass of one wing, should be the current wing (kg)}
+#' \item{head_height}{Radius of feather barb  for current species (m)}
+#' \item{neck_mass}{Distance between feather barbs for current species (m)}
+#' \item{neck_width}{Mass of all muscles in the brachial region of the wing (kg)}
+#' \item{neck_length}{Mass of all muscles in the antebrachial region of the wing (kg)}
+#' \item{torsotail_length}{Mass of all muscles in the manus region of the wing (kg)}
+#' \item{torsotail_mass}
+#' \item{tail_length}
+#' \item{tail_mass}
+#' \item{tail_width}
+#' \item{right_leg_mass}
+#' \item{left_leg_mass}
+#' \item{body_width_max}
+#' \item{body_width_at_leg_insert}
+#' \item{x_loc_of_body_max}
+#' \item{x_loc_leg_insertion}
+#' \item{x_loc_TorsotailCoG}
+#' \item{z_loc_TorsotailCoG}
+#' }
+#'
+#' @return
+#' @export
+#'
+#' @examples
 massprop_restbody <- function(dat_wingID_curr, dat_bird_curr){
   # --------------------- Initialize variables -----------------------
   # pre-define storage matrices
   mass_properties = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
-  column_names = c("species","WingID","TestID","FrameID","prop_type","component","value")
+  column_names = c("species","BirdID","TestID","FrameID","prop_type","component","value")
 
   # -------------------------------------------------------------
   # ----------------- Head and neck data ------------------------
   # -------------------------------------------------------------
   neck_start = c(0,0,0)
-  neck_end   = c(dat_bird_curr$neck_length_m,0,0)
-  head_end   = neck_end + c(dat_bird_curr$head_length_m,0,0)
+  neck_end   = c(dat_bird_curr$neck_length,0,0)
+  head_end   = neck_end + c(dat_bird_curr$head_length,0,0)
   # Calculate the effects of the head
-  head       = massprop_head(dat_bird_curr$head_mass_kg,0.5*dat_bird_curr$head_height_m,dat_bird_curr$head_length_m,neck_end,head_end)
+  head       = massprop_head(dat_bird_curr$head_mass,0.5*dat_bird_curr$head_height,dat_bird_curr$head_length,neck_end,head_end)
   # Calculate the effects of the neck
-  neck       = massprop_neck(dat_bird_curr$neck_mass_kg,0.5*dat_bird_curr$neck_width_m,dat_bird_curr$neck_length_m,neck_start,neck_end)
+  neck       = massprop_neck(dat_bird_curr$neck_mass,0.5*dat_bird_curr$neck_width,dat_bird_curr$neck_length,neck_start,neck_end)
   # -------------------------------------------------------------
   # ------------------- Torso and tail data -------------------------
   # -------------------------------------------------------------
-  tail_start  = c(-(dat_bird_curr$torsotail_length_m-dat_bird_curr$tail_length_m),0,0)
-  tail_end    = c(-dat_bird_curr$torsotail_length_m,0,0)
-  m_legs    = dat_bird_curr$right_leg_mass_kg + dat_bird_curr$left_leg_mass_kg
-  torso     = massprop_torso(dat_bird_curr$torsotail_mass_kg, m_legs, dat_bird_curr$body_width_max_m, dat_bird_curr$body_height_max_m,
-                                  dat_bird_curr$x_loc_of_body_max_m, dat_bird_curr$body_width_at_leg_insert_m, dat_bird_curr$x_loc_leg_insertion_m,
-                                  dat_bird_curr$torsotail_length_m, dat_bird_curr$x_loc_TorsotailCoG_m, dat_bird_curr$z_loc_TorsotailCoG_m,
+  tail_start  = c(-(dat_bird_curr$torsotail_length-dat_bird_curr$tail_length),0,0)
+  tail_end    = c(-dat_bird_curr$torsotail_length,0,0)
+  m_legs    = dat_bird_curr$right_leg_mass + dat_bird_curr$left_leg_mass
+  torso     = massprop_torso(dat_bird_curr$torsotail_mass, m_legs, dat_bird_curr$body_width_max, dat_bird_curr$body_height_max,
+                                  dat_bird_curr$x_loc_of_body_max, dat_bird_curr$body_width_at_leg_insert, dat_bird_curr$x_loc_leg_insertion,
+                                  dat_bird_curr$torsotail_length, dat_bird_curr$x_loc_TorsotailCoG, dat_bird_curr$z_loc_TorsotailCoG,
                                   neck_start, tail_end)
 
-  tail   = massprop_tail(dat_bird_curr$tail_mass_kg, dat_bird_curr$tail_length_m,dat_bird_curr$tail_width_m,dat_bird_curr$torsotail_length_m,tail_start,tail_end)
+  tail   = massprop_tail(dat_bird_curr$tail_mass, dat_bird_curr$tail_length,dat_bird_curr$tail_width,dat_bird_curr$torsotail_length,tail_start,tail_end)
   # ----------------------------------------------------
   # ----------------- Save Data ------------------------
   # ----------------------------------------------------
@@ -56,7 +95,7 @@ massprop_restbody <- function(dat_wingID_curr, dat_bird_curr){
 #' @param dat_wingID_curr Dataframe related to the current bird wing ID info that must include the following columns:
 #' \itemize{
 #' \item{species}{Species ID code as a string}
-#' \item{WingID}{Wing ID code as a string}
+#' \item{BirdID}{Bird ID code as a string}
 #' \item{TestID}{Test ID code as a string}
 #' \item{frameID}{Video frame ID code as a string}
 #' }
@@ -70,11 +109,13 @@ massprop_restbody <- function(dat_wingID_curr, dat_bird_curr){
 #' \item{brachial_muscle_mass}{Mass of all muscles in the brachial region of the wing (kg)}
 #' \item{antebrachial_muscle_mass}{Mass of all muscles in the antebrachial region of the wing (kg)}
 #' \item{manus_muscle_mass}{Mass of all muscles in the manus region of the wing (kg)}
+#' \item{all_skin_coverts_mass}
+#' \item{tertiary_mass}
 #' }
 #'
-#' @param dat_bone_curr Dataframe related to the current bird wing bones that must include the following columns:
+#' @param dat_bone_curr Dataframe (6 row x 5 column) related to the current bird wing bones that must include the following columns:
 #' \itemize{
-#' \item{bone}{Bone ID code. Must include: "Humerus","Ulna","Radius","Carpometacarpus,"Ulnare" and "Radiale".}
+#' \item{bone}{Bone ID code. Must include: "Humerus","Ulna","Radius","Carpometacarpus","Ulnare" and "Radiale".}
 #' \item{bone_mass}{Mass of bone in the same row as the appropriate bone ID code (kg)}
 #' \item{bone_len}{Length of bone in the same row as the appropriate bone ID code (m)}
 #' \item{bone_out_rad}{Outer radius of bone in the same row as the appropriate bone ID code (m)}
@@ -132,7 +173,7 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
 
   # --------------------- Initialize variables -----------------------
   mass_properties = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
-  column_names = c("species","WingID","TestID","FrameID","prop_type","component","value")
+  column_names = c("species","BirdID","TestID","FrameID","prop_type","component","value")
   colnames(mass_properties) = column_names
   mass_properties_bone      = mass_properties                    # specific bone data
   mass_properties_muscle    = mass_properties                    # specific muscle data
@@ -350,7 +391,7 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
 #' @param dat_wingID_curr Dataframe related to the current bird wing ID info that must include the following columns:
 #' \itemize{
 #' \item{species}{Species ID code as a string}
-#' \item{WingID}{Wing ID code as a string}
+#' \item{BirdID}{Bird ID code as a string}
 #' \item{TestID}{Test ID code as a string}
 #' \item{frameID}{Video frame ID code as a string}
 #' }
@@ -362,7 +403,7 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
 #' }
 #'
 #' @param mass_properties Dataframe containing any previously saved data.
-#' Must have the following columns: "species","WingID","TestID","FrameID","prop_type","component","value".
+#' Must have the following columns: "species","BirdID","TestID","FrameID","prop_type","component","value".
 #'
 #' @param name Name of the component for which the moment of inertia and center of gravity were computed.
 #'
@@ -374,26 +415,26 @@ store_data <- function(dat_wingID_curr,dat_mass,mass_properties,name){
   prop_type_ind  = cbind(c(1,2,3,1,2,1),c(1,2,3,2,3,3))
 
   species = dat_wingID_curr$species
-  wingID  = dat_wingID_curr$WingID
+  BirdID  = dat_wingID_curr$BirdID
   testID  = dat_wingID_curr$TestID
-  frameID = dat_wingID_curr$frameID
+  frameID = dat_wingID_curr$FrameID
 
   # Moment of inertia tensor
   for (i in 1:6){
-    new_row = data.frame(species = species,WingID = wingID,TestID = testID, FrameID = frameID, component = name,
+    new_row = data.frame(species = species,BirdID = BirdID,TestID = testID, FrameID = FrameID, component = name,
                          object = prop_type_list[i], value = dat_mass$I[prop_type_ind[i,1],prop_type_ind[i,2]]) # saves the name and valueof the tensor component
     mass_properties = rbind(mass_properties,new_row)
   }
 
   # Center of gravity
   for (i in 1:3){
-    new_row = data.frame(species = species,WingID = wingID,TestID = testID, FrameID = frameID, component = name,
+    new_row = data.frame(species = species,BirdID = BirdID,TestID = testID, FrameID = FrameID, component = name,
                          object = prop_type_list[6+i], value = dat_mass$CG[i]) # saves the name and value of the CG component
     mass_properties = rbind(mass_properties,new_row)
   }
 
   # Mass
-  new_row = data.frame(species = species,WingID = wingID,TestID = testID, FrameID = frameID, component = name,
+  new_row = data.frame(species = species,BirdID = BirdID,TestID = testID, FrameID = FrameID, component = name,
                          object = "m", value = dat_mass$m) # saves the name and value of the mass
   mass_properties = rbind(mass_properties,new_row)
 
