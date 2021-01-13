@@ -46,7 +46,7 @@ massprop_restbody <- function(dat_wingID_curr, dat_bird_curr){
   # --------------------- Initialize variables -----------------------
   # pre-define storage matrices
   mass_properties = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
-  column_names = c("species","BirdID","TestID","FrameID","prop_type","component","value")
+  colnames(mass_properties) = c("species","BirdID","TestID","FrameID","prop_type","component","value")
 
   # -------------------------------------------------------------
   # ----------------- Head and neck data ------------------------
@@ -421,20 +421,20 @@ store_data <- function(dat_wingID_curr,dat_mass,mass_properties,name){
 
   # Moment of inertia tensor
   for (i in 1:6){
-    new_row = data.frame(species = species,BirdID = BirdID,TestID = testID, FrameID = FrameID, component = name,
+    new_row = data.frame(species = species,BirdID = BirdID,TestID = testID, FrameID = frameID, component = name,
                          object = prop_type_list[i], value = dat_mass$I[prop_type_ind[i,1],prop_type_ind[i,2]]) # saves the name and valueof the tensor component
     mass_properties = rbind(mass_properties,new_row)
   }
 
   # Center of gravity
   for (i in 1:3){
-    new_row = data.frame(species = species,BirdID = BirdID,TestID = testID, FrameID = FrameID, component = name,
+    new_row = data.frame(species = species,BirdID = BirdID,TestID = testID, FrameID = frameID, component = name,
                          object = prop_type_list[6+i], value = dat_mass$CG[i]) # saves the name and value of the CG component
     mass_properties = rbind(mass_properties,new_row)
   }
 
   # Mass
-  new_row = data.frame(species = species,BirdID = BirdID,TestID = testID, FrameID = FrameID, component = name,
+  new_row = data.frame(species = species,BirdID = BirdID,TestID = testID, FrameID = frameID, component = name,
                          object = "m", value = dat_mass$m) # saves the name and value of the mass
   mass_properties = rbind(mass_properties,new_row)
 

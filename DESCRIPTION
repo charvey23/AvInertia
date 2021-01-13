@@ -17,7 +17,9 @@ RoxygenNote: 7.1.1.9000
 Imports: 
     pracma,
     readxl,
-    ggplot2
+    ggplot2,
+    stringr,
+    tidyr
 Suggests: 
     knitr,
     rmarkdown
