@@ -210,19 +210,13 @@ orient_feather <- function(no_pri,no_sec,Pt1,Pt2,Pt3,Pt4,Pt9,Pt10,Pt11){
   }
 
   # --- Secondaries ---
-  # Note: Secondaries will at most be in line with the elbow point along the
-  #       vector drawn between S1 and the wing root trailing edge
-  sec_vec = Pt11-Pt10;                   # vector between S1 and the wing root trailing edge
-  t       = (Pt2[2]-Pt10[2])/sec_vec[2]; # proportion along the vector where it intersects y = Pt2y
-  sec_end = c((t*sec_vec[1]+Pt10[1]), Pt2[2], (t*sec_vec[3]+Pt10[3])); # Point along the vector at Pt2Y
-
   # Calculate the start and end of the secondaries
   for(i in 1:no_sec){
     # -- Start --
     #equally space the start of the secondaries along the forearm ulna/radius
     feather$loc_start[count,] = Pt3 + (1/(no_sec-1))*(i-1)*(Pt2-Pt3);
     # -- End --
-    feather$loc_end[count,]   = Pt10 + (1/(no_sec-1))*(i-1)*(sec_end-Pt10);
+    feather$loc_end[count,]   = Pt10 + (1/(no_sec-1))*(i-1)*(Pt11-Pt10);
     count = count + 1
   }
 
