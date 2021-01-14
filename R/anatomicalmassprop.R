@@ -183,9 +183,6 @@ massprop_muscles <- function(m,rho,start,end){
 #' \item{m}{a double that returns the input skin mass}
 #' }
 #'
-#' @section Suggested ordering:
-#' For inner skin: Pt1 - Shoulder, Pt2 - Wrist, Pt3 - Elbow * ensures CCW ordering
-#' For outer skin: Pt1 - Wrist, Pt2 - Finger, Pt3 - Elbow * ensures CCW ordering
 #'
 #' @section Warning:
 #' Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
@@ -290,9 +287,9 @@ massprop_pm <- function(m,pt){
 #' @param rho_med Density of the medullary (kg/m^3)
 #' @param w_vp Width of proximal (closest to body) vane (m)
 #' @param w_vd Width of distal (closest to wing tip) vane (m)
-#' @param angle Angle between calamus and the vane #ADD INFO
+#' @param angle Angle between calamus and the vane taken the supplement angle to the interior angle. Negative indicates the feather tip is rotated proximally relative to the start of the feather vane.
 #' @param start a 1x3 vector (x,y,z) representing the 3D point where feather starts. (Frame of reference: VRP | Origin: VRP)
-#' @param end a 1x3 vector (x,y,z) representing the 3D point where feather ends (Frame of reference: VRP | Origin: VRP)
+#' @param end a 1x3 vector (x,y,z) representing the 3D point where feather tip ends (Frame of reference: VRP | Origin: VRP)
 #' @param normal Vector that defines the normal to each feather plane. (Frame of reference: VRP | Origin: VRP)
 #' @author Christina Harvey
 #'
@@ -367,11 +364,11 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
 
   # ------- Rachis -------
   # - Medullary - solid square pyramid
-  # 1. Moment of inertia tensor - inner rachis medullary component
+  # Moment of inertia tensor - inner rachis medullary component
   # CAUTION: this is about the center of base
   I_r_med_base  = calc_inertia_pyrasolid(r_med, l_r_med, m_r_med)        # Frame of reference: Feather Rachis | Origin: Start of the vane (center)
   # - Cortex - hollow square pyramid
-  # 1. Moment of inertia tensor - as if solid inner and outer cortex components
+  # Moment of inertia tensor - as if solid inner and outer cortex components
   # CAUTION: this is about the center of base
   I_r_out_cor = calc_inertia_pyrasolid(r_cor, l_r_cor, mass_outer)       # Frame of reference: Feather Rachis | Origin: Start of the vane
   I_r_in_cor  = calc_inertia_pyrasolid(r_med, l_r_med, mass_inner)       # Frame of reference: Feather Rachis | Origin: Start of the vane
@@ -421,7 +418,7 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
 
   # 6. Adjust the origin to first the CG of the entire object and then to the start of the feather
   I_vrCG  = parallelaxis(I_vr2,CG_vr2,(m_r+m_vd+m_vp),"A")       # Frame of reference: Feather Calamus | Origin: Rachis & Vane CG
-  CG_vr3 = CG_r1 + c(0,0,l_c)                                    # Frame of reference: Feather Calamus | Origin: Start of Feather
+  CG_vr3 = CG_vr2 + c(0,0,l_c)                                   # Frame of reference: Feather Calamus | Origin: Start of Feather
   I_vr3   = parallelaxis(I_vrCG,-CG_vr3,(m_r+m_vd+m_vp), "CG")   # Frame of reference: Feather Calamus | Origin: Start of Feather
 
   # 7. Sum all feather components - must be in Frame of reference: Feather Calamus | Origin: Start of Feather -----------------
@@ -449,12 +446,12 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   CG_3    = t(VRP2object) %*% CG_2                       # Frame of reference: VRP | Origin: Start of Feather
 
   # To properly use parallel axis first, return the origin to the center of gravity of the full feather
-  I_fCG    = parallelaxis(I_3,-CG_3,m_f,"A")             # Frame of reference: VRP | Origin: Feather CG
+  I_fCG   = parallelaxis(I_3,-CG_3,m_f,"A")              # Frame of reference: VRP | Origin: Feather CG
 
   # 10. Return the origin to the VRP
-  mass_prop = list() # pre-define
+  mass_prop    = list() # pre-define
   mass_prop$I  = parallelaxis(I_fCG,-(CG_3 + start),m_f,"CG")   # Frame of reference: VRP | Origin: VRP
-  mass_prop$CG = CG_3 + start                           # Frame of reference: VRP | Origin: VRP
+  mass_prop$CG = CG_3 + start                                   # Frame of reference: VRP | Origin: VRP
   mass_prop$m  = m_f
 
   return(mass_prop)
@@ -642,7 +639,7 @@ massprop_tail <- function(m,l_tail,w_tail,l_torso,start,end){
 #'
 #' Calculate the moment of inertia of a head modeled as a solid cone
 #'
-#' @param m_true Mass of the torso and legs (kg)
+#' @param m_true Mass of the torso and legs - no tail (kg)
 #' @param m_legs Mass of the legs only (kg)
 #' @param w_max Maximum width of the body (m)
 #' @param h_max Maximum height of the body (m)
@@ -809,8 +806,8 @@ massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, l_leg, l
 #' @param l_full length of the partial cone as if it was full length (m)
 #' @param l_par true length of the partial cone (m)
 #' @param l_end length of the end cone (m)
-#' @param CG_true x location of the CG for the torso, tail and legs (m)
-#' @param m_true Mass of the torso, tail and legs (kg)
+#' @param CG_true x location of the CG for the torso and legs (m)
+#' @param m_true Mass of the torso and legs (kg)
 #'
 #' @return the summed relative error of the difference between the true and predicted values of mass and density.
 #' It also includes a minor optimization to keep the densities in the front two sections of the body as close as possible.

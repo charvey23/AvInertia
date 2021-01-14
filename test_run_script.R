@@ -100,6 +100,8 @@ names(dat_bird)[names(dat_bird) == "x_loc_of_humeral_insert_cm"] <- "x_loc_humer
 names(dat_bird)[names(dat_bird) == "y_loc_of_humeral_insert_cm"] <- "y_loc_humeral_insert"
 names(dat_bird)[names(dat_bird) == "z_loc_of_humeral_insert_cm"] <- "z_loc_humeral_insert"
 names(dat_bird)[names(dat_bird) == "whole_body_mass_g"]          <- "total_bird_mass"
+#Correct the sign of the x measurement
+dat_bird$x_loc_TorsotailCoG = - dat_bird$x_loc_TorsotailCoG
 
 # save a singular wing mass - left if that is the one measured right otherwise
 dat_bird$wing_mass <-dat_bird$left_wing_mass_g
@@ -112,8 +114,8 @@ for (i in 1:nrow(dat_bird)){
 ## ----- Adjust the feather input properties ----------
 
 # Update to include the barb information within the species specific info
-dat_barb$barb_distance <- dat_barb$barb_distance_um/10^-6
-dat_barb$barb_radius   <- dat_barb$barb_radius_um/10^-6
+dat_barb$barb_distance <- dat_barb$barb_distance_um*10^-6
+dat_barb$barb_radius   <- dat_barb$barb_radius_um*10^-6
 dat_bird <- merge(dat_bird,dat_barb, by=c("species"))
 # need the calamus angle to be positive (i.e. from start of vane to tip of calamus)
 for (k in 1:nrow(dat_feat[which(dat_feat$Component == "calamus length"),c("Angle")])){
@@ -129,6 +131,7 @@ for (k in 1:nrow(dat_feat[which(dat_feat$Component == "vane length"),c("Angle")]
   }
 }
 
+
 # define all assumed material properties
 dat_mat = list()
 dat_mat$material  =	c("Muscle", "Bone", "Skin", "Cortex", "Medullary")
@@ -139,9 +142,9 @@ dat_mat$density   = c(1100, 2060, 1060, 660, 37)
 all_data = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
 column_names = c("species","BirdID","TestID","FrameID","prop_type","component","value")
 colnames(all_data) = column_names
+specimens <- unique(dat_ind[,c("species","BirdID")])
 
 # ----------- Iterate through each species ---------
-specimens <- unique(dat_ind[,c("species","BirdID")])
 for (k in 1:nrow(specimens)){
 
   # CAUTION: THIS JUST FOR DEBUGGING
@@ -191,20 +194,29 @@ for (k in 1:nrow(specimens)){
   tmp_angle   <- tmp_angle[,c("Group.1","calamus length","vane length")] ## NEED TO ADJUST THESE TO WORK
 
   dat_feat_curr <- merge(tmp_area,tmp_length, by = "Group.1")
-  # computes the interior angle between the calamus and vane assuming that the calamus is a positive angle and the vane is negative
-  dat_feat_curr$angle <- 180 - (tmp_angle$"calamus length" - tmp_angle$"vane length")
-  dat_feat_curr$w_vd  <- 0.01*(dat_feat_curr$"distal vane")/(dat_feat_curr$"vane length") # compute the average width of the distal vane
-  dat_feat_curr$w_vp  <- 0.01*(dat_feat_curr$"proximal vane")/(dat_feat_curr$"vane length") # compute the average width of the proximal vane
 
-  names(dat_feat_curr)[names(dat_feat_curr) == "vane length"]     <- "l_vane"
-  names(dat_feat_curr)[names(dat_feat_curr) == "calamus length"]  <- "l_cal"
-  names(dat_feat_curr)[names(dat_feat_curr) == "rachis width"]    <- "w_cal"
+  # computes the supplement angle to the interior angle between the calamus and vane assuming that the calamus is a positive angle and the vane is negative
+  dat_feat_curr$vane_angle <- 180 - (tmp_angle$"calamus length" - tmp_angle$"vane length")
+
+  # Change all units from cm to m
+  dat_feat_curr$l_vane <- dat_feat_curr$`vane length`*0.01
+  dat_feat_curr$l_cal  <- dat_feat_curr$`calamus length`*0.01
+  dat_feat_curr$w_cal  <- dat_feat_curr$`rachis width`*0.01
+  dat_feat_curr$w_vd   <- 0.01*(dat_feat_curr$"distal vane")/(dat_feat_curr$"vane length") # compute the average width of the distal vane
+  dat_feat_curr$w_vp   <- 0.01*(dat_feat_curr$"proximal vane")/(dat_feat_curr$"vane length") # compute the average width of the proximal vane
+  # rename last column
   names(dat_feat_curr)[names(dat_feat_curr) == "Group.1"]         <- "feather"
 
+  # save all feather masses
   dat_feat_curr$m_f <- NA
   for (i in 1:nrow(dat_feat_curr)){
     dat_feat_curr$m_f[i] = dat_bird_curr[1,paste(tolower(dat_feat_curr$feather[i]),"mass_g",sep = "_")]
   }
+  # save the combined alula feather masses
+  row_alula = nrow(dat_feat_curr)+1
+  dat_feat_curr[row_alula, ]       <- NA
+  dat_feat_curr$feather[row_alula] <- "alula"
+  dat_feat_curr$m_f[row_alula]     <- 0 # for now have no alula masses
 
   dat_feat_curr$species = species_curr
   dat_feat_curr$BirdID  = birdid_curr
@@ -244,9 +256,11 @@ for (k in 1:nrow(specimens)){
   # -------------- Iterate through the wings of this species ------------------------------
 
   for (ind_wing in 1:length(dat_wing_curr$frameID)){
+    ind_wing = 1 # CAUTION: FOR  DEBUGGING ONLY
     # both dataframes below should only be one row of input points
     dat_id_curr = dat_wing_curr[ind_wing,c("species","BirdID","testid","frameID")]
     names(dat_id_curr)[names(dat_id_curr) == "frameID"] <- "FrameID"
+    names(dat_id_curr)[names(dat_id_curr) == "testid"] <- "TestID"
     dat_pt_curr = dat_pt[ind_wing,]
 
     # Initialize common pts
@@ -261,8 +275,8 @@ for (k in 1:nrow(specimens)){
     Pt11 = c(dat_pt_curr$pt11_X, dat_pt_curr$pt11_Y, dat_pt_curr$pt11_Z) # Wing root trailing edge
     Pt12 = c(dat_pt_curr$pt12_X, dat_pt_curr$pt12_Y, dat_pt_curr$pt12_Z) # Wing root leading edge
     clean_pts = rbind(Pt1,Pt2,Pt3,Pt4,Pt8,Pt9,Pt10,Pt11,Pt12)
-    ## TOMORROW FIX: MISSING TEST ID within dat_id_curr
-    # solve the data
+
+        # solve the data
     curr_wing_data      = massprop_birdwing(dat_id_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts)
     curr_torsotail_data = massprop_restbody(dat_id_curr, dat_bird_curr)
 

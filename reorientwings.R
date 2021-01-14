@@ -166,8 +166,6 @@ for (i in 1:nrow(dat_info)){
   write.csv(dat_clean,filename_new)
 }
 
-
-
 # Visualize the wings as required - For each calibration verify that the axis is RH
 m = 1:nrow(dat_clean)
 max = 0.5

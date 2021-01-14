@@ -63,13 +63,25 @@ massprop_restbody <- function(dat_wingID_curr, dat_bird_curr){
   # -------------------------------------------------------------
   tail_start  = c(-(dat_bird_curr$torsotail_length-dat_bird_curr$tail_length),0,0)
   tail_end    = c(-dat_bird_curr$torsotail_length,0,0)
-  m_legs    = dat_bird_curr$right_leg_mass + dat_bird_curr$left_leg_mass
-  torso     = massprop_torso(dat_bird_curr$torsotail_mass, m_legs, dat_bird_curr$body_width_max, dat_bird_curr$body_height_max,
-                                  dat_bird_curr$x_loc_of_body_max, dat_bird_curr$body_width_at_leg_insert, dat_bird_curr$x_loc_leg_insertion,
-                                  dat_bird_curr$torsotail_length, dat_bird_curr$x_loc_TorsotailCoG, dat_bird_curr$z_loc_TorsotailCoG,
-                                  neck_start, tail_end)
+  m_legs      = dat_bird_curr$right_leg_mass + dat_bird_curr$left_leg_mass
+  tail        =  massprop_tail(dat_bird_curr$tail_mass, dat_bird_curr$tail_length,dat_bird_curr$tail_width,dat_bird_curr$torsotail_length,tail_start,tail_end)
 
-  tail   = massprop_tail(dat_bird_curr$tail_mass, dat_bird_curr$tail_length,dat_bird_curr$tail_width,dat_bird_curr$torsotail_length,tail_start,tail_end)
+  # adjust the COG from the torso tail to be torso only
+  m_torso    = dat_bird_curr$torsotail_mass - dat_bird_curr$tail_mass
+  l_torso    = dat_bird_curr$torsotail_length - dat_bird_curr$tail_length
+  CG_x_torso =  ((dat_bird_curr$torsotail_mass*dat_bird_curr$x_loc_TorsotailCoG) - (dat_bird_curr$tail_mass*tail$CG[1]))/m_torso
+  CG_z_torso =  ((dat_bird_curr$torsotail_mass*dat_bird_curr$z_loc_TorsotailCoG) - (dat_bird_curr$tail_mass*tail$CG[3]))/m_torso
+
+  # CAUTION: INGOING CG_x must be positive as it calculates a total distance along the known axis
+  torso     = massprop_torso(m_torso, m_legs, dat_bird_curr$body_width_max, dat_bird_curr$body_height_max,
+                             dat_bird_curr$x_loc_of_body_max, dat_bird_curr$body_width_at_leg_insert, dat_bird_curr$x_loc_leg_insertion,
+                             l_torso, abs(CG_x_torso), CG_z_torso, neck_start, tail_start)
+
+  # Include an error warning if difference between the CG is greater than a cm
+  if(abs(CG_x_torso - torso$CG[1])> 0.01 | abs(CG_z_torso - torso$CG[3])> 0.01){
+    warning("The error on the torso CG is above 1 cm.")
+  }
+
   # ----------------------------------------------------
   # ----------------- Save Data ------------------------
   # ----------------------------------------------------
@@ -132,6 +144,7 @@ massprop_restbody <- function(dat_wingID_curr, dat_bird_curr){
 #' \item{w_cal}{Width (diameter) of calamus in the same row as the appropriate feather ID code (m)}
 #' \item{w_vp}{Width of proximal vane (average value) in the same row as the appropriate feather ID code (m)}
 #' \item{w_vd}{Width of distal vane (average value)  in the same row as the appropriate feather ID code (m)}
+#' \item{vane_angle}{Interior angle between the rachis and calamus  (degrees)}
 #' }
 #' NOTE: Alula feathers will be treated as point mass so only the mass of the feathers is required. Other columns can be left blank.
 #'
@@ -234,14 +247,6 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
   prop_muscles$CG = (mass_muscles[1]*brach$CG + mass_muscles[2]*abrach$CG + mass_muscles[3]*manus$CG)/sum(mass_muscles)
   prop_muscles$m  = sum(mass_muscles)
 
-  # ---------------------------------------------------------
-  # --------------- Skin/Covert Data ------------------------
-  # ---------------------------------------------------------
-
-  rho_skin   = dat_mat$density[which(dat_mat$material == "Skin")]
-  mass_skin  = dat_bird_curr$all_skin_coverts_mass - dat_bird_curr$tertiary_mass
-  prop_skin  = massprop_skin(mass_skin,rho_skin,rbind(Pt1,Pt3,Pt2))
-
   # -------------------------------------------------------
   # ----------------- Feather Data ------------------------
   # -------------------------------------------------------
@@ -309,9 +314,9 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
   alula   = massprop_pm(m_alula, Pt3)
 
   # ----------------------------------- Tertiaries -----------------------------------
-  last_secondary_pos = feather_info$loc_end[which.min(feather_info$loc_end[,2]),]
-  prop_tertiary1 = massprop_skin(0.5*dat_bird_curr$tertiary_mass,rho_cor,rbind(Pt12,Pt2,Pt11))
-  prop_tertiary2 = massprop_skin(0.5*dat_bird_curr$tertiary_mass,rho_cor,rbind(Pt11,Pt2,last_secondary_pos))
+  edge_tert      = c(Pt11[1],Pt12[2],Pt12[3]) # position where the teritaries likely encounter the body
+  prop_tertiary1 = massprop_skin(0.5*dat_bird_curr$tertiary_mass,rho_cor,rbind(Pt12,edge_tert,Pt2))
+  prop_tertiary2 = massprop_skin(0.5*dat_bird_curr$tertiary_mass,rho_cor,rbind(Pt11,Pt2,edge_tert))
 
   # --- All Feathers ---
   prop_feathers = list()
@@ -322,6 +327,13 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
   prop_feathers$CG = (colSums(res_pri$CGm) + colSums(res_sec$CGm) + alula$CG*m_alula +
                         prop_tertiary1$CG*0.5*dat_bird_curr$tertiary_mass + prop_tertiary2$CG*0.5*dat_bird_curr$tertiary_mass)/prop_feathers$m
 
+  # ---------------------------------------------------------
+  # --------------- Skin/Covert Data ------------------------
+  # ---------------------------------------------------------
+
+  rho_skin   = dat_mat$density[which(dat_mat$material == "Skin")]
+  mass_skin  = dat_bird_curr$wing_mass - prop_feathers$m - prop_bone$m - prop_muscles$m
+  prop_skin  = massprop_skin(mass_skin,rho_skin,rbind(Pt1,Pt3,Pt2))
 
   # ----------------------------------------------------
   # ----------------- Save Data ------------------------
@@ -339,10 +351,10 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
   mass_properties_muscle = store_data(dat_wingID_curr,abrach,mass_properties_muscle,"abrach")
   mass_properties_muscle = store_data(dat_wingID_curr,manus,mass_properties_muscle,"manus")
 
-  # add data to muscle specific data frame
+  # add data to skin specific data frame
   mass_properties_skin = store_data(dat_wingID_curr,prop_skin,mass_properties_skin,"skin_prop")
 
-  # add data to bone specific data frame
+  # add data to feather specific data frame
   # --- Primaries ---
   for (i in 1:no_pri){
     feather_name = paste("P",i,sep = "")
@@ -367,7 +379,6 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
   mass_properties      = store_data(dat_wingID_curr,prop_muscles,mass_properties,"muscles")
   mass_properties      = store_data(dat_wingID_curr,prop_skin,mass_properties,"skin")
   mass_properties      = store_data(dat_wingID_curr,prop_feathers,mass_properties,"feathers")
-
   # save all wing data
   prop_wing    = list()
   prop_wing$I  = prop_bone$I + prop_muscles$I + prop_skin$I + prop_feathers$I
@@ -422,7 +433,7 @@ store_data <- function(dat_wingID_curr,dat_mass,mass_properties,name){
   # Moment of inertia tensor
   for (i in 1:6){
     new_row = data.frame(species = species,BirdID = BirdID,TestID = testID, FrameID = frameID, component = name,
-                         object = prop_type_list[i], value = dat_mass$I[prop_type_ind[i,1],prop_type_ind[i,2]]) # saves the name and valueof the tensor component
+                         object = prop_type_list[i], value = dat_mass$I[prop_type_ind[i,1],prop_type_ind[i,2]]) # saves the name and value of the tensor component
     mass_properties = rbind(mass_properties,new_row)
   }
 

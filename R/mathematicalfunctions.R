@@ -166,7 +166,7 @@ parallelaxis <- function(I, offset_vec, m, cg_a){
 #' @param Pt4 a matrix of 3 values representing the point on the end of carpometacarpus (m)
 #' @param Pt9 a matrix of 3 values representing the point on tip of most distal primary (m)
 #' @param Pt10 a matrix of 3 values representing the point on tip of last primary to model as if on the end of the carpometacarpus (m)
-#' @param Pt11 a matrix of 3 values representing the point on tip of most proximal feather (wing root trailing edge) (m)
+#' @param Pt11 a matrix of 3 values representing the point on tip of most proximal secondary feather (m)
 #'
 #' @author Christina Harvey
 #'
@@ -211,12 +211,19 @@ orient_feather <- function(no_pri,no_sec,Pt1,Pt2,Pt3,Pt4,Pt9,Pt10,Pt11){
 
   # --- Secondaries ---
   # Calculate the start and end of the secondaries
+  if(Pt11[2]<0){ # given the orientation it is possible that the secondary moves into a positive area
+    sec_vec = Pt11-Pt10;                   # vector between S1 and the wing root trailing edge
+    t       = (Pt12[2]-Pt10[2])/sec_vec[2]; # proportion along the vector where it intersects y = Pt12y
+    sec_end = c((t*sec_vec[1]+Pt10[1]), Pt12[2], (t*sec_vec[3]+Pt10[3])); # Point along the vector at Pt12Y
+  }else{
+    sec_end = Pt11
+  }
   for(i in 1:no_sec){
     # -- Start --
     #equally space the start of the secondaries along the forearm ulna/radius
     feather$loc_start[count,] = Pt3 + (1/(no_sec-1))*(i-1)*(Pt2-Pt3);
     # -- End --
-    feather$loc_end[count,]   = Pt10 + (1/(no_sec-1))*(i-1)*(Pt11-Pt10);
+    feather$loc_end[count,]   = Pt10 + (1/(no_sec-1))*(i-1)*(sec_end-Pt10);
     count = count + 1
   }
 
