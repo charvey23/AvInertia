@@ -19,7 +19,8 @@ Imports:
     readxl,
     ggplot2,
     stringr,
-    tidyr
+    tidyr,
+    ggthemes
 Suggests: 
     knitr,
     rmarkdown
