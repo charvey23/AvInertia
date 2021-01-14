@@ -1,6 +1,6 @@
 # ---- This code is to be used with the LLT takes raw digitized points and prepares them for testing
 #When re-running for new data double check that the transformations are working correctly.
-
+library(stringr)
 # CAUTION: This code is now set up to orient wings as follows:
 #          1. Pt3 (Wrist) will be inline with Pt1 (humeral head) along the y axis
 #          2. Pt3 (Wrist) will be inline with Pt1 (humeral head) along the z axis
@@ -115,7 +115,7 @@ for (i in 1:nrow(dat_info)){
   #------------------------------- Step 4 -------------------------------
   # Set pt 10 in line with Pt 3 looking from back of wing
   # Calculate angle between x axis and pt 10 (rotate about y)
-  # Project onto yaxis & make negative if k2 > 0: Gull 16-0048
+  # Project onto yaxis & make negative if k2 > 0
   i3 = dat_clean$pt10_X
   k3 = dat_clean$pt10_Z
 
@@ -155,14 +155,14 @@ for (i in 1:nrow(dat_info)){
   for (j in 1:11) {
     col_name = paste(point_list[j], dim_list[1], sep = "_")
     dat_clean[, col_name] <- -dat_clean[, col_name]
-    if (wing == "L") {
+    if(wing == "R"){
       col_name = paste(point_list[j], dim_list[3], sep = "_")
       dat_clean[, col_name] <- -dat_clean[, col_name]
     }
   }
 
   # ------------------------------ Save data
-  filename_new <- paste("2020_12_15_",dat_info$species[i],"_",dat_info$birdid[i],"_00",dat_info$testid[i],"_aligned.csv",sep = "")
+  filename_new <- paste("2020_01_14_",dat_info$species[i],"_",dat_info$birdid[i],"_00",dat_info$testid[i],"_aligned.csv",sep = "")
   write.csv(dat_clean,filename_new)
 }
 
@@ -181,9 +181,9 @@ points(dat_clean$pt11_Y[m],dat_clean$pt11_X[m], xlim =c(-max,max), ylim = c(-max
 plot(dat_clean$pt2_Y[m],dat_clean$pt2_Z[m], xlim =c(-max,max), ylim = c(-max,max))
 points(dat_clean$pt3_Y[m],dat_clean$pt3_Z[m],xlim =c(-max,max), ylim = c(-max,max),col = "blue")
 points(dat_clean$pt4_Y[m], dat_clean$pt4_Z[m], xlim =c(-max,max), ylim = c(-max,max), col = "green")
-points(dat_clean$pt1_Y[m],dat_clean$pt1_Z[m], xlim =c(-max,max), ylim = c(-max,max), col = "red")
 points(dat_clean$pt8_Y[m],dat_clean$pt8_Z[m], xlim =c(-max,max), ylim = c(-max,max), col = "purple")
-points(dat_clean$pt10_Y[m],dat_clean$pt10_Z[m], xlim =c(-max,max), ylim = c(-max,max), col = "yellow")
+points(dat_clean$pt11_Y[m],dat_clean$pt11_Z[m], xlim =c(-max,max), ylim = c(-max,max), col = "yellow")
+points(dat_clean$pt1_Y[m],dat_clean$pt1_Z[m], xlim =c(-max,max), ylim = c(-max,max), col = "red")
 
 plot(dat_clean$pt2_Z[m],dat_clean$pt2_X[m], xlim =c(-max,max), ylim = c(-max,max))
 points(dat_clean$pt3_Z[m],dat_clean$pt3_X[m],xlim =c(-max,max), ylim = c(-max,max),col = "blue")
