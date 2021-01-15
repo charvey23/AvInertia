@@ -7,6 +7,8 @@
 # ---------------------- Mass Properties - Solid cylinder -------------------------------
 #' Moment of inertia tensor of a solid cylinder
 #'
+#' Reference:https://en.wikipedia.org/wiki/List_of_moments_of_inertia#List_of_3D_inertia_tensors
+#'
 #' @param r radius of the cylinder (m)
 #' @param h height of the cylinder (m)
 #' @param m mass of the cylinder (kg)
@@ -32,6 +34,8 @@ calc_inertia_cylsolid <- function(r, h, m){
 
 # ---------------------- Mass Properties - Hollow cylinder -------------------------------
 #' Moment of inertia tensor of a hollow cylinder
+#'
+#' Reference:https://en.wikipedia.org/wiki/List_of_moments_of_inertia#List_of_3D_inertia_tensors
 #'
 #' @param r_out outer radius of the cylinder (m)
 #' @param r_in inner radius of the cylinder (m)
@@ -62,7 +66,7 @@ calc_inertia_cylhollow <- function(r_out, r_in, h, m){
 # -------------------- Mass Properties - solid ellipse   -------------------------------
 #' Moment of inertia tensor of solid ellipse CG or a half ellipse centered on the base
 #'
-#' All outputs are based on an origin at the centered point on the base
+#' Reference:https://en.wikipedia.org/wiki/List_of_moments_of_inertia#List_of_3D_inertia_tensors
 #'
 #' @param a half the height along the x direction (m)
 #' @param b half the width along the y direction  (m)
@@ -72,8 +76,10 @@ calc_inertia_cylhollow <- function(r_out, r_in, h, m){
 #' @author Christina Harvey
 #'
 #' @return a 3x3 matrix representing the moment of inertia tensor of a solid ellipse about
-#' its center of gravity with the major axes aligned. Origin is at the center of gravity for
-#' a full ellipse or at the center of the base if modelling a half ellipse.
+#' its center of gravity with the major axes aligned.
+#'
+#' @section
+#' CAUTION: Origin is at the center of gravity for a full ellipse or at the center of the base if modelling a half ellipse.
 #'
 #' @export
 #'
@@ -92,6 +98,7 @@ calc_inertia_ellipse <- function(a, b, c, m){
 #' Moment of inertia tensor of a solid circular cone pyramid
 #'
 #' All outputs are based on an origin at the centered point on the base
+#' Reference: https://scienceworld.wolfram.com/physics/MomentofInertiaCone.html
 #'
 #' @param r radius of the cone base (m)
 #' @param h height of the cone (m)
@@ -100,7 +107,10 @@ calc_inertia_ellipse <- function(a, b, c, m){
 #' @author Christina Harvey
 #'
 #' @return a 3x3 matrix representing the moment of inertia tensor of a solid circular cone about
-#' its center of gravity with z oriented through it's major axis. Origin is NOT at the center of gravity but at the center of the base.
+#' its center of gravity with z oriented through it's major axis.
+#'
+#' @section
+#' CAUTION: Origin of the output tensor is NOT at the center of gravity but at the center of the base.
 #'
 #' @export
 #'
@@ -115,20 +125,22 @@ calc_inertia_conesolid <- function(r, h, m){
   return(I)
 }
 
-# -------------------- Mass Properties - partial solid elliptical cone  -------------------------------
-#' Moment of inertia tensor of a partial solid elliptical cone
+# -------------------- Mass Properties - solid elliptical cone  -------------------------------
+#' Moment of inertia tensor of a solid elliptical cone - end of purple notebook derivation verified in green
 #'
 #' @param w   full width of the wide base (m)
 #' @param h   full width of the wide base (m)
 #' @param lp  length of the partial cone (m)
-#' @param lf  length of the full cone as if it had not been cut (m)
+#' @param lf  length of the full cone as if it had not been cut (m) - Note: if computing full cone lf = lp
 #' @param rho density of the partial cone (kg/m^3)
 #'
 #' @author Christina Harvey
 #'
 #' @return a 3x3 matrix representing the moment of inertia tensor of a partial solid elliptical cone about
-#' the center of the wider base with z oriented towards the end
+#' the center of the wider base with z oriented towards the end.
 #'
+#' @section
+#' CAUTION: Origin of the output tensor is NOT at the center of gravity but at the center of the base.
 #' @export
 #'
 calc_inertia_ellcone <- function(w, h, lp, lf, rho){
@@ -136,38 +148,41 @@ calc_inertia_ellcone <- function(w, h, lp, lf, rho){
   I = matrix(0, nrow = 3, ncol = 3)
   tmpxy = (((lp-lf)^5/lf^4)+lf)
   tmpz  = (lp^3/(3*lf^2))*((6*lp^2)-(15*lp*lf)+(10*lf^2))
-  I[1,1] = rho*w*h*pi*(tmpxy*(w^2/8) + tmpz) # Ixx
-  I[2,2] = rho*w*h*pi*(tmpxy*(h^2/8) + tmpz) # Iyy
-  I[3,3] = (1/8)*rho*w*h*pi*tmpxy*(w^2+h^2)  # Izz
-  I = (1/40)*I
+  I[1,1] = (tmpxy*(w^2/8) + tmpz) # Ixx
+  I[2,2] = (tmpxy*(h^2/8) + tmpz) # Iyy
+  I[3,3] = (1/8)*tmpxy*(w^2+h^2)  # Izz
+  I = (1/40)*rho*w*h*pi*I
 
   return(I)
 }
 
 
 # -------------------- Mass Properties - solid square pyramid  -------------------------------
-#' Moment of inertia tensor of a solid square pyramid
-#'
+#' Moment of inertia tensor of a solid square pyramid - mid way through blue notebook
+#' Reference: https://pdfs.semanticscholar.org/2be7/9651965bdda4a353ca72fd950748d74ecae3.pdf
 #' All outputs are based on an origin at the centered point on the base
 #'
-#' @param w_2 half width of one side of the pyramid base (m)
-#' @param h height of the pyramid (m)
+#' @param w entire width of one side of the pyramid base (m)
+#' @param h entire height of the pyramid (m)
 #' @param m mass of the pyramid (kg)
 #'
 #' @author Christina Harvey
 #'
 #' @return a 3x3 matrix representing the moment of inertia tensor of a solid square pyramid about
-#' its center of gravity with z oriented through it's major axis. Origin is NOT at the center of gravity but at the center of the base.
+#' its center of gravity with z oriented through it's major axis.
+#'
+#' @section
+#' CAUTION: Origin is NOT at the center of gravity but at the center of the base.
 #'
 #' @export
 #'
-calc_inertia_pyrasolid <- function(w_2, h, m){
+calc_inertia_pyrasolid <- function(w, h, m){
 
   I = matrix(0, nrow = 3, ncol = 3)
-  I[1,1] = (w_2^2+0.5*h^2) # Ixx
-  I[2,2] = (w_2^2+0.5*h^2) # Iyy
-  I[3,3] = 2*(w_2^2)       # Izz
-  I = (1/5)*m*I
+  I[1,1] = (w^2+2*h^2) # Ixx
+  I[2,2] = (w^2+2*h^2) # Iyy
+  I[3,3] = 2*(w^2)       # Izz
+  I = (1/20)*m*I
 
   return(I)
 }
@@ -175,14 +190,14 @@ calc_inertia_pyrasolid <- function(w_2, h, m){
 # -------------------- Mass Properties - flat rectangular plate  -------------------------------
 #' Moment of inertia tensor of a flat rectangular plate
 #'
-#' @param w full width of one side of the plate (m)
-#' @param h height of the plate (m)
+#' @param w full width of one side of the plate - short edge (m)
+#' @param h height of the plate - long edge (m)
 #' @param m mass of the plate (kg)
 #'
 #' @author Christina Harvey
 #'
 #' @return a 3x3 matrix representing the moment of inertia tensor of a flat plate about
-#' its center of gravity with z oriented parallel with it's long edge and y along its short edge
+#' its center of gravity with z oriented parallel with it's long edge (h) and y along its short edge (w)
 #'
 #' @export
 #'
@@ -197,10 +212,10 @@ calc_inertia_platerect <- function(w, h, m){
   return(I)
 }
 
-
-
 # -------------------- Mass Properties - flat triangular plate  -------------------------------
 #' Moment of inertia tensor of a flat triangular plate
+#'
+#' Reference: https://apps.dtic.mil/dtic/tr/fulltext/u2/a183444.pdf page 4 eqns 2.16-2.20
 #'
 #' @param pts a matrix of the three 3D points that define a point on the triangular plate.
 #' Frame of reference: Muscle | Origin: VRP
@@ -217,7 +232,7 @@ calc_inertia_platerect <- function(w, h, m){
 #' @author Christina Harvey
 #'
 #' @return a 3x3 matrix representing the moment of inertia tensor of a flat triangular plate about
-#' its center of gravity z axis defined by the input pts
+#' its center of gravity. Z axis defined as the normal to the input points.
 #'
 #' @section Warning:
 #' The input points should be defined in a counterclockwise direction around the plate
@@ -230,47 +245,50 @@ calc_inertia_platetri <- function(pts, A, rho, t, desired_prop){
 
   pts = rbind(pts,pts[1,]) # need to add the first point to allow circular calculation
 
-  # calculate the center of gravity of the plate
+  # ------------ Center of Gravity Calculation -----------------
   x1  = 0
   y1  = 0
   for (i in 1:3){
-    x1   = x1 + (1/(6*A))*(((pts[i,1]*pts[i+1,2])-(pts[i+1,1]*pts[i,2]))*(pts[i,1]+pts[i+1,1]));
-    y1   = y1 + (1/(6*A))*(((pts[i,1]*pts[i+1,2])-(pts[i+1,1]*pts[i,2]))*(pts[i,2]+pts[i+1,2]));
+    x1   = x1 + (1/(6*A))*(((pts[i,1]*pts[i+1,2])-(pts[i+1,1]*pts[i,2]))*(pts[i,1]+pts[i+1,1])); # eqn 2.16
+    y1   = y1 + (1/(6*A))*(((pts[i,1]*pts[i+1,2])-(pts[i+1,1]*pts[i,2]))*(pts[i,2]+pts[i+1,2])); # eqn 2.17
   }
 
   CG = c(x1, y1, pts[1,3]); # Frame of reference: Incoming points | Origin: Incoming points
 
-  # adjust the incoming points to be so that the origin of the pts is on the plate's center of gravity
-  adj_pts = pts # define the new matrix
-  for (i in 1:4){
-    adj_pts[i,] = pts[i,] - CG
-  }
-
-  # calculate the moment of inertia of the plate
-  x2  = 0;
-  y2  = 0;
-  Ixy = 0;
-  for (i in 1:3){
-    temp = ((adj_pts[i,1]*adj_pts[i+1,2])-(adj_pts[i+1,1]*adj_pts[i,2]))
-    x2   = x2  + (temp*(adj_pts[i,1]^2+(adj_pts[i,1]*adj_pts[i+1,1])+adj_pts[i+1,1]^2));
-    y2   = y2  + (temp*(adj_pts[i,2]^2+(adj_pts[i,2]*adj_pts[i+1,2])+adj_pts[i+1,2]^2));
-    Ixy  = Ixy + (0.5)*(temp*((2*adj_pts[i,1]*adj_pts[i,2])+ adj_pts[i,1]*adj_pts[i+1,2] + adj_pts[i,2]*adj_pts[i+1,1] + (2*adj_pts[i+1,1]*adj_pts[i+1,2])));
-  }
-
-
-  I = matrix(0, nrow = 3, ncol = 3) # define matrix
-  I[1,1] = y2      # Ixx
-  I[2,2] = x2      # Iyy
-  I[3,3] = (x2+y2) # Izz
-  I[1,2] = Ixy     # Ixy
-  I[2,1] = Ixy     # Iyx
-
-  I = (1/12)*rho*t*I
-
-
+  # ------------ Moment of Inertia Calculation -----------------
   if(desired_prop == "I"){
+    # adjust the incoming points to be so that the origin of the pts is on the plate's center of gravity
+    adj_pts = pts # define the new matrix
+    for (i in 1:4){
+      adj_pts[i,] = pts[i,] - CG
+    }
+
+    # calculate the moment of inertia of the plate
+    x2  = 0;
+    y2  = 0;
+    Ixy = 0;
+    for (i in 1:3){
+      temp = ((adj_pts[i,1]*adj_pts[i+1,2])-(adj_pts[i+1,1]*adj_pts[i,2]))
+      x2   = x2  + (temp*(adj_pts[i,1]^2+(adj_pts[i,1]*adj_pts[i+1,1])+adj_pts[i+1,1]^2)); # eqn 2.18
+      y2   = y2  + (temp*(adj_pts[i,2]^2+(adj_pts[i,2]*adj_pts[i+1,2])+adj_pts[i+1,2]^2)); # eqn 2.20
+      Ixy  = Ixy + (0.5)*(temp*((2*adj_pts[i,1]*adj_pts[i,2])+ adj_pts[i,1]*adj_pts[i+1,2] +
+                                  adj_pts[i,2]*adj_pts[i+1,1] + (2*adj_pts[i+1,1]*adj_pts[i+1,2]))); # eqn 2.19
+    }
+
+
+    I = matrix(0, nrow = 3, ncol = 3) # define matrix
+    I[1,1] = y2      # Ixx - (y^2)dA
+    I[2,2] = x2      # Iyy - (x^2)dA
+    I[3,3] = (x2+y2) # Izz - (x^2 + y^2)dA
+    I[1,2] = Ixy     # Ixy - (xy)dA
+    I[2,1] = Ixy     # Iyx - (xy)dA
+
+    I = (1/12)*rho*t*I
+
     return(I)
   }
+
+
   if(desired_prop == "CG"){
     return(CG)
   }
