@@ -64,21 +64,21 @@ massprop_restbody <- function(dat_wingID_curr, dat_bird_curr){
   tail_start  = c(-(dat_bird_curr$torsotail_length-dat_bird_curr$tail_length),0,0)
   tail_end    = c(-dat_bird_curr$torsotail_length,0,0)
   m_legs      = dat_bird_curr$right_leg_mass + dat_bird_curr$left_leg_mass
-  tail        =  massprop_tail(dat_bird_curr$tail_mass, dat_bird_curr$tail_length,dat_bird_curr$tail_width,dat_bird_curr$torsotail_length,tail_start,tail_end)
+  tail        = massprop_tail(dat_bird_curr$tail_mass, dat_bird_curr$tail_length,dat_bird_curr$tail_width,dat_bird_curr$torsotail_length,tail_start,tail_end)
 
   # adjust the COG from the torso tail to be torso only
   m_torso    = dat_bird_curr$torsotail_mass - dat_bird_curr$tail_mass
   l_torso    = dat_bird_curr$torsotail_length - dat_bird_curr$tail_length
-  CG_x_torso =  ((dat_bird_curr$torsotail_mass*dat_bird_curr$x_loc_TorsotailCoG) - (dat_bird_curr$tail_mass*tail$CG[1]))/m_torso
-  CG_z_torso =  ((dat_bird_curr$torsotail_mass*dat_bird_curr$z_loc_TorsotailCoG) - (dat_bird_curr$tail_mass*tail$CG[3]))/m_torso
+  CG_x_torso = ((dat_bird_curr$torsotail_mass*dat_bird_curr$x_loc_TorsotailCoG) - (dat_bird_curr$tail_mass*tail$CG[1]))/m_torso
+  CG_z_torso = ((dat_bird_curr$torsotail_mass*dat_bird_curr$z_loc_TorsotailCoG) - (dat_bird_curr$tail_mass*tail$CG[3]))/m_torso
 
   # CAUTION: INGOING CG_x must be positive as it calculates a total distance along the known axis
   torso     = massprop_torso(m_torso, m_legs, dat_bird_curr$body_width_max, dat_bird_curr$body_height_max,
-                             dat_bird_curr$x_loc_of_body_max, dat_bird_curr$body_width_at_leg_insert, dat_bird_curr$x_loc_leg_insertion,
+                             dat_bird_curr$x_loc_of_body_max, dat_bird_curr$body_width_at_leg_insert, dat_bird_curr$body_height_at_leg_insert, dat_bird_curr$x_loc_leg_insertion,
                              l_torso, abs(CG_x_torso), CG_z_torso, neck_start, tail_start)
 
   # Include an error warning if difference between the CG is greater than a cm
-  if(abs(CG_x_torso - torso$CG[1])> 0.01 | abs(CG_z_torso - torso$CG[3])> 0.01){
+  if(sqrt((CG_x_torso - torso$CG[1])^2+(CG_x_torso - torso$CG[1])^2) > 0.01){
     warning("The error on the torso CG is above 1 cm.")
   }
 
@@ -276,6 +276,7 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
   # determine the orientation and normal of each feather
   feather_info = orient_feather(no_pri,no_sec,Pt1,Pt2,Pt3,Pt4,Pt9,Pt10,Pt11)
   # --------------------------- Primaries -----------------------------------
+  #  P1 -> P10
   for (i in 1:no_pri){
     feather_name = paste("P",i,sep = "")
     pri_info = subset(dat_feat_curr,feather == feather_name) # subset data to be for this specific feather
@@ -293,6 +294,7 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
 
   }
   #  -----------------------------------Secondaries -----------------------------------
+  #  S1 -> last secondary
   for (i in 1:no_sec){
     feather_name = paste("S",i,sep = "")
     sec_info = subset(dat_feat_curr,feather == feather_name)  # subset data to be for this specific feather

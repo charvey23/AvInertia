@@ -15,8 +15,8 @@
 #' @param r_out Outer radius of bone (m)
 #' @param r_in Inner radius of bone (m)
 #' @param rho Density of the bone (kg/m^3)
-#' @param start a 1x3 vector (x,y,z) representing the 3D point where bone starts. Frame of reference: VRP | Origin: VRP
-#' @param end a 1x3 vector (x,y,z) representing the 3D point where bone ends. Frame of reference: VRP | Origin: VRP
+#' @param start a 1x3 vector (x,y,z) representing the 3D point where bone starts. Points from the VRP to the bone start. Frame of reference: VRP | Origin: VRP
+#' @param end a 1x3 vector (x,y,z) representing the 3D point where bone ends. Points from the VRP to the bone start. Frame of reference: VRP | Origin: VRP
 #'
 #' @return This function returns a list that includes:
 #' \itemize{
@@ -42,11 +42,11 @@
 #'
 massprop_bones <- function(m,l,r_out,r_in,rho,start,end){
   # ---------------------------- Define geometry ------------------------------------
-  vol   = m/rho # total volume of the bone
+  vol   = m/rho # total volume of the bone material
 
-  # calculate how thick the cap needs to be to match the vol1 = m/rho and vol2 = geometric
+  # calculate how thick the cap needs to be to match the vol_true = m/rho and vol2 = geometric
   r_cap = r_out
-  t_cap = (-(0.5*l*((r_out^2)-(r_in^2)))/(r_in^2))+(vol/(2*pi*(r_in^2)))
+  t_cap = 0.5*((-(l*(r_out^2-r_in^2))/(r_in^2))+(vol/(pi*r_in^2)))
   m_cap = pi*t_cap*r_cap^2
 
   # cylinder geometry
@@ -54,13 +54,12 @@ massprop_bones <- function(m,l,r_out,r_in,rho,start,end){
   l_cyl = l - (2*t_cap)
 
   # ------------------------------- Adjust axis -------------------------------------
-  z_axis = end-start;
+  z_axis = end-start;                   # Frame of reference: VRP | Origin: VRP
   temp_vec = c(1,1,1) # arbitrary vector as long as it's not the z-axis
   x_axis = pracma::cross(z_axis,temp_vec/norm(temp_vec, type = "2"))
-
   # doesn't matter where the x axis points as long as: 1. we know what it is 2. it's orthogonal to z
   # calculate the rotation matrix between VRP frame of reference and the object
-  VRP2object = calc_rot(z_axis,x_axis)
+  VRP2object = calc_rot(z_axis,x_axis)  # Frame of reference: VRP | Origin: VRP
 
   # ----------------------- Calculate moment of inertia -----------------------------
 
@@ -135,7 +134,7 @@ massprop_muscles <- function(m,rho,start,end){
 
   # -------------------------- Moment of inertia --------------------------------
 
-   I_m = calc_inertia_cylsolid(r, l, m)                    # Frame of reference: Muscle | Origin: Muscle CG
+  I_m = calc_inertia_cylsolid(r, l, m)                     # Frame of reference: Muscle | Origin: Muscle CG
 
   # want to move origin from CG to VRP but need to know where the bone is relative to the VRP origin
   off = VRP2object %*% start                               # Frame of reference: Muscle | Origin: VRP
@@ -187,6 +186,8 @@ massprop_muscles <- function(m,rho,start,end){
 #' @section Warning:
 #' Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
 #'
+#' Caution: The skin frame of reference assumes that the z axis is normal to the incoming points.
+#'
 #' @export
 
 massprop_skin <- function(m,rho,pts){
@@ -198,7 +199,7 @@ massprop_skin <- function(m,rho,pts){
   t = v/A;
 
   # ------------------------------- Adjust axis -------------------------------------
-  z_axis = temp_cross
+  z_axis = temp_cross      # normal to the incoming points
   x_axis = pts[3,]-pts[1,] # vector points towards the second input point along the bone edge
 
   # calculate the rotation matrix between VRP frame of reference and the object
@@ -207,12 +208,12 @@ massprop_skin <- function(m,rho,pts){
   # Adjust the input pts frame to skin axes
   adj_pts = pts # define the new matrix
   for (i in 1:3){
-    adj_pts[i,] = VRP2object%*%pts[i,]                      # Frame of reference: Skin | Origin: VRP
+    adj_pts[i,] = VRP2object%*%pts[i,]                    # Frame of reference: Skin | Origin: VRP
   }
 
   # ---------------------------- Moment of inertia ------------------------------
 
-  I_s = calc_inertia_platetri(adj_pts, A, rho, t, "I")    # Frame of reference: Skin | Origin: Skin CG
+  I_s  = calc_inertia_platetri(adj_pts, A, rho, t, "I")   # Frame of reference: Skin | Origin: Skin CG
   CG_s = calc_inertia_platetri(adj_pts, A, rho, t, "CG")  # Frame of reference: Skin | Origin: VRP
 
   # need to adjust the moment of inertia tensor
@@ -279,7 +280,7 @@ massprop_pm <- function(m,pt){
 #'
 #' @param m_f Mass of the entire feather (kg)
 #' @param l_c Length of the calamus; start of vane to end of calamus(m)
-#' @param l_r_cor Length of rachis/vane; tip to start of vane (m)
+#' @param l_r_cor Length of rachis; tip to start of vane (m)
 #' @param w_cal Width (diameter) of the cortex part of the calamus (m)
 #' @param r_b Radius of feather barbs (m)
 #' @param d_b Distance between barbs (m)
@@ -295,6 +296,8 @@ massprop_pm <- function(m,pt){
 #'
 #' @section Warning:
 #' Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
+#'
+#' CAUTION: While computing the variable components of the feather the x axis is the normal of the feather.
 #'
 #' @return This function returns a list that includes:
 #' \itemize{
@@ -312,16 +315,16 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   # mass of each component of the feather
   m_vp = rho_cor*(l_r_cor/d_b)*w_vp*pi*r_b^2 # mass of the proximal vane
   m_vd = rho_cor*(l_r_cor/d_b)*w_vd*pi*r_b^2 # mass of the distal vane
-  m_r  = m_f - m_vp - m_vd                   # mass of the rachis and calamus
+  m_rc = m_f - m_vp - m_vd                   # mass of the rachis and calamus
 
   # determine the width of the medullary material inside the rachis
-  c_0 = (rho_cor*(r_cor^2)*((pi*l_c) + (4*l_r_cor/3))) - m_r
+  c_0 = (rho_cor*(r_cor^2)*((pi*l_c) + (4*l_r_cor/3))) - m_rc
   c_2 = (pi*l_c*(rho_med-rho_cor))
   c_3 = (4*l_r_cor/(3*r_cor))*(rho_med - rho_cor)
   # solve the roots
   cubic_roots = polyroot(c(c_0,0,c_2,c_3))
 
-  #save the root that is real and positive
+  # save the root that is real and positive
   for (i in 1:length(cubic_roots)){
     if (round(Im(cubic_roots[i]),15) == 0 & Re(cubic_roots[i]) > 0 & Re(cubic_roots[i]) < r_cor){
       r_med = as.numeric(Re(cubic_roots[i])) # radius of the medullary component within the calamus
@@ -349,8 +352,8 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   # 6. Parallel axis to the start of feather
   # 7. Sum all feather components
   # 8. Rotate axes so that the feather tip will fall on the z-axis
-  # 9. Rotate axes tO VRP axes (feather tip z-axis is now along the vector defined by start-end)
-  # 9. Parallel axis to the VRP
+  # 9. Parallel axes to VRP axes
+  # 10. Rotate axes to the VRP
   # ------- Calamus -------
   # 1. Moment of inertia tensors in the calamus
   I_c_cor1 = calc_inertia_cylhollow(r_cor, r_med, l_c, m_c_cor) # Frame of reference: Feather Calamus | Origin: Calamus CG
@@ -366,13 +369,13 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   # - Medullary - solid square pyramid
   # Moment of inertia tensor - inner rachis medullary component
   # CAUTION: this is about the center of base
-  I_r_med_base  = calc_inertia_pyrasolid(r_med, l_r_med, m_r_med)        # Frame of reference: Feather Rachis | Origin: Start of the vane (center)
+  I_r_med_base  = calc_inertia_pyrasolid(2*r_med, l_r_med, m_r_med)        # Frame of reference: Feather Rachis | Origin: Start of the vane (center)
   # - Cortex - hollow square pyramid
   # Moment of inertia tensor - as if solid inner and outer cortex components
   # CAUTION: this is about the center of base
-  I_r_out_cor = calc_inertia_pyrasolid(r_cor, l_r_cor, mass_outer)       # Frame of reference: Feather Rachis | Origin: Start of the vane
-  I_r_in_cor  = calc_inertia_pyrasolid(r_med, l_r_med, mass_inner)       # Frame of reference: Feather Rachis | Origin: Start of the vane
-  I_r_cor_base = I_r_out_cor - I_r_in_cor # hollow square pyramid        # Frame of reference: Feather Rachis | Origin: Start of the vane
+  I_r_out_cor = calc_inertia_pyrasolid(2*r_cor, l_r_cor, mass_outer)         # Frame of reference: Feather Rachis | Origin: Start of the vane
+  I_r_in_cor  = calc_inertia_pyrasolid(2*r_med, l_r_med, mass_inner)         # Frame of reference: Feather Rachis | Origin: Start of the vane
+  I_r_cor_base = I_r_out_cor - I_r_in_cor # hollow square pyramid            # Frame of reference: Feather Rachis | Origin: Start of the vane
 
   CG_pyrasquare = c(0,0,0.25) # multiply by length
   CG_r_out_cor  = CG_pyrasquare*l_r_cor                                      # Frame of reference: Feather Rachis | Origin: Start of the vane
@@ -382,7 +385,7 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   # Calculate the CG of solid medullary pyramid
   CG_r_med1     = CG_pyrasquare*l_r_med                                      # Frame of reference: Feather Rachis | Origin: Start of the vane
   # Calculate the CG of the entire rachis
-  CG_r1         = ((CG_r_cor1*m_r_cor)+(CG_r_med1*m_r_med))/m_r              # Frame of reference: Feather Rachis | Origin: Start of the vane
+  CG_r1         = ((CG_r_cor1*m_r_cor)+(CG_r_med1*m_r_med))/(m_r_cor+m_r_med)# Frame of reference: Feather Rachis | Origin: Start of the vane
   # -------------------
 
   # ------- Vane -------
@@ -408,22 +411,23 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   I_vp3  = parallelaxis(I_vp2,-CG_vp3,m_vp, "CG")         # Frame of reference: Feather Rachis | Origin: Start of the vane
 
   # ----------- Rotate all Rachis and Vane components relative to the calamus -----------------
-  # 4. sum the rachis and vane components that are in Frame of reference: Feather Rachis | Origin: Start of the vane (center)
+  # 4. sum the rachis and vane components that are in Frame of reference: Feather Rachis | Origin: Start of the vane
+  m_r    = m_r_cor+m_r_med+m_vd+m_vp
   I_vr1  = I_vp3 + I_vd3 + I_r_med_base + I_r_cor_base
-  CG_vr1 = ((CG_r_cor1*m_r_cor)+(CG_r_med1*m_r_med)+(CG_vd3*m_vd)+(CG_vp3*m_vp))/(m_r+m_vd+m_vp)
+  CG_vr1 = ((CG_r_cor1*m_r_cor)+(CG_r_med1*m_r_med)+(CG_vd3*m_vd)+(CG_vp3*m_vp))/(m_r) # Frame of reference: Feather Rachis | Origin: Start of the vane
 
   # 5. Rotate the frame of reference from the rachis to the calamus
   I_vr2  = rotx(angle) %*% I_vr1 %*% t(rotx(angle))              # Frame of reference: Feather Calamus | Origin: Start of the vane
   CG_vr2 = rotx(angle) %*% CG_vr1                                # Frame of reference: Feather Calamus | Origin: Start of the vane
 
-  # 6. Adjust the origin to first the CG of the entire object and then to the start of the feather
-  I_vrCG  = parallelaxis(I_vr2,CG_vr2,(m_r+m_vd+m_vp),"A")       # Frame of reference: Feather Calamus | Origin: Rachis & Vane CG
-  CG_vr3 = CG_vr2 + c(0,0,l_c)                                   # Frame of reference: Feather Calamus | Origin: Start of Feather
-  I_vr3   = parallelaxis(I_vrCG,-CG_vr3,(m_r+m_vd+m_vp), "CG")   # Frame of reference: Feather Calamus | Origin: Start of Feather
+  # 6. Adjust the origin to first the CG of the entire rachis and then to the start of the feather
+  I_vrCG  = parallelaxis(I_vr2,CG_vr2,m_r,"A")                   # Frame of reference: Feather Calamus | Origin: Rachis & Vane CG
+  CG_vr3  = CG_vr2 + c(0,0,l_c)                                  # Frame of reference: Feather Calamus | Origin: Start of Feather
+  I_vr3   = parallelaxis(I_vrCG,-CG_vr3,m_r,"CG")                # Frame of reference: Feather Calamus | Origin: Start of Feather
 
   # 7. Sum all feather components - must be in Frame of reference: Feather Calamus | Origin: Start of Feather -----------------
   I_1  = I_c1 + I_vr3
-  CG_1 = ((CG_c1*m_c)+(CG_vr3*(m_r+m_vd+m_vp)))/m_f
+  CG_1 = ((CG_c1*m_c)+(CG_vr3*m_r))/m_f
 
   # 8. Rotate the axes about the x-axis with the origin at the start of the feather so that the length of the calamus is no longer directly along the z-axis.
   full_rot = rotx(pracma::atand(l_r_cor*abs(pracma::sind(angle))/(l_c + l_r_cor*abs(pracma::cosd(angle)))))
@@ -441,17 +445,17 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   # calculate the rotation matrix between VRP frame of reference and the feather start to tip
   VRP2object = calc_rot(z_axis,x_axis)
 
-  # 9. Rotate the axes so that the previous z axis now becomes the vector (end-start)
-  I_3     = t(VRP2object) %*% I_2 %*% VRP2object         # Frame of reference: VRP | Origin: Start of Feather
-  CG_3    = t(VRP2object) %*% CG_2                       # Frame of reference: VRP | Origin: Start of Feather
-
   # To properly use parallel axis first, return the origin to the center of gravity of the full feather
-  I_fCG   = parallelaxis(I_3,-CG_3,m_f,"A")              # Frame of reference: VRP | Origin: Feather CG
+  # 9. Need to return origin to VRP before rotating to the final axis system
+  off     = VRP2object %*% start                         # Frame of reference: Feather start to tip | Origin: VRP
+  I_fCG   = parallelaxis(I_3,CG_2,m_f,"A")               # Frame of reference: Feather start to tip | Origin: Feather CG
+  CG_3    = CG_2 + off                                   # Frame of reference: Feather start to tip | Origin: VRP
+  I_3     = parallelaxis(I_3,-CG_3,m_f,"CG")             # Frame of reference: Feather start to tip | Origin: VRP
 
-  # 10. Return the origin to the VRP
+  # 10. Rotate the FOR to the VRP axes
   mass_prop    = list() # pre-define
-  mass_prop$I  = parallelaxis(I_fCG,-(CG_3 + start),m_f,"CG")   # Frame of reference: VRP | Origin: VRP
-  mass_prop$CG = CG_3 + start                                   # Frame of reference: VRP | Origin: VRP
+  mass_prop$I  = t(VRP2object) %*% I_3 %*% VRP2object    # Frame of reference: VRP | Origin: VRP
+  mass_prop$CG = t(VRP2object) %*% CG_3                  # Frame of reference: VRP | Origin: VRP
   mass_prop$m  = m_f
 
   return(mass_prop)
@@ -491,8 +495,6 @@ massprop_neck <- function(m,r,l,start,end){
   z_axis = end-start
   temp_vec = c(0,-1,0) # In this case this is not arbitrary and defines the y axis
   x_axis = pracma::cross(z_axis,temp_vec/norm(temp_vec, type = "2"))
-  # doesn't matter where the x axis points as long as:1. we know what it is 2. it's orthogonal to z
-  # calculate the rotation matrix between VRP frame of reference and the object
   VRP2object = calc_rot(z_axis,x_axis)
 
   # -------------------------- Moment of inertia --------------------------------
@@ -551,8 +553,6 @@ massprop_head <- function(m,r,l,start,end){
   z_axis = end-start
   temp_vec = c(0,-1,0) # In this case this is not arbitrary and defines the y axis
   x_axis = pracma::cross(z_axis,temp_vec/norm(temp_vec, type = "2"))
-  # doesn't matter where the x axis points as long as:1. we know what it is 2. it's orthogonal to z
-  # calculate the rotation matrix between VRP frame of reference and the object
   VRP2object = calc_rot(z_axis,x_axis)
 
   # -------------------------- Moment of inertia --------------------------------
@@ -609,11 +609,9 @@ massprop_head <- function(m,r,l,start,end){
 massprop_tail <- function(m,l_tail,w_tail,l_torso,start,end){
 
   # ------------------------------- Adjust axis -------------------------------------
-  z_axis = end-start
-  temp_vec = c(0,-1,0)
-  x_axis = pracma::cross(z_axis,temp_vec/norm(temp_vec, type = "2"))
-  # doesn't matter where the x axis points as long as:1. we know what it is 2. it's orthogonal to z
-  # calculate the rotation matrix between VRP frame of reference and the object
+  z_axis     = end-start
+  temp_vec   = c(0,-1,0) # must be this value to ensure that the x axis in the tail FOR is the VRP z axis
+  x_axis     = pracma::cross(z_axis,temp_vec/norm(temp_vec, type = "2"))
   VRP2object = calc_rot(z_axis,x_axis)
 
   # -------------------------- Moment of inertia --------------------------------
@@ -624,7 +622,7 @@ massprop_tail <- function(m,l_tail,w_tail,l_torso,start,end){
 
   mass_prop = list() # pre-define
   # Adjust frame to VRP axes
-  mass_prop$I  = t(VRP2object) %*% I_t1 %*% VRP2object     # Frame of reference: VRP | Origin: VRP
+  mass_prop$I  = t(VRP2object) %*% I_t2 %*% VRP2object     # Frame of reference: VRP | Origin: VRP
   mass_prop$CG = t(VRP2object) %*% CG_t                    # Frame of reference: VRP | Origin: VRP
   mass_prop$m  = m
 
@@ -645,10 +643,11 @@ massprop_tail <- function(m,l_tail,w_tail,l_torso,start,end){
 #' @param h_max Maximum height of the body (m)
 #' @param l_bmax x location of the maximum width of the body (m)
 #' @param w_leg width of the body at leg insertion (m)
+#' @param w_leg height of the body at leg insertion (m)
 #' @param l_leg x location of the leg insertion point (m)
 #' @param l_tot length of body from clavicle to end of the tail (m)
-#' @param CG_true_x x location of the CG for the torso, tail and legs, origin is at the VRP  (m)
-#' @param CG_true_z z location of the CG for the torso, tail and legs, origin is at the VRP (m)
+#' @param CG_true_x x location of the CG for the torso and legs, origin is at the VRP  (m)
+#' @param CG_true_z z location of the CG for the torso and legs, origin is at the VRP (m)
 #' @param start a 1x3 vector (x,y,z) representing the 3D point where torso starts. Frame of reference: VRP | Origin: VRP
 #' @param end a 1x3 vector (x,y,z) representing the 3D point where tail ends. Frame of reference: VRP | Origin: VRP
 #'
@@ -656,9 +655,9 @@ massprop_tail <- function(m,l_tail,w_tail,l_torso,start,end){
 #'
 #' @return This function returns a list that includes:
 #' \itemize{
-#' \item{I}{a 3x3 matrix representing the moment of inertia tensor of the torso, tail and leg composite body}
-#' \item{CG}{a 1x3 vector representing the center of gravity position of the torso, tail and leg composite body}
-#'  \item{m}{a double that returns the mass of the torso, tail and leg composite body}
+#' \item{I}{a 3x3 matrix representing the moment of inertia tensor of the torso and leg composite body}
+#' \item{CG}{a 1x3 vector representing the center of gravity position of the torso and leg composite body}
+#'  \item{m}{a double that returns the mass of the torso and leg composite body}
 #' }
 #'
 #' @section Warning:
@@ -666,33 +665,32 @@ massprop_tail <- function(m,l_tail,w_tail,l_torso,start,end){
 #'
 #' @export
 
-massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, l_leg, l_tot, CG_true_x, CG_true_z, start, end){
+massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, h_leg, l_leg, l_tot, CG_true_x, CG_true_z, start, end){
 
   # ------------------------------- Adjust axis -------------------------------------
   z_axis = end-start
   temp_vec = c(0,-1,0) # In this case this is not arbitrary and defines the y axis
-  x_axis = pracma::cross(z_axis,temp_vec/norm(temp_vec, type = "2"))
-  # doesn't matter where the x axis points as long as:1. we know what it is 2. it's orthogonal to z
-  # calculate the rotation matrix between VRP frame of reference and the object
+  x_axis = pracma::cross(z_axis,temp_vec/norm(temp_vec, type = "2")) # z points along the VRP positive z axis
   VRP2object = calc_rot(z_axis,x_axis)
 
   # -------------------------- Moment of inertia --------------------------------
   # pre-define info about the partial elliptic cone
   h_leg  = w_leg*h_max/w_max
   l_par  = (l_leg-l_bmax)
-  l_full = l_par/(1-(w_leg/w_max))
+  l_full = l_par*(w_max/(w_max-w_leg))
   l_end  = l_tot - l_leg
 
   # --------------- Legs - point mass -------------------------
-  CG_leg_right = c(CG_true_z,0.5*w_leg, l_leg)          # Frame of reference: Torso | Origin: VRP
-  CG_leg_left  = c(CG_true_z,-0.5*w_leg, l_leg)         # Frame of reference: Torso | Origin: VRP
+  CG_leg_right = c(-0.5*h_leg, 0.5*w_leg, l_leg)        # Frame of reference: Torso | Origin: VRP
+  CG_leg_left  = c(-0.5*h_leg,-0.5*w_leg, l_leg)        # Frame of reference: Torso | Origin: VRP
   leg_right = massprop_pm(0.5*m_legs, CG_leg_right)     # Frame of reference: Torso | Origin: VRP
   leg_left  = massprop_pm(0.5*m_legs, CG_leg_left)      # Frame of reference: Torso | Origin: VRP
 
   # -------------- Calculate the body volume to have an estimate for the density --------------
-  # volume of the hemiellipsoid
+  # - 1. volume of the hemiellipsoid -
   v_ell = (1/6)*(pi*w_max*h_max*l_bmax)
 
+  # - 2. volume of the partial elliptical cone -
   # volume as if the interior cone went to full length
   v_full = (1/12)*(pi*w_max*h_max*l_full)
   # volume of the ghost part of the cone
@@ -700,16 +698,21 @@ massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, l_leg, l
   # volume of the partial cone
   v_par  = v_full - v_cut
 
+  # - 3. volume of the full elliptical cone -
   # volume of the full end cone
   v_end  = (1/12)*(pi*w_leg*h_leg*l_end)
 
   v_body  = v_ell + v_par + v_end
-  rho_avg = (m_true-m_legs)/v_body
+  m_body  = (m_true-m_legs)
+  rho_avg = m_body/v_body
+
+  #adjust CG of torso to remove the effects of the legs
+  CG_body_z = (CG_true_z*m_true - CG_leg_left[1]*0.5*m_legs -CG_leg_right[1]*0.5*m_legs)/m_body
 
   # ----------- Estimate the density in each section of the body -----------------
   # initial guess for the densities - in the order: emiellipsoid, Partial cone, end cone
   x0        = as.matrix(c(rho_avg,rho_avg,rho_avg))
-  # solve the non-linear equations
+  # solve the non-linear equations so that the density for each section gives the correct total mass at the correct CG
   densities = pracma::lsqnonlin(density_optimizer, x0, options=list(tolx=1e-12, tolg=1e-12),  v_ell, v_par, v_full, v_cut, v_end, m_legs, l_bmax, l_leg, l_full, l_par, l_end, CG_true_x, m_true)
   # save the results
   rho_ell   = abs(densities$x[1])
@@ -729,7 +732,7 @@ massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, l_leg, l
   I_ellCG = parallelaxis(I_ell1,CG_ell1,m_ell,"A")                  # Frame of reference: Torso | Origin: Hemiellipsoid CG
   # Define center of gravity wrt to VRP origin
   # NOTE: we need to offset the body from the x axis to ensure that the VRP z-location of the CG is correct in the Torso frame of ref this is the positive x direction
-  CG_ell2 = c(CG_true_z,0,(5/8)*l_bmax)                             # Frame of reference: Torso | Origin: VRP
+  CG_ell2 = c(CG_body_z,0,(5/8)*l_bmax)                             # Frame of reference: Torso | Origin: VRP
   # Adjust the MOI to be about the VRP
   I_ell_vrp = parallelaxis(I_ellCG,-CG_ell2,m_ell,"CG")             # Frame of reference: Torso | Origin: VRP
 
@@ -750,7 +753,7 @@ massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, l_leg, l
   I_parCG = parallelaxis(I_par1,CG_par1,m_par,"A")                      # Frame of reference: Torso | Origin: Partial Cone CG
   # Define CG wrt to VRP origin
   # NOTE: we need to offset the body from the x axis to ensure that the VRP z-location of the CG is correct in the Torso frame of ref this is the positive x direction
-  CG_par2 = CG_par1 + c(CG_true_z,0,l_bmax)                             # Frame of reference: Torso | Origin: VRP
+  CG_par2 = CG_par1 + c(CG_body_z,0,l_bmax)                             # Frame of reference: Torso | Origin: VRP
   # Adjust the MOI to be about the VRP
   I_par_vrp = parallelaxis(I_parCG,-CG_par2,m_par,"CG")                 # Frame of reference: Torso | Origin: VRP
 
@@ -760,16 +763,21 @@ massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, l_leg, l
 
   # CG of the end cone
   CG_end1 = c(0,0,0.25*l_end)                                              # Frame of reference: Torso | Origin: Base of the end cone
-  # MOI of the partial cone about the wide base
+  # MOI of the end cone about the wide base
   I_end1  = calc_inertia_ellcone(w_leg, h_leg, l_end, l_end, rho_back)     # Frame of reference: Torso | Origin: Base of the end cone
 
   # Adjust the moment of inertia to be about the center of gravity of the partial cone
   I_endCG = parallelaxis(I_end1,CG_end1,m_end,"A")                         # Frame of reference: Torso | Origin: End Cone CG
   # Define CG wrt to VRP origin
   # NOTE: we need to offset the body from the x axis to ensure that the VRP z-location of the CG is correct in the Torso frame of ref this is the positive x direction
-  CG_end2 = CG_end1 + c(CG_true_z,0,(l_bmax + l_par))                      # Frame of reference: Torso | Origin: VRP
+  CG_end2 = CG_end1 + c(CG_body_z,0,(l_bmax + l_par))                      # Frame of reference: Torso | Origin: VRP
   # Adjust the MOI to be about the VRP
   I_end_vrp = parallelaxis(I_endCG,-CG_end2,m_end,"CG")                    # Frame of reference: Torso | Origin: VRP
+
+  # Check that the mass matches the expected value
+  if(abs(m_end+m_par+m_ell-m_body)>0.001){
+    warning("The mass of the predicted body shape does not match the expected value")
+  }
 
   # -------------- Sum data and adjust axes -------------------
   I_torso_vrp  = I_ell_vrp + I_par_vrp + I_end_vrp + leg_right$I + leg_left$I
@@ -783,6 +791,10 @@ massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, l_leg, l
   mass_prop$CG = t(VRP2object) %*% CG_torso_vrp                             # Frame of reference: VRP | Origin: VRP
   mass_prop$m  = m_true
 
+  # Check that the CG matches the expected value
+  if(abs(mass_prop$CG-CG_x_true)>0.01){
+    warning("The center of gravity the predicted body shape does not match the expected value.")
+  }
   return(mass_prop)
 }
 
@@ -834,10 +846,10 @@ density_optimizer <- function(x, v_ell, v_par, v_full, v_cut, v_end, m_legs, l_b
   CG_ell = (5/8)*l_bmax                                   # Frame of reference: Torso | Origin: VRP
 
   # partial elliptic cone
-  m_par  = rho_par*v_par
+  m_par   = rho_par*v_par
 
-  CG_full = l_bmax+0.25*l_full
-  CG_cut  = l_bmax+l_par+0.25*(l_full-l_par)
+  CG_full = l_bmax + 0.25*l_full                          # Frame of reference: Torso | Origin: VRP
+  CG_cut  = l_leg + 0.25*(l_full-l_par)                   # Frame of reference: Torso | Origin: VRP
   CG_par  = (1/v_par)*(v_full*CG_full - v_cut*CG_cut)     # Frame of reference: Torso | Origin: VRP
 
   # end elliptic cone
@@ -845,12 +857,12 @@ density_optimizer <- function(x, v_ell, v_par, v_full, v_cut, v_end, m_legs, l_b
   CG_end  = l_leg+0.25*l_end                              # Frame of reference: Torso | Origin: VRP
 
   # compute the error between predicted mass and CG and the true values
-  m_pred  = m_ell + m_par + m_end + m_legs
-  CG_pred = (1/m_true)*(m_ell*CG_ell + m_par*CG_par + m_end*CG_end + m_legs*l_leg) # Frame of reference: Torso | Origin: VRP
-  rho_front = mean(c(rho_par,rho_ell))
+  m_pred    = m_ell + m_par + m_end + m_legs
+  CG_pred   = (1/m_true)*(m_ell*CG_ell + m_par*CG_par + m_end*CG_end + m_legs*l_leg) # Frame of reference: Torso | Origin: VRP
 
   # calculates the summation of the absolute total error of the mass and the CG - need to minimize both
   tot_err = abs(m_pred-m_true)/m_true + abs(CG_pred-CG_true)/CG_true
+
   return(tot_err)
 }
 

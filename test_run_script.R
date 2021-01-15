@@ -247,7 +247,7 @@ for (k in 1:nrow(specimens)){
     if (grepl("Y",colnames(dat_pt)[i],fixed=TRUE)){
       dat_pt[,i] = dat_pt[,i] + (dat_bird_curr$y_loc_humeral_insert)
     }
-    # z position - the sign has been verified
+    # z position - the sign has been verified + positive ensures that the shoulder is "below" the clavicle origin
     if (grepl("Z",colnames(dat_pt)[i],fixed=TRUE)){
       dat_pt[,i] = dat_pt[,i] + (dat_bird_curr$z_loc_humeral_insert)
     }

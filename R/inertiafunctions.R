@@ -181,7 +181,7 @@ calc_inertia_pyrasolid <- function(w, h, m){
   I = matrix(0, nrow = 3, ncol = 3)
   I[1,1] = (w^2+2*h^2) # Ixx
   I[2,2] = (w^2+2*h^2) # Iyy
-  I[3,3] = 2*(w^2)       # Izz
+  I[3,3] = 2*(w^2)     # Izz
   I = (1/20)*m*I
 
   return(I)

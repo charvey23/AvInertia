@@ -145,13 +145,6 @@ for (i in 1:nrow(dat_info)){
 
 
   #------------------------------- Step 5 -------------------------------
-  # x = -x; y = y; z =  z:
-  # col_liv_20_0300R_002 & 004
-  # col_liv_20_0281R_001
-
-  # x = -x; y = y; z = -z:
-  # ard_her_20_317L_001
-
   for (j in 1:11) {
     col_name = paste(point_list[j], dim_list[1], sep = "_")
     dat_clean[, col_name] <- -dat_clean[, col_name]
