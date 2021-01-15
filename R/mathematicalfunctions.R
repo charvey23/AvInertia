@@ -80,8 +80,8 @@ calc_univec <- function(vector){
 # ---------------------- Calculate a rotation matrices ---------------------------
 #' A 3x3 rotation matrix constructed by projecting the new axes onto the original system. Likely results in rotation about all axes.
 #'
-#' @param z_vector a 1x3 vector representing the direction for the desired z axis of the new frame of reference.
-#' @param x_vector a 1x3 vector representing the direction for the desired x axis of the new frame of reference.
+#' @param z_vector a 1x3 vector representing the direction for the desired z axis of the new frame of reference. Frame of reference: VRP
+#' @param x_vector a 1x3 vector representing the direction for the desired x axis of the new frame of reference. Frame of reference: VRP
 #'
 #' @author Christina Harvey
 #'
@@ -98,13 +98,15 @@ calc_rot <- function(z_vector, x_vector){
   unit_z_vector = calc_univec(z_vector)
   unit_x_vector = calc_univec(x_vector)
 
-  #cross z with x to get the righthanded axis
+  # cross z with x to get the right-handed axis - verified
   y_vector = pracma::cross(unit_z_vector,unit_x_vector)
   # ensure vectors are in unit form
   unit_y_vector = calc_univec(y_vector)
 
   # rotation matrix representing the rotated basis
   VRP2object = rbind(unit_x_vector,unit_y_vector,unit_z_vector)
+  # strip row names
+  rownames(VRP2object)<-NULL
 
   return(VRP2object)
 }
@@ -116,7 +118,7 @@ calc_rot <- function(z_vector, x_vector){
 #' Will be in the same frame of reference as the input tensor.
 #'
 #' @param I_CG Moment of intertia tensor (3x3) about the center of gravity of the object (kg-m^2)
-#' @param offset_vec Distance between the objects CG and the arbitrary pt A. (m) Should always point from the CG to the arbitrary point A
+#' @param offset_vec Distance between the objects CG and the arbitrary pt A. (m) Vector should always point from the CG to the arbitrary point A.
 #' @param m Mass of the object (kg)
 #' @param cg_a If input I is about the CG enter "CG" or if I is about an arbitrary axis enter "A".
 #'

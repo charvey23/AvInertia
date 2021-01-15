@@ -247,7 +247,7 @@ for (k in 1:nrow(specimens)){
     if (grepl("Y",colnames(dat_pt)[i],fixed=TRUE)){
       dat_pt[,i] = dat_pt[,i] + (dat_bird_curr$y_loc_humeral_insert)
     }
-    # z position - the sign has been verified
+    # z position - the sign has been verified + positive ensures that the shoulder is "below" the clavicle origin
     if (grepl("Z",colnames(dat_pt)[i],fixed=TRUE)){
       dat_pt[,i] = dat_pt[,i] + (dat_bird_curr$z_loc_humeral_insert)
     }
@@ -256,7 +256,7 @@ for (k in 1:nrow(specimens)){
   # -------------- Iterate through the wings of this species ------------------------------
 
   for (ind_wing in 1:length(dat_wing_curr$frameID)){
-    ind_wing = 1 # CAUTION: FOR  DEBUGGING ONLY
+    ind_wing = 2 # CAUTION: FOR  DEBUGGING ONLY
     # both dataframes below should only be one row of input points
     dat_id_curr = dat_wing_curr[ind_wing,c("species","BirdID","testid","frameID")]
     names(dat_id_curr)[names(dat_id_curr) == "frameID"] <- "FrameID"
