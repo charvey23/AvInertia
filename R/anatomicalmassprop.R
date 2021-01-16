@@ -448,9 +448,15 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   # To properly use parallel axis first, return the origin to the center of gravity of the full feather
   # 9. Need to return origin to VRP before rotating to the final axis system
   off     = VRP2object %*% start                         # Frame of reference: Feather start to tip | Origin: VRP
+<<<<<<< HEAD
   I_fCG   = parallelaxis(I_2,CG_2,m_f,"A")               # Frame of reference: Feather start to tip | Origin: Feather CG
   CG_3    = CG_2 + off                                   # Frame of reference: Feather start to tip | Origin: VRP
   I_3     = parallelaxis(I_fCG,-CG_3,m_f,"CG")           # Frame of reference: Feather start to tip | Origin: VRP
+=======
+  I_fCG   = parallelaxis(I_3,CG_2,m_f,"A")               # Frame of reference: Feather start to tip | Origin: Feather CG
+  CG_3    = CG_2 + off                                   # Frame of reference: Feather start to tip | Origin: VRP
+  I_3     = parallelaxis(I_3,-CG_3,m_f,"CG")             # Frame of reference: Feather start to tip | Origin: VRP
+>>>>>>> aedec26e5f8ba4f0b40c290d07b7415ca59445ae
 
   # 10. Rotate the FOR to the VRP axes
   mass_prop    = list() # pre-define
@@ -792,7 +798,11 @@ massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, h_leg, l
   mass_prop$m  = m_true
 
   # Check that the CG matches the expected value
+<<<<<<< HEAD
   if(abs(mass_prop$CG-CG_true_x)>0.01){
+=======
+  if(abs(mass_prop$CG-CG_x_true)>0.01){
+>>>>>>> aedec26e5f8ba4f0b40c290d07b7415ca59445ae
     warning("The center of gravity the predicted body shape does not match the expected value.")
   }
   return(mass_prop)
