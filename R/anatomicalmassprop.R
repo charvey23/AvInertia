@@ -317,30 +317,15 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   m_vd = rho_cor*(l_r_cor/d_b)*w_vd*pi*r_b^2 # mass of the distal vane
   m_rc = m_f - m_vp - m_vd                   # mass of the rachis and calamus
 
-  # determine the width of the medullary material inside the rachis
-  c_0 = (rho_cor*(r_cor^2)*((pi*l_c) + (4*l_r_cor/3))) - m_rc
-  c_2 = (pi*l_c*(rho_med-rho_cor))
-  c_3 = (4*l_r_cor/(3*r_cor))*(rho_med - rho_cor)
-  # solve the roots
-  cubic_roots = polyroot(c(c_0,0,c_2,c_3))
-
-  # save the root that is real and positive
-  for (i in 1:length(cubic_roots)){
-    if (round(Im(cubic_roots[i]),15) == 0 & Re(cubic_roots[i]) > 0 & Re(cubic_roots[i]) < r_cor){
-      r_med = as.numeric(Re(cubic_roots[i])) # radius of the medullary component within the calamus
-    }
-  }
-
-  # calculate the length of the medullary material within the rachis (height of that pyramid)
-  l_r_med    = l_r_cor*(r_med/r_cor)
-
+  #assumes that the interior medullary pyramid has the same height as the cortex exterior
+  r_med   = sqrt((m_rc -  rho_cor*r_cor^2*(pi*l_c+(4/3)*l_r_cor))/((4/3)*l_r_cor*(rho_med-rho_cor)-l_c*pi*rho_cor))
+  l_r_med = l_r_cor
   # calculate the mass of each component
-  m_c_cor = rho_cor*(pi*l_c)*(r_cor^2-r_med^2)                                  # mass of the cortex part of the calamus
-  m_c_med = rho_med*(pi*l_c)*(r_med^2)                                          # mass of the medullary part of the calamus
-  m_r_cor = rho_cor*((4/3)*l_r_cor*r_cor^2) - rho_cor*((4/3)*l_r_med)*(r_med^2) # mass of the cortex part of the rachis
-  m_r_med = rho_med*((4/3)*l_r_med)*(r_med^2)                                   # mass of the medullary part of the rachis
-  mass_outer = (4*rho_cor*(r_cor^2)*l_r_cor/3)                                  # mass as if entire rachis was solid cortex
-  mass_inner = (4*rho_cor*r_med^2*l_r_med/3)                                    # mass as if hollow part of rachis was solid cortex
+  m_c        = rho_cor*(pi*l_c)*(r_cor^2-r_med^2)                # mass of the cortex part of the calamus
+  m_r_cor    = (4/3)*rho_cor*(l_r_cor*r_cor^2 - l_r_med*r_med^2) # mass of the cortex part of the rachis
+  m_r_med    = (4/3)*rho_med*(r_med^2)*l_r_med                   # mass of the medullary part of the rachis
+  mass_outer = (4/3)*rho_cor*r_cor^2*l_r_cor                     # mass as if entire rachis was solid cortex
+  mass_inner = (4/3)*rho_cor*r_med^2*l_r_med                     # mass as if hollow part of rachis was solid cortex
 
   # --------------------------- Moment of inertia -----------------------------------
 
@@ -356,11 +341,7 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   # 10. Rotate axes to the VRP
   # ------- Calamus -------
   # 1. Moment of inertia tensors in the calamus
-  I_c_cor1 = calc_inertia_cylhollow(r_cor, r_med, l_c, m_c_cor) # Frame of reference: Feather Calamus | Origin: Calamus CG
-  I_c_med1 = calc_inertia_cylsolid(r_med, l_c, m_c_med)         # Frame of reference: Feather Calamus | Origin: Calamus CG
-  I_cCG    = I_c_cor1 + I_c_med1                                # Frame of reference: Feather Calamus | Origin: Calamus CG
-  m_c      = m_c_cor + m_c_med
-
+  I_cCG    = calc_inertia_cylhollow(r_cor, r_med, l_c, m_c) # Frame of reference: Feather Calamus | Origin: Calamus CG
   # 6. Adjust so that the origin is at the start of the feather - READY TO BE SUMMED WITH OTHER COMPONENTS
   CG_c1 = c(0,0,0.5*l_c)                                        # Frame of reference: Feather Calamus | Origin: Start of Feather
   I_c1  = parallelaxis(I_cCG,-CG_c1,m_c, "CG")                  # Frame of reference: Feather Calamus | Origin: Start of Feather
@@ -448,15 +429,10 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   # To properly use parallel axis first, return the origin to the center of gravity of the full feather
   # 9. Need to return origin to VRP before rotating to the final axis system
   off     = VRP2object %*% start                         # Frame of reference: Feather start to tip | Origin: VRP
-<<<<<<< HEAD
+
   I_fCG   = parallelaxis(I_2,CG_2,m_f,"A")               # Frame of reference: Feather start to tip | Origin: Feather CG
   CG_3    = CG_2 + off                                   # Frame of reference: Feather start to tip | Origin: VRP
   I_3     = parallelaxis(I_fCG,-CG_3,m_f,"CG")           # Frame of reference: Feather start to tip | Origin: VRP
-=======
-  I_fCG   = parallelaxis(I_3,CG_2,m_f,"A")               # Frame of reference: Feather start to tip | Origin: Feather CG
-  CG_3    = CG_2 + off                                   # Frame of reference: Feather start to tip | Origin: VRP
-  I_3     = parallelaxis(I_3,-CG_3,m_f,"CG")             # Frame of reference: Feather start to tip | Origin: VRP
->>>>>>> aedec26e5f8ba4f0b40c290d07b7415ca59445ae
 
   # 10. Rotate the FOR to the VRP axes
   mass_prop    = list() # pre-define
@@ -798,11 +774,8 @@ massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, h_leg, l
   mass_prop$m  = m_true
 
   # Check that the CG matches the expected value
-<<<<<<< HEAD
-  if(abs(mass_prop$CG-CG_true_x)>0.01){
-=======
-  if(abs(mass_prop$CG-CG_x_true)>0.01){
->>>>>>> aedec26e5f8ba4f0b40c290d07b7415ca59445ae
+
+  if(abs(abs(mass_prop$CG[1])-CG_true_x)>0.01){
     warning("The center of gravity the predicted body shape does not match the expected value.")
   }
   return(mass_prop)
@@ -871,8 +844,7 @@ density_optimizer <- function(x, v_ell, v_par, v_full, v_cut, v_end, m_legs, l_b
   CG_pred   = (1/m_true)*(m_ell*CG_ell + m_par*CG_par + m_end*CG_end + m_legs*l_leg) # Frame of reference: Torso | Origin: VRP
 
   # calculates the summation of the absolute total error of the mass and the CG - need to minimize both
-  tot_err = abs(m_pred-m_true)/m_true + abs(CG_pred-CG_true)/CG_true
+  err_tot = abs(m_pred-m_true)/m_true + abs(CG_pred-CG_true)/CG_true
 
-  return(tot_err)
+  return(err_tot)
 }
-

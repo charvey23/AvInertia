@@ -77,11 +77,6 @@ massprop_restbody <- function(dat_wingID_curr, dat_bird_curr){
                              dat_bird_curr$x_loc_of_body_max, dat_bird_curr$body_width_at_leg_insert, dat_bird_curr$body_height_at_leg_insert, dat_bird_curr$x_loc_leg_insertion,
                              l_torso, abs(CG_x_torso), CG_z_torso, neck_start, tail_start)
 
-  # Include an error warning if difference between the CG is greater than a cm
-  if(sqrt((CG_x_torso - torso$CG[1])^2+(CG_x_torso - torso$CG[1])^2) > 0.01){
-    warning("The error on the torso CG is above 1 cm.")
-  }
-
   # ----------------------------------------------------
   # ----------------- Save Data ------------------------
   # ----------------------------------------------------
