@@ -20,7 +20,8 @@ Imports:
     ggplot2,
     stringr,
     tidyr,
-    ggthemes
+    ggthemes,
+    reshape2
 Suggests: 
     knitr,
     rmarkdown

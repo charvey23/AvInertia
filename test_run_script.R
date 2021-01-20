@@ -333,6 +333,8 @@ for (k in c(17,24,33)){
 
     all_data = rbind(all_data, curr_wing_data, curr_torsotail_data, curr_full_bird)
   }
+  # for the sake of memory need to recast from long to wide format to save
+  all_data <- reshape2::dcast(all_data, species + BirdID + TestID + FrameID ~ component + object, value.var="value")
 
   filename_output = paste(format(Sys.Date(), "%Y_%m_%d"),species_curr,birdid_curr,"results.csv",sep="_")
   write.csv(all_data,filename_output)
