@@ -658,31 +658,36 @@ massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, h_leg, l
   # -------------------------- Moment of inertia --------------------------------
   # pre-define info about the partial elliptic cone
   h_leg  = w_leg*h_max/w_max
-  l_par  = (l_leg-l_bmax)
-  l_full = l_par*(w_max/(w_max-w_leg))
+  l_par  = l_leg-l_bmax
+  l_full = l_par*w_max/(w_max-w_leg)
   l_end  = l_tot - l_leg
 
   # --------------- Legs - point mass -------------------------
+  # placed at the bottom of the bird body
   CG_leg_right = c(-0.5*h_leg, 0.5*w_leg, l_leg)        # Frame of reference: Torso | Origin: VRP
   CG_leg_left  = c(-0.5*h_leg,-0.5*w_leg, l_leg)        # Frame of reference: Torso | Origin: VRP
   leg_right = massprop_pm(0.5*m_legs, CG_leg_right)     # Frame of reference: Torso | Origin: VRP
   leg_left  = massprop_pm(0.5*m_legs, CG_leg_left)      # Frame of reference: Torso | Origin: VRP
 
   # -------------- Calculate the body volume to have an estimate for the density --------------
-  # - 1. volume of the hemiellipsoid -
-  v_ell = (1/6)*(pi*w_max*h_max*l_bmax)
+  # - 1. volume and CGx of the hemiellipsoid -
+  v_ell  = (1/6)*(pi*w_max*h_max*l_bmax)
+  CG_ell = (5/8)*l_bmax                                   # Frame of reference: Torso | Origin: VRP
 
   # - 2. volume of the partial elliptical cone -
   # volume as if the interior cone went to full length
-  v_full = (1/12)*(pi*w_max*h_max*l_full)
-  # volume of the ghost part of the cone
-  v_cut  = (1/12)*(pi*w_leg*h_leg*(l_full-l_par))
-  # volume of the partial cone
-  v_par  = v_full - v_cut
+  v_full  = (1/12)*pi*w_max*h_max*l_full
+  #volume of the ghost part of the cone
+  v_cut   = (1/12)*pi*w_leg*h_leg*(l_full-l_par)
+  v_par   = v_full-v_cut
+  CG_full = l_bmax + 0.25*l_full                          # Frame of reference: Torso | Origin: VRP
+  CG_cut  = l_leg + 0.25*(l_full-l_par)                   # Frame of reference: Torso | Origin: VRP
+  CG_par  = (1/v_par)*(v_full*CG_full - v_cut*CG_cut)     # Frame of reference: Torso | Origin: VRP
 
-  # - 3. volume of the full elliptical cone -
+  # - 3. volume and CGx of the full elliptical cone -
   # volume of the full end cone
   v_end  = (1/12)*(pi*w_leg*h_leg*l_end)
+  CG_end  = l_leg+0.25*l_end                              # Frame of reference: Torso | Origin: VRP
 
   v_body  = v_ell + v_par + v_end
   m_body  = (m_true-m_legs)
@@ -690,16 +695,16 @@ massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, h_leg, l
 
   #adjust CG of torso to remove the effects of the legs
   CG_body_z = (CG_true_z*m_true - CG_leg_left[1]*0.5*m_legs -CG_leg_right[1]*0.5*m_legs)/m_body
+  CG_body_x = (CG_true_x*m_true - CG_leg_left[3]*0.5*m_legs -CG_leg_right[3]*0.5*m_legs)/m_body # Yes this is supposed to in index 3 - in the torso FOR
 
   # ----------- Estimate the density in each section of the body -----------------
-  # initial guess for the densities - in the order: emiellipsoid, Partial cone, end cone
-  x0        = as.matrix(c(rho_avg,rho_avg,rho_avg))
-  # solve the non-linear equations so that the density for each section gives the correct total mass at the correct CG
-  densities = pracma::lsqnonlin(density_optimizer, x0, options=list(tolx=1e-12, tolg=1e-12),  v_ell, v_par, v_full, v_cut, v_end, m_legs, l_bmax, l_leg, l_full, l_par, l_end, CG_true_x, m_true)
-  # save the results
-  rho_ell   = abs(densities$x[1])
-  rho_par   = abs(densities$x[2])
-  rho_back  = abs(densities$x[3])
+  A    = matrix(c(v_par,v_par*CG_par,v_end,v_end*CG_end),2,2)
+  test = pracma::lsqnonlin(test_optimizer, rho_avg, options=list(tolx=1e-12, tolg=1e-12), A, m_body, v_ell, CG_body_x, CG_ell, rho_avg)
+  rho_ell  = test$x
+  b        = c((m_body-(rho_ell*v_ell)),((m_body*CG_body_x)-(rho_ell*v_ell*CG_ell)))
+  output   = solve(A,b)
+  rho_par  = output[1]
+  rho_back = output[2]
 
   # -------------- Hemiellipsoid -------------------
   # mass of the front
@@ -778,72 +783,4 @@ massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, h_leg, l
     warning("The center of gravity the predicted body shape does not match the expected value.")
   }
   return(mass_prop)
-}
-
-
-# ---------------------------------------------------------------------------------------
-##### -------------------- Body component density optimizer ----------------------- #####
-# ---------------------------------------------------------------------------------------
-
-
-#' Body density optimizer
-#'
-#' @param x a 1x3 matrix that represents the densities that are being optimized. Entries are in the order: hemiellipsoid, partial cone, end cone (kg/m^3)
-#' @param v_ell volume of the hemiellipsoid (m^3)
-#' @param v_par volume of the partial cone (m^3)
-#' @param v_full volume of the partial cone as if it was full length (m^3)
-#' @param v_cut volume of the tip of the cone that is cut off to make it partial length (m^3)
-#' @param v_end volume of the end cone (m^3)
-#' @param m_legs mass of both legs (kg)
-#' @param l_bmax x location of the maximum width of the body (m)
-#' @param l_leg x location of the leg insertion point (m)
-#' @param l_full length of the partial cone as if it was full length (m)
-#' @param l_par true length of the partial cone (m)
-#' @param l_end length of the end cone (m)
-#' @param CG_true x location of the CG for the torso and legs (m)
-#' @param m_true Mass of the torso and legs (kg)
-#'
-#' @return the summed relative error of the difference between the true and predicted values of mass and density.
-#' It also includes a minor optimization to keep the densities in the front two sections of the body as close as possible.
-#' This function is intended to be used within pracmas optimization protocols.
-#'
-#' @export
-#'
-#' @examples
-#'
-#' # initial guess for the densities - in the order: emiellipsoid, Partial cone, end cone
-#' x0        = as.matrix(c(1000,1000,1000))
-#' # solve the non-linear equations
-#' densities = pracma::lsqnonlin(density_optimizer, x0, options=list(tolx=1e-12, tolg=1e-12),  v_ell, v_par, v_full, v_cut, v_end, m_legs, l_bmax, l_leg, l_full, l_par, l_end, CG_true, m_true)
-
-density_optimizer <- function(x, v_ell, v_par, v_full, v_cut, v_end, m_legs, l_bmax, l_leg, l_full, l_par, l_end, CG_true, m_true){
-
-  # NOTE: all CG locations only include the position only the length of the body as the z and y axes are symmetrical
-  rho_ell  = abs(x[1])
-  rho_par  = abs(x[2])
-  rho_back = abs(x[3])
-
-  # hemiellipsoid
-  m_ell  = rho_ell*v_ell
-  CG_ell = (5/8)*l_bmax                                   # Frame of reference: Torso | Origin: VRP
-
-  # partial elliptic cone
-  m_par   = rho_par*v_par
-
-  CG_full = l_bmax + 0.25*l_full                          # Frame of reference: Torso | Origin: VRP
-  CG_cut  = l_leg + 0.25*(l_full-l_par)                   # Frame of reference: Torso | Origin: VRP
-  CG_par  = (1/v_par)*(v_full*CG_full - v_cut*CG_cut)     # Frame of reference: Torso | Origin: VRP
-
-  # end elliptic cone
-  m_end   = rho_back*v_end
-  CG_end  = l_leg+0.25*l_end                              # Frame of reference: Torso | Origin: VRP
-
-  # compute the error between predicted mass and CG and the true values
-  m_pred    = m_ell + m_par + m_end + m_legs
-  CG_pred   = (1/m_true)*(m_ell*CG_ell + m_par*CG_par + m_end*CG_end + m_legs*l_leg) # Frame of reference: Torso | Origin: VRP
-
-  # calculates the summation of the absolute total error of the mass and the CG - need to minimize both
-  err_tot = abs(m_pred-m_true)/m_true + abs(CG_pred-CG_true)/CG_true
-
-  return(err_tot)
 }

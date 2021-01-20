@@ -273,13 +273,18 @@ for (k in c(17,24,33)){
     dat_bird_all <- rbind(dat_bird_all,dat_bird_curr)
   }
 
+  names(dat_wing_curr)[names(dat_wing_curr) == "frameID"] <- "FrameID"
+  names(dat_wing_curr)[names(dat_wing_curr) == "testid"] <- "TestID"
+  dat_id_curr = dat_wing_curr[1,c("species","BirdID","TestID","FrameID")]
+
+
+  # Compute the CG and I for the body without the wings
+  curr_torsotail_data = massprop_restbody(dat_id_curr, dat_bird_curr)
 
   for (ind_wing in 1:nrow(dat_wing_curr)){
-    # both dataframes below should only be one row of input points
-    dat_id_curr = dat_wing_curr[ind_wing,c("species","BirdID","testid","frameID")]
-    names(dat_id_curr)[names(dat_id_curr) == "frameID"] <- "FrameID"
-    names(dat_id_curr)[names(dat_id_curr) == "testid"] <- "TestID"
+    # both data frames below should only be one row of input points
     dat_pt_curr = dat_wing_curr[ind_wing,]
+    dat_id_curr = dat_pt_curr[,c("species","BirdID","TestID","FrameID")]
 
     # Initialize common pts
     Pt1  = c(dat_pt_curr$pt1_X, dat_pt_curr$pt1_Y, dat_pt_curr$pt1_Z) # Shoulder
@@ -294,9 +299,8 @@ for (k in c(17,24,33)){
     Pt12 = c(dat_pt_curr$pt12_X, dat_pt_curr$pt12_Y, dat_pt_curr$pt12_Z) # Wing root leading edge
     clean_pts = rbind(Pt1,Pt2,Pt3,Pt4,Pt8,Pt9,Pt10,Pt11,Pt12)
 
-    # solve the data
+    # Compute the CG and I for the wing configuration
     curr_wing_data      = massprop_birdwing(dat_id_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts)
-    curr_torsotail_data = massprop_restbody(dat_id_curr, dat_bird_curr)
 
     # Compute the full bird results
     fullbird = list()
@@ -318,8 +322,7 @@ for (k in c(17,24,33)){
                       subset(curr_torsotail_data, object == "CGx" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
                       subset(curr_torsotail_data, object == "CGx" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
                       2*subset(curr_wing_data, object == "CGx" & component == "wing")$value*subset(curr_wing_data, object == "m" & component == "wing")$value)/fullbird$m
-    # do not include the effects of the wing because of symmetric morphing this is equal and opposite between left and right
-    fullbird$CG[2] = 0
+    # fullbird$CG[2] = 0; symmetric morphing this is equal and opposite between left and right
     fullbird$CG[3] = (subset(curr_torsotail_data, object == "CGz" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
                         subset(curr_torsotail_data, object == "CGz" & component == "neck")$value*subset(curr_torsotail_data, object == "m" & component == "neck")$value +
                         subset(curr_torsotail_data, object == "CGz" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
