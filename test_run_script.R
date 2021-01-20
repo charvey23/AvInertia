@@ -4,6 +4,9 @@ devtools::load_all()
 # CAUTION: All incoming measurements must be in SI units; adjust as required
 # UPDATE REQUIRED: Should probably move final run files into the bird moment folder
 path_data_folder = "/Users/christinaharvey/Dropbox (University of Michigan)/Bird Mass Distribution/rundata/"
+
+no_pts = 11 # number of points that were digitized
+
 # identification info on each of the individual specimens
 dat_ind      = read.csv(file = paste(path_data_folder,"2020_12_15_IDfile.csv",sep= ""))
 # all of the non-wing based measurements for all specimens - NEED TO RESAVE THIS - ALSO NEED TO CORRECT ONE ID NUMBER TO MATCH FEATHERS
@@ -139,12 +142,10 @@ dat_mat$material  =	c("Muscle", "Bone", "Skin", "Cortex", "Medullary")
 dat_mat$density   = c(1100,2060,1060,1150,80)
 
 specimens <- unique(dat_ind[,c("species","BirdID")])
-
+iter = 0
 # ----------- Iterate through each species ---------
-for (k in 1:nrow(specimens)){
-
-  k = 24
-
+for (k in c(17,24,33)){
+  iter = iter + 1
   # --------------------- Initialize variables -----------------------
   all_data = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
   column_names = c("species","BirdID","TestID","FrameID","prop_type","component","value")
@@ -157,9 +158,12 @@ for (k in 1:nrow(specimens)){
   #Read in all the wing configuration data - loop through all files for the individual
   filename_wingconfigs = list.files(path = path_data_folder, pattern = paste(species_curr,birdid_curr,sep="_"))
   dat_wing_curr   = read.csv(paste(path_data_folder,filename_wingconfigs[1],sep=""))
-  for (n in 2:length(filename_wingconfigs)){
-    dat_wing_curr = rbind(dat_wing_curr,read.csv(paste(path_data_folder,filename_wingconfigs[n],sep="")))
+  if(length(filename_wingconfigs)>1){
+    for (n in 2:length(filename_wingconfigs)){
+      dat_wing_curr = rbind(dat_wing_curr,read.csv(paste(path_data_folder,filename_wingconfigs[n],sep="")))
+    }
   }
+
   # Save the side of the wing and the bird ID out of the file path
   dat_wing_curr$wing_side <- stringr::str_sub(dat_wing_curr$birdid, -1)
   dat_wing_curr$BirdID    <- stringr::str_sub(dat_wing_curr$birdid, 1, stringr::str_length(dat_wing_curr$birdid)-1)
@@ -215,17 +219,10 @@ for (k in 1:nrow(specimens)){
   row_alula = nrow(dat_feat_curr)+1
   dat_feat_curr[row_alula, ]       <- NA
   dat_feat_curr$feather[row_alula] <- "alula"
-  dat_feat_curr$m_f[row_alula]     <- 0 # FIX THIS - for now have no alula masses
+  dat_feat_curr$m_f[row_alula]     <- dat_bird_curr[1,"alular_mass_g"]
 
   dat_feat_curr$species = species_curr
   dat_feat_curr$BirdID  = birdid_curr
-
-  # save all feather data for future use
-  if (k == 1){
-    dat_feat_all <- dat_feat_curr
-  }else{
-    dat_feat_all <- rbind(dat_feat_all,dat_feat_curr)
-  }
 
   # --------------- Clean up wing 3D incoming data --------------------
   # CAUTION:   The read in data has the origin at the RH humeral head. Pt1X, Pt1Y, Pt1Z = 0
@@ -234,30 +231,27 @@ for (k in 1:nrow(specimens)){
   #            point (VRP). VRP is assumed to be in the center of the body
   #            on the y axis between the two humerus bones at the clavicle point
 
-  dat_pt = dat_wing_curr[,4:36]
-
-  for (i in 1:length(colnames(dat_pt))){
+  for (i in 1:(no_pts*3)){
     # x position - the sign has been verified
-    if (grepl("X",colnames(dat_pt)[i],fixed=TRUE)){
-      dat_pt[,i] = dat_pt[,i] - (dat_bird_curr$x_loc_humeral_insert)
+    if (grepl("X",colnames(dat_wing_curr)[i+3],fixed=TRUE)){
+      dat_wing_curr[,i+3] = dat_wing_curr[,i+3] - (dat_bird_curr$x_loc_humeral_insert)
     }
     # y position - the sign has been verified
     # CAUTION: this assumes the wings is on the right side of the bird for all calculations
-    if (grepl("Y",colnames(dat_pt)[i],fixed=TRUE)){
-      dat_pt[,i] = dat_pt[,i] + (dat_bird_curr$y_loc_humeral_insert)
+    if (grepl("Y",colnames(dat_wing_curr)[i+3],fixed=TRUE)){
+      dat_wing_curr[,i+3] = dat_wing_curr[,i+3] + (dat_bird_curr$y_loc_humeral_insert)
     }
     # z position - the sign has been verified + positive ensures that the shoulder is "below" the clavicle origin
-    if (grepl("Z",colnames(dat_pt)[i],fixed=TRUE)){
-      dat_pt[,i] = dat_pt[,i] + (dat_bird_curr$z_loc_humeral_insert)
+    if (grepl("Z",colnames(dat_wing_curr)[i+3],fixed=TRUE)){
+      dat_wing_curr[,i+3] = dat_wing_curr[,i+3] + (dat_bird_curr$z_loc_humeral_insert)
     }
   }
 
   # -------------- Iterate through the wings of this species ------------------------------
 
   # Make sure that no wing data points are
-  row_keep = which(dat_pt$pt2_Y > 0 & dat_pt$pt3_Y > 0 & dat_pt$pt4_Y > 0 & dat_pt$pt6_Y > 0 & dat_pt$pt7_Y > 0 &
-                   dat_pt$pt8_Y > 0 & dat_pt$pt9_Y > 0 & dat_pt$pt10_Y > 0 & dat_pt$pt11_Y > 0 & dat_pt$pt12_Y > 0)
-  dat_pt        = dat_pt[row_keep,]
+  row_keep = which(dat_wing_curr$pt2_Y > 0 & dat_wing_curr$pt3_Y > 0 & dat_wing_curr$pt4_Y > 0 & dat_wing_curr$pt6_Y > 0 & dat_wing_curr$pt7_Y > 0 &
+                     dat_wing_curr$pt8_Y > 0 & dat_wing_curr$pt9_Y > 0 & dat_wing_curr$pt10_Y > 0 & dat_wing_curr$pt11_Y > 0 & dat_wing_curr$pt12_Y > 0)
   dat_wing_curr = dat_wing_curr[row_keep,]
 
   # Need a blank dataframe to save each iteration
@@ -265,12 +259,27 @@ for (k in 1:nrow(specimens)){
   column_names = c("species","BirdID","TestID","FrameID","prop_type","component","value")
   colnames(mass_properties) = column_names
 
-  for (ind_wing in 1:nrow(dat_pt)){
+
+  # -------- Save the final input info used for this specimen -------
+
+  # save all the individual info
+  if (iter == 1){
+    dat_wing_all <- dat_wing_curr
+    dat_feat_all <- dat_feat_curr
+    dat_bird_all <- dat_bird_curr
+  }else{
+    dat_wing_all <- rbind(dat_wing_all,dat_wing_curr)
+    dat_feat_all <- rbind(dat_feat_all,dat_feat_curr)
+    dat_bird_all <- rbind(dat_bird_all,dat_bird_curr)
+  }
+
+
+  for (ind_wing in 1:nrow(dat_wing_curr)){
     # both dataframes below should only be one row of input points
     dat_id_curr = dat_wing_curr[ind_wing,c("species","BirdID","testid","frameID")]
     names(dat_id_curr)[names(dat_id_curr) == "frameID"] <- "FrameID"
     names(dat_id_curr)[names(dat_id_curr) == "testid"] <- "TestID"
-    dat_pt_curr = dat_pt[ind_wing,]
+    dat_pt_curr = dat_wing_curr[ind_wing,]
 
     # Initialize common pts
     Pt1  = c(dat_pt_curr$pt1_X, dat_pt_curr$pt1_Y, dat_pt_curr$pt1_Z) # Shoulder
@@ -324,8 +333,21 @@ for (k in 1:nrow(specimens)){
 
     all_data = rbind(all_data, curr_wing_data, curr_torsotail_data, curr_full_bird)
   }
+
   filename_output = paste(format(Sys.Date(), "%Y_%m_%d"),species_curr,birdid_curr,"results.csv",sep="_")
   write.csv(all_data,filename_output)
+
   remove(all_data)
 }
 
+path_dataout_folder = "/Users/christinaharvey/Dropbox (University of Michigan)/Bird Mass Distribution/outputdata/"
+
+#Save combined data
+filename = paste(path_dataout_folder,format(Sys.Date(), "%Y_%m_%d"),"_allspecimen_winginfo.csv",sep="")
+write.csv(dat_wing_all,filename)
+
+filename = paste(path_dataout_folder,format(Sys.Date(), "%Y_%m_%d"),"_allspecimen_birdinfo.csv",sep="")
+write.csv(dat_bird_all,filename)
+
+filename = paste(path_dataout_folder,format(Sys.Date(), "%Y_%m_%d"),"_allspecimen_featherinfo.csv",sep="")
+write.csv(dat_feat_all,filename)

@@ -774,7 +774,6 @@ massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, h_leg, l
   mass_prop$m  = m_true
 
   # Check that the CG matches the expected value
-
   if(abs(abs(mass_prop$CG[1])-CG_true_x)>0.01){
     warning("The center of gravity the predicted body shape does not match the expected value.")
   }

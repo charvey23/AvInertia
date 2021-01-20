@@ -330,7 +330,7 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
 
   rho_skin   = dat_mat$density[which(dat_mat$material == "Skin")]
   mass_skin  = dat_bird_curr$wing_mass - prop_feathers$m - prop_bone$m - prop_muscles$m
-  prop_skin  = massprop_skin(mass_skin,rho_skin,rbind(Pt1,Pt3,Pt2))
+  prop_skin  = massprop_skin(mass_skin,rho_skin,rbind(Pt12,Pt3,Pt2))
 
   # ----------------------------------------------------
   # ----------------- Save Data ------------------------
