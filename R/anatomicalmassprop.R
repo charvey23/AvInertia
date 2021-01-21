@@ -699,7 +699,7 @@ massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, h_leg, l
 
   # ----------- Estimate the density in each section of the body -----------------
   A    = matrix(c(v_par,v_par*CG_par,v_end,v_end*CG_end),2,2)
-  test = pracma::lsqnonlin(test_optimizer, rho_avg, options=list(tolx=1e-12, tolg=1e-12), A, m_body, v_ell, CG_body_x, CG_ell, rho_avg)
+  test = pracma::lsqnonlin(density_optimizer, rho_avg, options=list(tolx=1e-12, tolg=1e-12), A, m_body, v_ell, CG_body_x, CG_ell, rho_avg)
   rho_ell  = test$x
   b        = c((m_body-(rho_ell*v_ell)),((m_body*CG_body_x)-(rho_ell*v_ell*CG_ell)))
   output   = solve(A,b)
@@ -783,4 +783,24 @@ massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, h_leg, l
     warning("The center of gravity the predicted body shape does not match the expected value.")
   }
   return(mass_prop)
+}
+
+
+# ---------------------------------------------------------------------------------------
+##### -------------------- Body component density optimizer ----------------------- #####
+# ---------------------------------------------------------------------------------------
+
+density_optimizer <- function(x,A,m_body,v_ell,CG_body_x,CG_ell,rho_avg){
+  rho = x
+  b      = c((m_body-(rho*v_ell)),
+             ((m_body*CG_body_x)-(rho*v_ell*CG_ell)))
+  output = solve(A,b)
+
+  err = ((rho-rho_avg)^2 + (output[1]-rho_avg)^2 + (output[2]-rho_avg)^2 + (rho-output[1])^2 + (rho-output[2])^2)
+
+  if(output[1] < 0 | output[2] < 0 | rho < 0){
+    err = err + rho_avg
+  }
+
+  return(err)
 }

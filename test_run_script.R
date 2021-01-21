@@ -4,6 +4,7 @@ devtools::load_all()
 # CAUTION: All incoming measurements must be in SI units; adjust as required
 # UPDATE REQUIRED: Should probably move final run files into the bird moment folder
 path_data_folder = "/Users/christinaharvey/Dropbox (University of Michigan)/Bird Mass Distribution/rundata/"
+path_dataout_folder = "/Users/christinaharvey/Dropbox (University of Michigan)/Bird Mass Distribution/outputdata/"
 
 no_pts = 11 # number of points that were digitized
 
@@ -262,17 +263,6 @@ for (k in c(17,24,33)){
 
   # -------- Save the final input info used for this specimen -------
 
-  # save all the individual info
-  if (iter == 1){
-    dat_wing_all <- dat_wing_curr
-    dat_feat_all <- dat_feat_curr
-    dat_bird_all <- dat_bird_curr
-  }else{
-    dat_wing_all <- rbind(dat_wing_all,dat_wing_curr)
-    dat_feat_all <- rbind(dat_feat_all,dat_feat_curr)
-    dat_bird_all <- rbind(dat_bird_all,dat_bird_curr)
-  }
-
   names(dat_wing_curr)[names(dat_wing_curr) == "frameID"] <- "FrameID"
   names(dat_wing_curr)[names(dat_wing_curr) == "testid"] <- "TestID"
   dat_id_curr = dat_wing_curr[1,c("species","BirdID","TestID","FrameID")]
@@ -280,6 +270,19 @@ for (k in c(17,24,33)){
 
   # Compute the CG and I for the body without the wings
   curr_torsotail_data = massprop_restbody(dat_id_curr, dat_bird_curr)
+
+  # ---- save all the individual info that does not change with wing position -------
+  if (iter == 1){
+    dat_wing_all <- dat_wing_curr        # wing specimen info
+    dat_feat_all <- dat_feat_curr        # feather specimen info
+    dat_bird_all <- dat_bird_curr        # entire body specimen info
+    dat_body_all <- curr_torsotail_data  # CG and MOI from the torso, tail, head and neck for this individual
+  }else{
+    dat_wing_all <- rbind(dat_wing_all,dat_wing_curr)
+    dat_feat_all <- rbind(dat_feat_all,dat_feat_curr)
+    dat_bird_all <- rbind(dat_bird_all,dat_bird_curr)
+    dat_body_all <- rbind(dat_body_all,curr_torsotail_data)
+  }
 
   for (ind_wing in 1:nrow(dat_wing_curr)){
     # both data frames below should only be one row of input points
@@ -334,18 +337,16 @@ for (k in c(17,24,33)){
     # save the full data
     curr_full_bird = store_data(dat_id_curr,fullbird,mass_properties,"full")
 
-    all_data = rbind(all_data, curr_wing_data, curr_torsotail_data, curr_full_bird)
+    all_data = rbind(all_data, curr_wing_data, curr_full_bird)
   }
   # for the sake of memory need to recast from long to wide format to save
   all_data <- reshape2::dcast(all_data, species + BirdID + TestID + FrameID ~ component + object, value.var="value")
 
-  filename_output = paste(format(Sys.Date(), "%Y_%m_%d"),species_curr,birdid_curr,"results.csv",sep="_")
+  filename_output = paste(path_dataout_folder,format(Sys.Date(), "%Y_%m_%d"),species_curr,birdid_curr,"results.csv",sep="_")
   write.csv(all_data,filename_output)
 
   remove(all_data)
 }
-
-path_dataout_folder = "/Users/christinaharvey/Dropbox (University of Michigan)/Bird Mass Distribution/outputdata/"
 
 #Save combined data
 filename = paste(path_dataout_folder,format(Sys.Date(), "%Y_%m_%d"),"_allspecimen_winginfo.csv",sep="")
@@ -356,3 +357,6 @@ write.csv(dat_bird_all,filename)
 
 filename = paste(path_dataout_folder,format(Sys.Date(), "%Y_%m_%d"),"_allspecimen_featherinfo.csv",sep="")
 write.csv(dat_feat_all,filename)
+
+filename = paste(path_dataout_folder,format(Sys.Date(), "%Y_%m_%d"),"_bodyCGandMOI.csv",sep="")
+write.csv(dat_body_all,filename)
