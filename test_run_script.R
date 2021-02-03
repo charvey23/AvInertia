@@ -1,6 +1,9 @@
 devtools::load_all()
 
+## ---------------------------------------------------------
 # --------------------- Read in data -----------------------
+## ---------------------------------------------------------
+
 # CAUTION: All incoming measurements must be in SI units; adjust as required
 # UPDATE REQUIRED: Should probably move final run files into the bird moment folder
 path_data_folder = "/Users/christinaharvey/Dropbox (University of Michigan)/Bird Mass Distribution/rundata/"
@@ -11,27 +14,39 @@ no_pts = 11 # number of points that were digitized
 # identification info on each of the individual specimens
 dat_ind      = read.csv(file = paste(path_data_folder,"2020_12_15_IDfile.csv",sep= ""))
 # all of the non-wing based measurements for all specimens - NEED TO RESAVE THIS - ALSO NEED TO CORRECT ONE ID NUMBER TO MATCH FEATHERS
-dat_bird     = readxl::read_xlsx(paste(path_data_folder,"2020_12_19_bird_measurements.xlsx",sep= ""), sheet = 'Major body parts')
+dat_bird     = readxl::read_xlsx(paste(path_data_folder,"2021_02_02_bird_measurements.xlsx",sep= ""), sheet = 'Major body parts')
 
 # all of the wing based measurements for all specimens
-dat_wingspec = readxl::read_xlsx(paste(path_data_folder,"2020_12_19_bird_measurements.xlsx",sep= ""), sheet = 'Within wings')
+dat_wingspec = readxl::read_xlsx(paste(path_data_folder,"2021_02_02_bird_measurements.xlsx",sep= ""), sheet = 'Within wings')
 
 # all of the feather measurements for one specimen of each species
-dat_feat     = readxl::read_xlsx(paste(path_data_folder,"2021_01_13_trackingsheet.xlsx",sep= ""), sheet = 'FeatherData')
+dat_feat     = readxl::read_xlsx(paste(path_data_folder,"2021_02_02_trackingsheet.xlsx",sep= ""), sheet = 'FeatherData')
 
 # all of the barb measurements for each species baed on measurements from previous studies
-dat_barb     = readxl::read_xlsx(paste(path_data_folder,"2021_01_13_trackingsheet.xlsx",sep= ""), sheet = 'BarbInfo')
+dat_barb     = readxl::read_xlsx(paste(path_data_folder,"2021_02_02_trackingsheet.xlsx",sep= ""), sheet = 'BarbInfo')
 
-# ----------------- Clean Data -----------------------
+## ----------------------------------------------------
+## ------- define all assumed material properties -----
+## ----------------------------------------------------
+
+dat_mat = list()
+dat_mat$material  =	c("Muscle", "Bone", "Skin", "Cortex", "Medullary")
+# SI units density: kg/m^3 - for references see Simplications document
+dat_mat$density   = c(1100,2060,1060,1150,80)
+
+## ----------------------------------------------------
+# ----------------- Clean Data ------------------------
+## ----------------------------------------------------
+
 # -- Clean up the data set relating to each individual specimen --
 
 # Save info about whether this is a right or left wing
-dat_ind$wing_side <- stringr::str_sub(dat_ind$birdid, -1)
-dat_ind$BirdID    <- stringr::str_sub(dat_ind$birdid, 1, stringr::str_length(dat_ind$birdid)-1)
+dat_ind$wing_side = stringr::str_sub(dat_ind$birdid, -1)
+dat_ind$BirdID    = stringr::str_sub(dat_ind$birdid, 1, stringr::str_length(dat_ind$birdid)-1)
 
 # -- Clean up the data set relating to full bird measurements of each individual specimen--
-dat_bird$species <- NA
-dat_bird$BirdID  <- NA
+dat_bird$species = NA
+dat_bird$BirdID  = NA
 for (i in 1:nrow(dat_bird)){
   if (strsplit(dat_bird$bird_id, "_")[[i]][1] == "COLLI"){
     dat_bird$species[i] = "col_liv"
@@ -42,8 +57,8 @@ for (i in 1:nrow(dat_bird)){
   }
 }
 # -- Clean up the data set relating to the wing specific measurements for each individual specimen --
-dat_wingspec$species <- NA
-dat_wingspec$BirdID  <- NA
+dat_wingspec$species = NA
+dat_wingspec$BirdID  = NA
 for (i in 1:nrow(dat_wingspec)){
   if (strsplit(dat_wingspec$bird_id, "_")[[i]][1] == "COLLI"){
     dat_wingspec$species[i] = "col_liv"
@@ -55,298 +70,340 @@ for (i in 1:nrow(dat_wingspec)){
 }
 
 # Merge the wing specific measurements with the full bird measurements
-dat_bird <- merge(dat_bird,dat_wingspec, by = c("species","BirdID"))
+dat_bird = merge(dat_bird,dat_wingspec, by = c("species","BirdID"))
 
-# Correct all the units in the data frame to SI
+# Correct all the units in the data frame to SI - and ensure that all inputs are rounded to 0.01g and 0.1mm
 for (i in 1:length(colnames(dat_bird))){
   # Adjust all masses to be in kg
   if (grepl("mass_g",colnames(dat_bird)[i],fixed=TRUE)){
-    dat_bird[,i] = dat_bird[,i]/1000
+    dat_bird[,i] = round(dat_bird[,i]/1000,5)
   }
   # Adjust all lengths to be in m
   if (grepl("_cm",colnames(dat_bird)[i],fixed=TRUE)){
-    dat_bird[,i] = dat_bird[,i]/100
+    dat_bird[,i] = round(dat_bird[,i]/100,4)
   }
   # Adjust all lengths to be in m
   if (grepl("_mm",colnames(dat_bird)[i],fixed=TRUE)){
-    dat_bird[,i] = dat_bird[,i]/1000
+    dat_bird[,i] = round(dat_bird[,i]/1000,4)
   }
 }
 
 #Rename columns as necessary
-names(dat_bird)[names(dat_bird) == "humerus_muscles_mass_g"] <- "brachial_muscle_mass"
-names(dat_bird)[names(dat_bird) == "raduln_muscles_mass_g"]  <- "antebrachial_muscle_mass"
-names(dat_bird)[names(dat_bird) == "cmc_muscles_mass_g"]     <- "manus_muscle_mass"
-names(dat_bird)[names(dat_bird) == "whole_body_mass_g"]      <- "total_bird_mass"
-names(dat_bird)[names(dat_bird) == "tert_feathers_mass_g"]   <- "tertiary_mass"
-names(dat_bird)[names(dat_bird) == "skin_coverts_mass_g"]    <- "all_skin_coverts_mass"
+names(dat_bird)[names(dat_bird) == "humerus_muscles_mass_g"] = "brachial_muscle_mass"
+names(dat_bird)[names(dat_bird) == "raduln_muscles_mass_g"]  = "antebrachial_muscle_mass"
+names(dat_bird)[names(dat_bird) == "cmc_muscles_mass_g"]     = "manus_muscle_mass"
+names(dat_bird)[names(dat_bird) == "whole_body_mass_g"]      = "total_bird_mass"
+names(dat_bird)[names(dat_bird) == "tert_feathers_mass_g"]   = "tertiary_mass"
+names(dat_bird)[names(dat_bird) == "skin_coverts_mass_g"]    = "all_skin_coverts_mass"
 
-names(dat_bird)[names(dat_bird) == "head_length_cm"]             <- "head_length"
-names(dat_bird)[names(dat_bird) == "head_mass_g"]                <- "head_mass"
-names(dat_bird)[names(dat_bird) == "head_height_max_cm"]         <- "head_height"
-names(dat_bird)[names(dat_bird) == "neck_mass_g"]                <- "neck_mass"
-names(dat_bird)[names(dat_bird) == "neck_width_cm"]              <- "neck_width"
-names(dat_bird)[names(dat_bird) == "neck_length_cm"]             <- "neck_length"
-names(dat_bird)[names(dat_bird) == "torsotail_length_cm"]        <- "torsotail_length"
-names(dat_bird)[names(dat_bird) == "torsotail_mass_g"]           <- "torsotail_mass"
-names(dat_bird)[names(dat_bird) == "tail_length_cm"]             <- "tail_length"
-names(dat_bird)[names(dat_bird) == "tail_width_cm"]              <- "tail_width"
-names(dat_bird)[names(dat_bird) == "right_leg_mass_g"]           <- "right_leg_mass"
-names(dat_bird)[names(dat_bird) == "left_leg_mass_"]             <- "left_leg_mass"
-names(dat_bird)[names(dat_bird) == "body_width_max_cm"]          <- "body_width_max"
-names(dat_bird)[names(dat_bird) == "width_at_leg_insert_cm"]     <- "body_width_at_leg_insert"
-names(dat_bird)[names(dat_bird) == "x_loc_of_body_max_cm"]       <- "x_loc_of_body_max"
-names(dat_bird)[names(dat_bird) == "tail_width_cm"]              <- "tail_width"
-names(dat_bird)[names(dat_bird) == "x_loc_leg_insertion_cm"]     <- "x_loc_leg_insertion"
-names(dat_bird)[names(dat_bird) == "x_loc_TorsotailCoG_cm"]      <- "x_loc_TorsotailCoG"
-names(dat_bird)[names(dat_bird) == "z_loc_TorsotailCoG_cm"]      <- "z_loc_TorsotailCoG"
-names(dat_bird)[names(dat_bird) == "x_loc_of_humeral_insert_cm"] <- "x_loc_humeral_insert"
-names(dat_bird)[names(dat_bird) == "y_loc_of_humeral_insert_cm"] <- "y_loc_humeral_insert"
-names(dat_bird)[names(dat_bird) == "z_loc_of_humeral_insert_cm"] <- "z_loc_humeral_insert"
-names(dat_bird)[names(dat_bird) == "whole_body_mass_g"]          <- "total_bird_mass"
+names(dat_bird)[names(dat_bird) == "head_length_cm"]             = "head_length"
+names(dat_bird)[names(dat_bird) == "head_mass_g"]                = "head_mass"
+names(dat_bird)[names(dat_bird) == "head_height_max_cm"]         = "head_height"
+names(dat_bird)[names(dat_bird) == "neck_mass_g"]                = "neck_mass"
+names(dat_bird)[names(dat_bird) == "neck_width_cm"]              = "neck_width"
+names(dat_bird)[names(dat_bird) == "neck_length_cm"]             = "neck_length"
+names(dat_bird)[names(dat_bird) == "torsotail_length_cm"]        = "torsotail_length"
+names(dat_bird)[names(dat_bird) == "torsotail_mass_g"]           = "torsotail_mass"
+names(dat_bird)[names(dat_bird) == "tail_length_cm"]             = "tail_length"
+names(dat_bird)[names(dat_bird) == "tail_width_cm"]              = "tail_width"
+names(dat_bird)[names(dat_bird) == "right_leg_mass_g"]           = "right_leg_mass"
+names(dat_bird)[names(dat_bird) == "left_leg_mass_"]             = "left_leg_mass"
+names(dat_bird)[names(dat_bird) == "body_width_max_cm"]          = "body_width_max"
+names(dat_bird)[names(dat_bird) == "width_at_leg_insert_cm"]     = "body_width_at_leg_insert"
+names(dat_bird)[names(dat_bird) == "x_loc_of_body_max_cm"]       = "x_loc_of_body_max"
+names(dat_bird)[names(dat_bird) == "tail_width_cm"]              = "tail_width"
+names(dat_bird)[names(dat_bird) == "x_loc_leg_insertion_cm"]     = "x_loc_leg_insertion"
+names(dat_bird)[names(dat_bird) == "x_loc_TorsotailCoG_cm"]      = "x_loc_TorsotailCoG"
+names(dat_bird)[names(dat_bird) == "z_loc_TorsotailCoG_cm"]      = "z_loc_TorsotailCoG"
+names(dat_bird)[names(dat_bird) == "x_loc_of_humeral_insert_cm"] = "x_loc_humeral_insert"
+names(dat_bird)[names(dat_bird) == "y_loc_of_humeral_insert_cm"] = "y_loc_humeral_insert"
+names(dat_bird)[names(dat_bird) == "z_loc_of_humeral_insert_cm"] = "z_loc_humeral_insert"
+names(dat_bird)[names(dat_bird) == "whole_body_mass_g"]          = "total_bird_mass"
+
 #Correct the sign of the x measurement
 dat_bird$x_loc_TorsotailCoG = - dat_bird$x_loc_TorsotailCoG
 
+# Adjust all body z measurements to be from the clavicle position (VRP) rather than the back of the bird
+dat_bird$z_loc_humeral_insert = dat_bird$z_loc_humeral_insert - dat_bird$z_dist_to_veh_ref_point_cm
+dat_bird$z_loc_TorsotailCoG   = dat_bird$z_loc_TorsotailCoG - dat_bird$z_dist_to_veh_ref_point_cm
+
 # save a singular wing mass - left if that is the one measured right otherwise
-dat_bird$wing_mass <-dat_bird$left_wing_mass_g
+dat_bird$wing_mass = dat_bird$left_wing_mass_g
 for (i in 1:nrow(dat_bird)){
   if (dat_bird$right_or_left[i] == "Right"){
     dat_bird$wing_mass[i] = dat_bird$right_wing_mass_g[i]
   }
 }
 
+## ----------------------------------------------------
 ## ----- Adjust the feather input properties ----------
+## ----------------------------------------------------
 
 # Update to include the barb information within the species specific info
-dat_barb$barb_distance <- dat_barb$barb_distance_um*10^-6
-dat_barb$barb_radius   <- dat_barb$barb_radius_um*10^-6
-dat_bird <- merge(dat_bird,dat_barb, by=c("species"))
+dat_barb$barb_distance = dat_barb$barb_distance_um*10^-6
+dat_barb$barb_radius   = dat_barb$barb_radius_um*10^-6
+dat_bird               = merge(dat_bird,dat_barb, by=c("species"))
+
 # need the calamus angle to be positive (i.e. from start of vane to tip of calamus)
 for (k in 1:nrow(dat_feat[which(dat_feat$Component == "calamus length"),c("Angle")])){
   if (dat_feat[which(dat_feat$Component == "calamus length"),c("Angle")][k,1] < 0){
     dat_feat[which(dat_feat$Component == "calamus length"),c("Angle")][k,1] = 180 + dat_feat[which(dat_feat$Component == "calamus length"),c("Angle")][k,1]
   }
 }
-
 # need the vane angle to be negative (i.e. from start of vane to tip of feather)
 for (k in 1:nrow(dat_feat[which(dat_feat$Component == "vane length"),c("Angle")])){
   if (dat_feat[which(dat_feat$Component == "vane length"),c("Angle")][k,1] > 0){
     dat_feat[which(dat_feat$Component == "vane length"),c("Angle")][k,1] = dat_feat[which(dat_feat$Component == "vane length"),c("Angle")][k,1] - 180
   }
 }
+## -----------------------------------------------------
+## ---------- Clean up the specimen list ---------------
+## -----------------------------------------------------
 
+specimens  = unique(dat_ind[,c("species","BirdID")])
+# If there is a specimen that needs to be skipped remove it here
+specimens  = specimens[-which(specimens$species == "col_liv"),] # missing tail data
+specimens  = specimens[-which(specimens$species == "col_aur"),] # missing tail data
+specimens  = specimens[-which(specimens$species == "aec_occ"),] # missing tail data
+specimens  = specimens[-which(specimens$species == "cya_ste"),] # missing tail data
+specimens  = specimens[-which(specimens$species == "tyt_alb" & specimens$BirdID == "18_1"),] # missing a lot of data
+specimens  = specimens[-which(specimens$species == "fal_per" & specimens$BirdID == "18_1"),] # missing a lot of data
+specimens  = specimens[-which(specimens$species == "ard_her" & specimens$BirdID == "20_317"),] # missing a lot of data
 
-# define all assumed material properties
-dat_mat = list()
-dat_mat$material  =	c("Muscle", "Bone", "Skin", "Cortex", "Medullary")
-# SI units density: kg/m^3 - for references see Simplications document
-dat_mat$density   = c(1100,2060,1060,1150,80)
+specimens  = specimens[order(specimens$species),]
+no_species = unique(specimens[,c("species")])
 
-specimens <- unique(dat_ind[,c("species","BirdID")])
+# --------------------- Initialize variables -----------------------
+all_data           = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
+column_names       = c("species","BirdID","TestID","FrameID","prop_type","component","value")
+colnames(all_data) = column_names
 iter = 0
-# ----------- Iterate through each species ---------
-for (k in c(17,24,33)){
-  iter = iter + 1
-  # --------------------- Initialize variables -----------------------
-  all_data = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
-  column_names = c("species","BirdID","TestID","FrameID","prop_type","component","value")
-  colnames(all_data) = column_names
+
+## ----------------------------------------------------
+## --------- Iterate through each species -------------
+## ----------------------------------------------------
+
+for (m in 1:length(no_species)){
 
   # ----------- Filter the data to the current species ---------
-  species_curr  = specimens$species[k]
-  birdid_curr   = specimens$BirdID[k]
+  species_curr   = no_species[m]
+  specimens_curr = subset(specimens, species == species_curr)
 
-  #Read in all the wing configuration data - loop through all files for the individual
-  filename_wingconfigs = list.files(path = path_data_folder, pattern = paste(species_curr,birdid_curr,sep="_"))
-  dat_wing_curr   = read.csv(paste(path_data_folder,filename_wingconfigs[1],sep=""))
-  if(length(filename_wingconfigs)>1){
-    for (n in 2:length(filename_wingconfigs)){
-      dat_wing_curr = rbind(dat_wing_curr,read.csv(paste(path_data_folder,filename_wingconfigs[n],sep="")))
-    }
-  }
-
-  # Save the side of the wing and the bird ID out of the file path
-  dat_wing_curr$wing_side <- stringr::str_sub(dat_wing_curr$birdid, -1)
-  dat_wing_curr$BirdID    <- stringr::str_sub(dat_wing_curr$birdid, 1, stringr::str_length(dat_wing_curr$birdid)-1)
-
-  ## ---
-  dat_bird_curr = subset(dat_bird, species == species_curr & BirdID == birdid_curr)
-
-  # Create the bone specific data frame
-  dat_bone_curr = as.data.frame(matrix(nrow = 6, ncol = 5))
-  names(dat_bone_curr) <- c("bone", "bone_mass", "bone_len", "bone_out_rad", "bone_in_rad")
-  dat_bone_curr$bone <- c("Humerus","Ulna","Radius","Carpometacarpus","Ulnare", "Radiale")
-  dat_bone_curr$bone_mass  <- c(dat_bird_curr$humerus_mass_g,dat_bird_curr$ulna_mass_g,dat_bird_curr$radius_mass_g,dat_bird_curr$cmc_mass_g,
-                          dat_bird_curr$ulnare_mass_g,dat_bird_curr$radiale_mass_g)
-  dat_bone_curr$bone_len  <- c(dat_bird_curr$humerus_length_mm,dat_bird_curr$ulna_length_mm,dat_bird_curr$radius_length_mm,dat_bird_curr$cmc_length_mm,
-                             NA,NA)
-  dat_bone_curr$bone_out_rad <- c(dat_bird_curr$humerus_diameter_mm, ## ASK ABOUT THIS
-                                  dat_bird_curr$ulna_diameter_mm,
-                                  dat_bird_curr$radius_diameter_mm,
-                                  dat_bird_curr$cmc_diameter_mm,NA,NA)
-  dat_bone_curr$bone_out_rad <- 0.5*dat_bone_curr$bone_out_rad
-  dat_bone_curr$bone_in_rad  <- 0.78*dat_bone_curr$bone_out_rad # Ref. De Margerie (2005)
-
-  # ------------------------ Create the feather specific data frame --------------------------
+  # ---------- Acquire the appropriate feather data for the species --------------
   # Inputs are adjusted to be in SI units, kg and m
-  tmp = subset(dat_feat, species == species_curr & bird_id == birdid_curr)
-  tmp_area   <- tidyr::spread(aggregate(x = tmp$Area, by = list(tmp$Feather, tmp$Component), "mean"),"Group.2","x")
-  tmp_area   <- tmp_area[,c("Group.1","distal vane","proximal vane")]
-  tmp_length <- tidyr::spread(aggregate(x = tmp$Length, by = list(tmp$Feather, tmp$Component), "mean"),"Group.2","x")
-  tmp_length   <- tmp_length[,c("Group.1","calamus length","vane length","rachis width")]
-  tmp_angle  <- tidyr::spread(aggregate(x = tmp$Angle, by = list(tmp$Feather, tmp$Component), "mean"),"Group.2","x")
-  tmp_angle   <- tmp_angle[,c("Group.1","calamus length","vane length")]
+  # CAUTION: I only limit to the specific species - not specific birdID
+  tmp = subset(dat_feat, species == species_curr)
 
-  dat_feat_curr <- merge(tmp_area,tmp_length, by = "Group.1")
+  tmp_area   = tidyr::spread(aggregate(x = tmp$Area, by = list(tmp$Feather, tmp$Component), "mean"),"Group.2","x")
+  tmp_area   = tmp_area[,c("Group.1","distal vane","proximal vane")]
+  tmp_length = tidyr::spread(aggregate(x = tmp$Length, by = list(tmp$Feather, tmp$Component), "mean"),"Group.2","x")
+  tmp_length = tmp_length[,c("Group.1","calamus length","vane length","rachis width")]
+  tmp_angle  = tidyr::spread(aggregate(x = tmp$Angle, by = list(tmp$Feather, tmp$Component), "mean"),"Group.2","x")
+  tmp_angle  = tmp_angle[,c("Group.1","calamus length","vane length")]
 
-  # computes the supplement angle to the interior angle between the calamus and vane assuming that the calamus is a positive angle and the vane is negative
-  dat_feat_curr$vane_angle <- 180 - (tmp_angle$"calamus length" - tmp_angle$"vane length")
+  dat_feat_curr = merge(tmp_area,tmp_length, by = "Group.1")
+
+  # computes the supplement angle to the interior angle between the calamus and vane
+  # assuming that the calamus is a positive angle and the vane is negative
+  # negative value indicates that the feather tip points towards the body
+  dat_feat_curr$vane_angle = 180 - (tmp_angle$"calamus length" - tmp_angle$"vane length")
+  # Need to account for the "flipped" view of feathers from the left wing
+  if(tmp$right_or_left[1] == "Left"){
+    dat_feat_curr$vane_angle = -dat_feat_curr$vane_angle
+  }
 
   # Change all units from cm to m
-  dat_feat_curr$l_vane <- dat_feat_curr$`vane length`*0.01
-  dat_feat_curr$l_cal  <- dat_feat_curr$`calamus length`*0.01
-  dat_feat_curr$w_cal  <- dat_feat_curr$`rachis width`*0.01
-  dat_feat_curr$w_vd   <- 0.01*(dat_feat_curr$"distal vane")/(dat_feat_curr$"vane length")   # compute the average width of the distal vane
-  dat_feat_curr$w_vp   <- 0.01*(dat_feat_curr$"proximal vane")/(dat_feat_curr$"vane length") # compute the average width of the proximal vane
+  dat_feat_curr$l_vane = dat_feat_curr$`vane length`*0.01
+  dat_feat_curr$l_cal  = dat_feat_curr$`calamus length`*0.01
+  dat_feat_curr$w_cal  = dat_feat_curr$`rachis width`*0.01
+  dat_feat_curr$w_vd   = 0.01*(dat_feat_curr$"distal vane")/(dat_feat_curr$"vane length")   # compute the average width of the distal vane
+  dat_feat_curr$w_vp   = 0.01*(dat_feat_curr$"proximal vane")/(dat_feat_curr$"vane length") # compute the average width of the proximal vane
   # rename last column
-  names(dat_feat_curr)[names(dat_feat_curr) == "Group.1"]         <- "feather"
+  names(dat_feat_curr)[names(dat_feat_curr) == "Group.1"] = "feather"
 
-  # save all feather masses
-  dat_feat_curr$m_f <- NA
-  for (i in 1:nrow(dat_feat_curr)){
-    dat_feat_curr$m_f[i] = dat_bird_curr[1,paste(tolower(dat_feat_curr$feather[i]),"mass_g",sep = "_")]
-  }
-  # save the combined alula feather masses
-  row_alula = nrow(dat_feat_curr)+1
-  dat_feat_curr[row_alula, ]       <- NA
-  dat_feat_curr$feather[row_alula] <- "alula"
-  dat_feat_curr$m_f[row_alula]     <- dat_bird_curr[1,"alular_mass_g"]
+  # ----------- Iterate through each species ---------
+  for (k in 1:nrow(specimens_curr)){
+    iter = iter + 1
 
-  dat_feat_curr$species = species_curr
-  dat_feat_curr$BirdID  = birdid_curr
+    # ----------- Filter the data to the current individual ---------
+    birdid_curr   = specimens_curr$BirdID[k]
 
-  # --------------- Clean up wing 3D incoming data --------------------
-  # CAUTION:   The read in data has the origin at the RH humeral head. Pt1X, Pt1Y, Pt1Z = 0
-  #            It is critical that the data is given in the structural
-  #            frame of reference with the origin at the vehicle reference
-  #            point (VRP). VRP is assumed to be in the center of the body
-  #            on the y axis between the two humerus bones at the clavicle point
-
-  for (i in 1:(no_pts*3)){
-    # x position - the sign has been verified
-    if (grepl("X",colnames(dat_wing_curr)[i+3],fixed=TRUE)){
-      dat_wing_curr[,i+3] = dat_wing_curr[,i+3] - (dat_bird_curr$x_loc_humeral_insert)
+    #Read in all the wing configuration data
+    filename_wingconfigs = list.files(path = path_data_folder, pattern = paste(species_curr,birdid_curr,sep="_"))
+    dat_wing_curr        = read.csv(paste(path_data_folder,filename_wingconfigs[1],sep=""))
+    # loop through all files for the individual
+    if(length(filename_wingconfigs) > 1){
+      for (n in 2:length(filename_wingconfigs)){
+        dat_wing_curr = rbind(dat_wing_curr,read.csv(paste(path_data_folder,filename_wingconfigs[n],sep="")))
+      }
     }
-    # y position - the sign has been verified
-    # CAUTION: this assumes the wings is on the right side of the bird for all calculations
-    if (grepl("Y",colnames(dat_wing_curr)[i+3],fixed=TRUE)){
-      dat_wing_curr[,i+3] = dat_wing_curr[,i+3] + (dat_bird_curr$y_loc_humeral_insert)
+
+    # Save the side of the wing and the bird ID out of the file path
+    dat_wing_curr$wing_side = stringr::str_sub(dat_wing_curr$birdid, -1)
+    dat_wing_curr$BirdID    = stringr::str_sub(dat_wing_curr$birdid, 1, stringr::str_length(dat_wing_curr$birdid)-1)
+
+    ## --- Limit all body dat to specifically this specimen ----------
+    dat_bird_curr = subset(dat_bird, species == species_curr & BirdID == birdid_curr)
+
+    ## ----- Update to the correct feather masses ---------
+    dat_feat_curr$m_f = NA
+    for (i in 1:nrow(dat_feat_curr)){
+      dat_feat_curr$m_f[i] = dat_bird_curr[1,paste(tolower(dat_feat_curr$feather[i]),"mass_g",sep = "_")]
     }
-    # z position - the sign has been verified + positive ensures that the shoulder is "below" the clavicle origin
-    if (grepl("Z",colnames(dat_wing_curr)[i+3],fixed=TRUE)){
-      dat_wing_curr[,i+3] = dat_wing_curr[,i+3] + (dat_bird_curr$z_loc_humeral_insert)
+    # save the combined alula feather masses
+    row_alula = nrow(dat_feat_curr)+1
+    dat_feat_curr[row_alula, ]       = NA
+    dat_feat_curr$feather[row_alula] = "alula"
+    dat_feat_curr$m_f[row_alula]     = dat_bird_curr[1,"alular_mass_g"]
+
+    dat_feat_curr$species = species_curr
+
+    ## ------- Create the bone specific data frame --------
+    dat_bone_curr              = as.data.frame(matrix(nrow = 6, ncol = 5))
+    names(dat_bone_curr)       = c("bone", "bone_mass", "bone_len", "bone_out_rad", "bone_in_rad")
+    dat_bone_curr$bone         = c("Humerus","Ulna","Radius","Carpometacarpus","Ulnare", "Radiale")
+    dat_bone_curr$bone_mass    = c(dat_bird_curr$humerus_mass_g,dat_bird_curr$ulna_mass_g,dat_bird_curr$radius_mass_g,dat_bird_curr$cmc_mass_g,
+                                  dat_bird_curr$ulnare_mass_g,dat_bird_curr$radiale_mass_g)
+    dat_bone_curr$bone_len     = c(dat_bird_curr$humerus_length_mm,dat_bird_curr$ulna_length_mm,dat_bird_curr$radius_length_mm,dat_bird_curr$cmc_length_mm,
+                                   NA,NA)
+    dat_bone_curr$bone_out_rad = c(dat_bird_curr$humerus_diameter_mm, ## ASK ABOUT THIS
+                                    dat_bird_curr$ulna_diameter_mm,
+                                    dat_bird_curr$radius_diameter_mm,
+                                    dat_bird_curr$cmc_diameter_mm,NA,NA)
+    dat_bone_curr$bone_out_rad = 0.5*dat_bone_curr$bone_out_rad
+    dat_bone_curr$bone_in_rad  = 0.78*dat_bone_curr$bone_out_rad # Ref. De Margerie (2005)
+
+    # --------------- Clean up wing 3D incoming data --------------------
+    # CAUTION:   The wing data has the origin at the RH humeral head Pt1
+    #            (for both left and right wings due to the aligning process).
+    #            It is critical that the data is given in the structural
+    #            frame of reference with the origin at the vehicle reference
+    #            point (VRP). VRP is assumed to be in the center of the body
+    #            on the y axis between the two humerus bones at the clavicle point
+
+    for (i in 1:(no_pts*3)){
+      # x position - the sign has been verified
+      if (grepl("X",colnames(dat_wing_curr)[i+3],fixed=TRUE)){
+        dat_wing_curr[,i+3] = dat_wing_curr[,i+3] - (dat_bird_curr$x_loc_humeral_insert)
+      }
+      # y position - the sign has been verified
+      # CAUTION: this assumes the wings is on the right side of the bird for all calculations
+      if (grepl("Y",colnames(dat_wing_curr)[i+3],fixed=TRUE)){
+        dat_wing_curr[,i+3] = dat_wing_curr[,i+3] + (dat_bird_curr$y_loc_humeral_insert)
+      }
+      # z position - the sign has been verified + positive ensures that the shoulder is "below" the clavicle origin
+      if (grepl("Z",colnames(dat_wing_curr)[i+3],fixed=TRUE)){
+        dat_wing_curr[,i+3] = dat_wing_curr[,i+3] + (dat_bird_curr$z_loc_humeral_insert)
+      }
     }
+
+    # Make sure that no wing data points are tucked past the body edge
+    row_keep      = which(dat_wing_curr$pt2_Y > 0 & dat_wing_curr$pt3_Y > 0 & dat_wing_curr$pt4_Y > 0 &
+                          dat_wing_curr$pt6_Y > 0 & dat_wing_curr$pt7_Y > 0 & dat_wing_curr$pt8_Y > 0 &
+                          dat_wing_curr$pt9_Y > 0 & dat_wing_curr$pt10_Y > 0 & dat_wing_curr$pt11_Y > 0 & dat_wing_curr$pt12_Y > 0)
+    dat_wing_curr = dat_wing_curr[row_keep,]
+
+    # Need a blank data frame to save each iteration
+    mass_properties = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
+    column_names = c("species","BirdID","TestID","FrameID","prop_type","component","value")
+    colnames(mass_properties) = column_names
+
+    # -------- Save the final input info used for this specimen -------
+
+    names(dat_wing_curr)[names(dat_wing_curr) == "frameID"] = "FrameID"
+    names(dat_wing_curr)[names(dat_wing_curr) == "testid"] = "TestID"
+    dat_id_curr = dat_wing_curr[1,c("species","BirdID","TestID","FrameID")]
+
+    # Compute the CG and I for the body without the wings
+    curr_torsotail_data = massprop_restbody(dat_id_curr, dat_bird_curr)
+
+    # ---- save all the individual info that does not change with wing position -------
+    if (iter == 1){
+      dat_wing_all = dat_wing_curr        # wing specimen info
+      dat_feat_all = dat_feat_curr        # feather specimen info
+      dat_bird_all = dat_bird_curr        # entire body specimen info
+      dat_body_all = curr_torsotail_data  # CG and MOI from the torso, tail, head and neck for this individual
+    }else{
+      dat_wing_all = rbind(dat_wing_all,dat_wing_curr)
+      dat_feat_all = rbind(dat_feat_all,dat_feat_curr)
+      dat_bird_all = rbind(dat_bird_all,dat_bird_curr)
+      dat_body_all = rbind(dat_body_all,curr_torsotail_data)
+    }
+
+    ## --------------------------------------------------------------------------------
+    ## ------------------ Iterate through all wing configurations ---------------------
+    ## --------------------------------------------------------------------------------
+
+    for (ind_wing in 1:nrow(dat_wing_curr)){
+
+      # both data frames below should only be one row of input points
+      dat_pt_curr = dat_wing_curr[ind_wing,]
+      dat_id_curr = dat_pt_curr[,c("species","BirdID","TestID","FrameID")]
+
+      # Initialize common pts
+      Pt1  = c(dat_pt_curr$pt1_X, dat_pt_curr$pt1_Y, dat_pt_curr$pt1_Z) # Shoulder
+      Pt2  = c(dat_pt_curr$pt2_X, dat_pt_curr$pt2_Y, dat_pt_curr$pt2_Z) # Elbow
+      Pt3  = c(dat_pt_curr$pt3_X, dat_pt_curr$pt3_Y, dat_pt_curr$pt3_Z) # Wrist
+      Pt4  = c(dat_pt_curr$pt4_X, dat_pt_curr$pt4_Y, dat_pt_curr$pt4_Z) # End of carpometacarpus
+
+      Pt8  = c(dat_pt_curr$pt8_X, dat_pt_curr$pt8_Y, dat_pt_curr$pt8_Z)    # Tip of most distal primary
+      Pt9  = c(dat_pt_curr$pt9_X, dat_pt_curr$pt9_Y, dat_pt_curr$pt9_Z)    # Tip of last primary to model as if on the end of the carpometacarpus
+      Pt10 = c(dat_pt_curr$pt10_X, dat_pt_curr$pt10_Y, dat_pt_curr$pt10_Z) # S1
+      Pt11 = c(dat_pt_curr$pt11_X, dat_pt_curr$pt11_Y, dat_pt_curr$pt11_Z) # Wing root trailing edge
+      Pt12 = c(dat_pt_curr$pt12_X, dat_pt_curr$pt12_Y, dat_pt_curr$pt12_Z) # Wing root leading edge
+      clean_pts = rbind(Pt1,Pt2,Pt3,Pt4,Pt8,Pt9,Pt10,Pt11,Pt12)
+
+      # Compute the CG and I for the wing configuration
+      curr_wing_data      = massprop_birdwing(dat_id_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts)
+
+      # Compute the full bird results
+      fullbird = list()
+      fullbird$I = matrix(0, nrow = 3, ncol = 3)
+      fullbird$CG = matrix(0, nrow = 3, ncol = 1)
+      # --- Mass ---
+      fullbird$m = sum(subset(curr_torsotail_data, object == "m")$value,2*subset(curr_wing_data, object == "m" & component == "wing")$value)
+      # --- Moment of Inertia tensor --- **Origin is about the VRP**
+      # Diagonal elements
+      fullbird$I[1,1] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Ixx")]) + 2*curr_wing_data$value[which(curr_wing_data$object == "Ixx" & curr_wing_data$component == "wing")]
+      fullbird$I[2,2] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Iyy")]) + 2*curr_wing_data$value[which(curr_wing_data$object == "Iyy" & curr_wing_data$component == "wing")]
+      fullbird$I[3,3] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Izz")]) + 2*curr_wing_data$value[which(curr_wing_data$object == "Izz" & curr_wing_data$component == "wing")]
+      # Off-diagonal elements - only compute xz because the symmetry of the wing will cancel out xy and yz
+      fullbird$I[1,3] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Ixz")]) + 2*curr_wing_data$value[which(curr_wing_data$object == "Ixz" & curr_wing_data$component == "wing")]
+      fullbird$I[3,1] = fullbird$I[1,3]
+
+      fullbird$CG[1] = (subset(curr_torsotail_data, object == "CGx" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
+                          subset(curr_torsotail_data, object == "CGx" & component == "neck")$value*subset(curr_torsotail_data, object == "m" & component == "neck")$value +
+                          subset(curr_torsotail_data, object == "CGx" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
+                          subset(curr_torsotail_data, object == "CGx" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
+                          2*subset(curr_wing_data, object == "CGx" & component == "wing")$value*subset(curr_wing_data, object == "m" & component == "wing")$value)/fullbird$m
+      # fullbird$CG[2] = 0; symmetric morphing this is equal and opposite between left and right
+      fullbird$CG[3] = (subset(curr_torsotail_data, object == "CGz" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
+                          subset(curr_torsotail_data, object == "CGz" & component == "neck")$value*subset(curr_torsotail_data, object == "m" & component == "neck")$value +
+                          subset(curr_torsotail_data, object == "CGz" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
+                          subset(curr_torsotail_data, object == "CGz" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
+                          2*subset(curr_wing_data, object == "CGz" & component == "wing")$value*subset(curr_wing_data, object == "m" & component == "wing")$value)/fullbird$m
+
+      err_mass = fullbird$m - dat_bird_curr$total_bird_mass # SAVE THIS SOMEHOW
+
+      # save the full data -
+      # origin about the VRP
+      curr_full_bird_vrp = store_data(dat_id_curr,fullbird,mass_properties,"full_VRP")
+      # update the final moment of inertia tensor to be about the CG
+      fullbird$I         = parallelaxis(fullbird$I,-fullbird$CG,fullbird$m,"A")
+      curr_full_bird     = store_data(dat_id_curr,fullbird,mass_properties,"full")
+
+      all_data = rbind(all_data, curr_wing_data, curr_full_bird_vrp[1:6,], curr_full_bird)
+    }
+    # for the sake of memory need to recast from long to wide format to save
+    all_data = reshape2::dcast(all_data, species + BirdID + TestID + FrameID ~ component + object, value.var="value")
+
+    filename_output = paste(path_dataout_folder,format(Sys.Date(), "%Y_%m_%d"),"_",species_curr,"_",birdid_curr,"_results.csv",sep="")
+    write.csv(all_data,filename_output)
+
+    remove(all_data)
   }
-
-  # -------------- Iterate through the wings of this species ------------------------------
-
-  # Make sure that no wing data points are
-  row_keep = which(dat_wing_curr$pt2_Y > 0 & dat_wing_curr$pt3_Y > 0 & dat_wing_curr$pt4_Y > 0 & dat_wing_curr$pt6_Y > 0 & dat_wing_curr$pt7_Y > 0 &
-                     dat_wing_curr$pt8_Y > 0 & dat_wing_curr$pt9_Y > 0 & dat_wing_curr$pt10_Y > 0 & dat_wing_curr$pt11_Y > 0 & dat_wing_curr$pt12_Y > 0)
-  dat_wing_curr = dat_wing_curr[row_keep,]
-
-  # Need a blank dataframe to save each iteration
-  mass_properties = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
-  column_names = c("species","BirdID","TestID","FrameID","prop_type","component","value")
-  colnames(mass_properties) = column_names
-
-
-  # -------- Save the final input info used for this specimen -------
-
-  names(dat_wing_curr)[names(dat_wing_curr) == "frameID"] <- "FrameID"
-  names(dat_wing_curr)[names(dat_wing_curr) == "testid"] <- "TestID"
-  dat_id_curr = dat_wing_curr[1,c("species","BirdID","TestID","FrameID")]
-
-
-  # Compute the CG and I for the body without the wings
-  curr_torsotail_data = massprop_restbody(dat_id_curr, dat_bird_curr)
-
-  # ---- save all the individual info that does not change with wing position -------
-  if (iter == 1){
-    dat_wing_all <- dat_wing_curr        # wing specimen info
-    dat_feat_all <- dat_feat_curr        # feather specimen info
-    dat_bird_all <- dat_bird_curr        # entire body specimen info
-    dat_body_all <- curr_torsotail_data  # CG and MOI from the torso, tail, head and neck for this individual
-  }else{
-    dat_wing_all <- rbind(dat_wing_all,dat_wing_curr)
-    dat_feat_all <- rbind(dat_feat_all,dat_feat_curr)
-    dat_bird_all <- rbind(dat_bird_all,dat_bird_curr)
-    dat_body_all <- rbind(dat_body_all,curr_torsotail_data)
-  }
-
-  for (ind_wing in 1:nrow(dat_wing_curr)){
-    # both data frames below should only be one row of input points
-    dat_pt_curr = dat_wing_curr[ind_wing,]
-    dat_id_curr = dat_pt_curr[,c("species","BirdID","TestID","FrameID")]
-
-    # Initialize common pts
-    Pt1  = c(dat_pt_curr$pt1_X, dat_pt_curr$pt1_Y, dat_pt_curr$pt1_Z) # Shoulder
-    Pt2  = c(dat_pt_curr$pt2_X, dat_pt_curr$pt2_Y, dat_pt_curr$pt2_Z) # Elbow
-    Pt3  = c(dat_pt_curr$pt3_X, dat_pt_curr$pt3_Y, dat_pt_curr$pt3_Z) # Wrist
-    Pt4  = c(dat_pt_curr$pt4_X, dat_pt_curr$pt4_Y, dat_pt_curr$pt4_Z) # End of carpometacarpus
-
-    Pt8  = c(dat_pt_curr$pt8_X, dat_pt_curr$pt8_Y, dat_pt_curr$pt8_Z)    # Tip of most distal primary
-    Pt9  = c(dat_pt_curr$pt9_X, dat_pt_curr$pt9_Y, dat_pt_curr$pt9_Z)    # Tip of last primary to model as if on the end of the carpometacarpus
-    Pt10 = c(dat_pt_curr$pt10_X, dat_pt_curr$pt10_Y, dat_pt_curr$pt10_Z) # S1
-    Pt11 = c(dat_pt_curr$pt11_X, dat_pt_curr$pt11_Y, dat_pt_curr$pt11_Z) # Wing root trailing edge
-    Pt12 = c(dat_pt_curr$pt12_X, dat_pt_curr$pt12_Y, dat_pt_curr$pt12_Z) # Wing root leading edge
-    clean_pts = rbind(Pt1,Pt2,Pt3,Pt4,Pt8,Pt9,Pt10,Pt11,Pt12)
-
-    # Compute the CG and I for the wing configuration
-    curr_wing_data      = massprop_birdwing(dat_id_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts)
-
-    # Compute the full bird results
-    fullbird = list()
-    fullbird$I = matrix(0, nrow = 3, ncol = 3)
-    fullbird$CG = matrix(0, nrow = 3, ncol = 1)
-    # --- Mass ---
-    fullbird$m = sum(subset(curr_torsotail_data, object == "m")$value,2*subset(curr_wing_data, object == "m" & component == "wing")$value)
-    # --- Moment of Inertia tensor ---
-    # Diagonal elements
-    fullbird$I[1,1] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Ixx")]) + 2*curr_wing_data$value[which(curr_wing_data$object == "Ixx" & curr_wing_data$component == "wing")]
-    fullbird$I[2,2] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Iyy")]) + 2*curr_wing_data$value[which(curr_wing_data$object == "Iyy" & curr_wing_data$component == "wing")]
-    fullbird$I[3,3] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Izz")]) + 2*curr_wing_data$value[which(curr_wing_data$object == "Izz" & curr_wing_data$component == "wing")]
-    # Off-diagonal elements - only compute xz because the symmetry of the wing will cancel out xy and yz
-    fullbird$I[1,3] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Ixz")]) + 2*curr_wing_data$value[which(curr_wing_data$object == "Ixz" & curr_wing_data$component == "wing")]
-    fullbird$I[3,1] = fullbird$I[1,3]
-
-    fullbird$CG[1] = (subset(curr_torsotail_data, object == "CGx" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
-                      subset(curr_torsotail_data, object == "CGx" & component == "neck")$value*subset(curr_torsotail_data, object == "m" & component == "neck")$value +
-                      subset(curr_torsotail_data, object == "CGx" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
-                      subset(curr_torsotail_data, object == "CGx" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
-                      2*subset(curr_wing_data, object == "CGx" & component == "wing")$value*subset(curr_wing_data, object == "m" & component == "wing")$value)/fullbird$m
-    # fullbird$CG[2] = 0; symmetric morphing this is equal and opposite between left and right
-    fullbird$CG[3] = (subset(curr_torsotail_data, object == "CGz" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
-                        subset(curr_torsotail_data, object == "CGz" & component == "neck")$value*subset(curr_torsotail_data, object == "m" & component == "neck")$value +
-                        subset(curr_torsotail_data, object == "CGz" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
-                        subset(curr_torsotail_data, object == "CGz" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
-                        2*subset(curr_wing_data, object == "CGz" & component == "wing")$value*subset(curr_wing_data, object == "m" & component == "wing")$value)/fullbird$m
-
-    err_mass = fullbird$m - dat_bird_curr$total_bird_mass # SAVE THIS SOMEHOW
-
-    # save the full data
-    curr_full_bird = store_data(dat_id_curr,fullbird,mass_properties,"full")
-
-    all_data = rbind(all_data, curr_wing_data, curr_full_bird)
-  }
-  # for the sake of memory need to recast from long to wide format to save
-  all_data <- reshape2::dcast(all_data, species + BirdID + TestID + FrameID ~ component + object, value.var="value")
-
-  filename_output = paste(path_dataout_folder,format(Sys.Date(), "%Y_%m_%d"),species_curr,birdid_curr,"results.csv",sep="_")
-  write.csv(all_data,filename_output)
-
-  remove(all_data)
 }
+
 
 #Save combined data
 filename = paste(path_dataout_folder,format(Sys.Date(), "%Y_%m_%d"),"_allspecimen_winginfo.csv",sep="")
