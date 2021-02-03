@@ -383,7 +383,10 @@ for (m in 1:length(no_species)){
                           subset(curr_torsotail_data, object == "CGz" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
                           2*subset(curr_wing_data, object == "CGz" & component == "wing")$value*subset(curr_wing_data, object == "m" & component == "wing")$value)/fullbird$m
 
-      err_mass = fullbird$m - dat_bird_curr$total_bird_mass # SAVE THIS SOMEHOW
+      # Save the error between the measured bird mass and the final output mass
+      err_mass = fullbird$m - dat_bird_curr$total_bird_mass
+      dat_err = data.frame(species = species_curr,BirdID = birdid_curr,TestID = dat_id_curr$TestID, FrameID = dat_id_curr$frameID, component = "full",
+                 object = "m_err", value = err_mass)
 
       # save the full data -
       # origin about the VRP
@@ -392,7 +395,7 @@ for (m in 1:length(no_species)){
       fullbird$I         = parallelaxis(fullbird$I,-fullbird$CG,fullbird$m,"A")
       curr_full_bird     = store_data(dat_id_curr,fullbird,mass_properties,"full")
 
-      all_data = rbind(all_data, curr_wing_data, curr_full_bird_vrp[1:6,], curr_full_bird)
+      all_data = rbind(all_data, curr_wing_data, curr_full_bird_vrp[1:6,], curr_full_bird, dat_err)
     }
     # for the sake of memory need to recast from long to wide format to save
     all_data = reshape2::dcast(all_data, species + BirdID + TestID + FrameID ~ component + object, value.var="value")
