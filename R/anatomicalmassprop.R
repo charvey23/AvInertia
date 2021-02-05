@@ -308,7 +308,7 @@ massprop_pm <- function(m,pt){
 #'
 #' @export
 
-massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp,w_vd,angle,start,end,normal){
+massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp,w_vd,angle){
   # ------------------ Determine the geometry of feathers ---------------------------
   r_cor = 0.5*w_cal # radius of the cortex part of the calamus
 
@@ -418,14 +418,22 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   full_rot = rotx(pracma::atand(l_r_cor*abs(pracma::sind(angle))/(l_c + l_r_cor*abs(pracma::cosd(angle)))))
   I_2     = full_rot %*% I_1 %*% t(full_rot)                  # Frame of reference: Feather start to tip | Origin: Start of Feather
   CG_2    = full_rot %*% CG_1                                 # Frame of reference: Feather start to tip | Origin: Start of Feather
-  #Print to verify against feather only studies
-  #print(I_2)
-  #print(CG_2)
 
+  I_fCG   = parallelaxis(I_2,CG_2,m_f,"A")                    # Frame of reference: Feather start to tip | Origin: Feather CG
+
+  mass_prop    = list() # pre-define
+  mass_prop$I  = I_fCG
+  mass_prop$CG = CG_2
+  mass_prop$m  = m_f
+
+  return(mass_prop)
+}
+
+structural2VRP_feat <- function(m_f, I_fCG, CG_start, start, end, normal){
   # ------------------------------- Adjust axis -------------------------------------
   # first find the frame where z points towards the tip then rotate to frame where z axis points straight along the calamus
-  z_axis = end - start     # Frame of reference: VRP | Origin: VRP
-  x_axis = normal          # Frame of reference: VRP | Origin: VRP
+  z_axis = end - start                                   # Frame of reference: VRP | Origin: VRP
+  x_axis = normal                                        # Frame of reference: VRP | Origin: VRP
 
   # calculate the rotation matrix between VRP frame of reference and the feather start to tip
   VRP2object = calc_rot(z_axis,x_axis)
@@ -433,9 +441,7 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   # To properly use parallel axis first, return the origin to the center of gravity of the full feather
   # 9. Need to return origin to VRP before rotating to the final axis system
   off     = VRP2object %*% start                         # Frame of reference: Feather start to tip | Origin: VRP
-
-  I_fCG   = parallelaxis(I_2,CG_2,m_f,"A")               # Frame of reference: Feather start to tip | Origin: Feather CG
-  CG_3    = CG_2 + off                                   # Frame of reference: Feather start to tip | Origin: VRP
+  CG_3    = CG_start + off                               # Frame of reference: Feather start to tip | Origin: VRP
   I_3     = parallelaxis(I_fCG,-CG_3,m_f,"CG")           # Frame of reference: Feather start to tip | Origin: VRP
 
   # 10. Rotate the FOR to the VRP axes

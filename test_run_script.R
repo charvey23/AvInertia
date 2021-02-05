@@ -179,8 +179,8 @@ iter = 0
 ## ----------------------------------------------------
 ## --------- Iterate through each species -------------
 ## ----------------------------------------------------
-
-for (m in 8:length(no_species)){
+#length(no_species)
+for (m in 1:2){
 
   # ----------- Filter the data to the current species ---------
   species_curr   = no_species[m]
@@ -254,6 +254,10 @@ for (m in 8:length(no_species)){
     ## --- Limit all body dat to specifically this specimen ----------
     dat_bird_curr = subset(dat_bird, species == species_curr & BirdID == birdid_curr)
 
+    ## --------------------------------------------------
+    ## ------------------ Feather Info ------------------
+    ## --------------------------------------------------
+
     ## ----- Update to the correct feather masses ---------
     dat_feat_curr$m_f = NA
 
@@ -267,8 +271,12 @@ for (m in 8:length(no_species)){
 
     dat_feat_curr$species = species_curr
 
+    # - Compute the I and CG of each feather - I origin is about feather CG and CG origin is start of feather, both in the feather FOR
+    feather_inertia <- compute_feat_inertia(dat_mat, dat_feat_curr, dat_bird_curr)
 
-    ## ------- Create the bone specific data frame --------
+    ## --------------------------------------------------
+    ## -------------------- Bone Info -------------------
+    ## --------------------------------------------------
     dat_bone_curr              = as.data.frame(matrix(nrow = 6, ncol = 5))
     names(dat_bone_curr)       = c("bone", "bone_mass", "bone_len", "bone_out_rad", "bone_in_rad")
     dat_bone_curr$bone         = c("Humerus","Ulna","Radius","Carpometacarpus","Ulnare", "Radiale")
@@ -364,7 +372,7 @@ for (m in 8:length(no_species)){
       clean_pts = rbind(Pt1,Pt2,Pt3,Pt4,Pt8,Pt9,Pt10,Pt11,Pt12)
 
       # Compute the CG and I for the wing configuration
-      curr_wing_data      = massprop_birdwing(dat_id_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts)
+      curr_wing_data      = massprop_birdwing(dat_id_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts, feather_inertia)
 
       # Compute the full bird results
       fullbird = list()

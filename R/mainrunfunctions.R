@@ -177,7 +177,7 @@ massprop_restbody <- function(dat_wingID_curr, dat_bird_curr){
 #'
 #' @export
 #'
-massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat_curr, clean_pts){
+massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat_curr, clean_pts, feather_inertia){
 
   # --------------------- Initialize variables -----------------------
   mass_properties = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
@@ -273,36 +273,27 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
   # --------------------------- Primaries -----------------------------------
   #  P1 -> P10
   for (i in 1:no_pri){
-    feather_name = paste("P",i,sep = "")
-    pri_info = subset(dat_feat_curr,feather == feather_name) # subset data to be for this specific feather
-    # Calculate MOI and CG
-    tmp = massprop_feathers(pri_info$m_f,pri_info$l_cal,pri_info$l_vane, pri_info$w_cal,
-                      dat_bird_curr$barb_radius, dat_bird_curr$barb_distance,
-                      rho_cor,rho_med,
-                      pri_info$w_vp,pri_info$w_vd,pri_info$vane_angle,
-                      feather_info$loc_start[i,],feather_info$loc_end[i,],feather_info$normal[i,])
+    # Adjust MOI and CG to the current orientation
+    tmp = structural2VRP_feat(feather_inertia$m_pri[i], feather_inertia$I_pri[,,i], feather_inertia$CG_pri[i,],
+                              feather_info$loc_start[i,],feather_info$loc_end[i,],feather_info$normal[i,])
     # Save MOI, CG and CG*mass
-    res_pri$I[,,i] = tmp$I
-    res_pri$CG[i,] = tmp$CG
-    res_pri$CGm[i,] = tmp$CG*pri_info$m_f
-    res_pri$m[i] = tmp$m
+    res_pri$I[,,i]  = tmp$I
+    res_pri$CG[i,]  = tmp$CG
+    res_pri$CGm[i,] = tmp$CG*tmp$m
+    res_pri$m[i]    = tmp$m
 
   }
   #  -----------------------------------Secondaries -----------------------------------
   #  S1 -> last secondary
   for (i in 1:no_sec){
-    feather_name = paste("S",i,sep = "")
-    sec_info = subset(dat_feat_curr,feather == feather_name)  # subset data to be for this specific feather
-    # Calculate MOI and CG
-    tmp = massprop_feathers(sec_info$m_f,sec_info$l_cal,sec_info$l_vane, sec_info$w_cal,
-                            dat_bird_curr$barb_radius, dat_bird_curr$barb_distance,
-                            rho_cor,rho_med,
-                            sec_info$w_vp,sec_info$w_vd,sec_info$vane_angle,
-                            feather_info$loc_start[i+no_pri,],feather_info$loc_end[i+no_pri,],feather_info$normal[i+no_pri,])
+    # Adjust MOI and CG to the current orientation
+    tmp = structural2VRP_feat(feather_inertia$m_sec[i], feather_inertia$I_sec[,,i], feather_inertia$CG_sec[i,],
+                              feather_info$loc_start[i+no_pri,],feather_info$loc_end[i+no_pri,],feather_info$normal[i+no_pri,])
+
     # Save MOI, CG and CG*mass
     res_sec$I[,,i]  = tmp$I
     res_sec$CG[i,]  = tmp$CG
-    res_sec$CGm[i,] = tmp$CG*sec_info$m_f
+    res_sec$CGm[i,] = tmp$CG*tmp$m
     res_sec$m[i]    = tmp$m
   }
 
@@ -449,6 +440,68 @@ store_data <- function(dat_wingID_curr,dat_mass,mass_properties,name){
 
 
   return(mass_properties)
+}
+
+
+compute_feat_inertia <- function(dat_mat, dat_feat_curr, dat_bird_curr){
+
+  # -------------------------------------------------------
+  # ----------------- Feather Data ------------------------
+  # -------------------------------------------------------
+
+  # density information
+  rho_cor = dat_mat$density[which(dat_mat$material == "Cortex")]
+  rho_med = dat_mat$density[which(dat_mat$material == "Medullary")]
+
+  # separate out primaries and secondaries
+  primaries   = dat_feat_curr[grep("P",dat_feat_curr$feather),]
+  secondaries = dat_feat_curr[grep("S",dat_feat_curr$feather),]
+  no_sec = length(secondaries$feather)
+  no_pri = length(primaries$feather)
+
+  #pre-define storage matrices
+  res_pri     = list()
+  res_pri$I_pri   = array(dim = c(3,3,no_pri))
+  res_pri$CG_pri  = array(dim = c(no_pri,3))
+  res_pri$m_pri   = array(dim = c(no_pri))
+  res_sec     = list()
+  res_sec$I_sec   = array(dim = c(3,3,no_sec))
+  res_sec$CG_sec  = array(dim = c(no_sec,3))
+  res_sec$m_sec   = array(dim = c(no_sec))
+
+  # --------------------------- Primaries -----------------------------------
+  #  P1 -> P10
+  for (i in 1:no_pri){
+    feather_name = paste("P",i,sep = "")
+    pri_info = subset(dat_feat_curr,feather == feather_name) # subset data to be for this specific feather
+    # Calculate MOI and CG
+    tmp = massprop_feathers(pri_info$m_f,pri_info$l_cal,pri_info$l_vane, pri_info$w_cal,
+                            dat_bird_curr$barb_radius, dat_bird_curr$barb_distance,
+                            rho_cor,rho_med,
+                            pri_info$w_vp,pri_info$w_vd,pri_info$vane_angle)
+    # Save MOI, CG and CG*mass
+    res_pri$I_pri[,,i] = tmp$I
+    res_pri$CG_pri[i,] = tmp$CG
+    res_pri$m_pri[i]   = tmp$m
+
+  }
+  #  -----------------------------------Secondaries -----------------------------------
+  #  S1 -> last secondary
+  for (i in 1:no_sec){
+    feather_name = paste("S",i,sep = "")
+    sec_info = subset(dat_feat_curr,feather == feather_name)  # subset data to be for this specific feather
+    # Calculate MOI and CG
+    tmp = massprop_feathers(sec_info$m_f,sec_info$l_cal,sec_info$l_vane, sec_info$w_cal,
+                            dat_bird_curr$barb_radius, dat_bird_curr$barb_distance,
+                            rho_cor,rho_med,
+                            sec_info$w_vp,sec_info$w_vd,sec_info$vane_angle)
+    # Save MOI, CG and CG*mass
+    res_sec$I_sec[,,i]  = tmp$I
+    res_sec$CG_sec[i,]  = tmp$CG
+    res_sec$m_sec[i]    = tmp$m
+  }
+
+  return(c(res_pri,res_sec))
 }
 
 
