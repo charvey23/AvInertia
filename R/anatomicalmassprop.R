@@ -318,7 +318,7 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   m_rc = m_f - m_vp - m_vd                   # mass of the rachis and calamus
 
   #assumes that the interior medullary pyramid has the same height as the cortex exterior
-  r_med   = sqrt((m_rc -  rho_cor*r_cor^2*(pi*l_c+(4/3)*l_r_cor))/((4/3)*l_r_cor*(rho_med-rho_cor)-l_c*pi*rho_cor))
+  r_med   = sqrt((m_rc -  rho_cor*r_cor^2*((pi*l_c)+(4/3)*l_r_cor))/((4/3)*l_r_cor*(rho_med-rho_cor)-l_c*pi*rho_cor))
   l_r_med = l_r_cor
   # calculate the mass of each component
   m_c        = rho_cor*(pi*l_c)*(r_cor^2-r_med^2)                # mass of the cortex part of the calamus
@@ -326,6 +326,10 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   m_r_med    = (4/3)*rho_med*(r_med^2)*l_r_med                   # mass of the medullary part of the rachis
   mass_outer = (4/3)*rho_cor*r_cor^2*l_r_cor                     # mass as if entire rachis was solid cortex
   mass_inner = (4/3)*rho_cor*r_med^2*l_r_med                     # mass as if hollow part of rachis was solid cortex
+
+  if (r_med > r_cor){
+    warning("Incorrect feather medullary radius. Larger than the exterior radius.")
+  }
 
   # --------------------------- Moment of inertia -----------------------------------
 

@@ -72,11 +72,12 @@ for (i in 1:nrow(dat_wingspec)){
 # Merge the wing specific measurements with the full bird measurements
 dat_bird = merge(dat_bird,dat_wingspec, by = c("species","BirdID"))
 
-# Correct all the units in the data frame to SI - and ensure that all inputs are rounded to 0.01g and 0.1mm
+# Correct all the units in the data frame to SI - and ensure that all inputs are rounded to 0.0001g and 0.1mm.
+# The small mass size is necessary for the tiny bird feathers.
 for (i in 1:length(colnames(dat_bird))){
   # Adjust all masses to be in kg
   if (grepl("mass_g",colnames(dat_bird)[i],fixed=TRUE)){
-    dat_bird[,i] = round(dat_bird[,i]/1000,5)
+    dat_bird[,i] = round(dat_bird[,i]/1000,7)
   }
   # Adjust all lengths to be in m
   if (grepl("_cm",colnames(dat_bird)[i],fixed=TRUE)){
@@ -88,7 +89,7 @@ for (i in 1:length(colnames(dat_bird))){
   }
 }
 
-#Rename columns as necessary
+# Rename columns as necessary
 names(dat_bird)[names(dat_bird) == "humerus_muscles_mass_g"] = "brachial_muscle_mass"
 names(dat_bird)[names(dat_bird) == "raduln_muscles_mass_g"]  = "antebrachial_muscle_mass"
 names(dat_bird)[names(dat_bird) == "cmc_muscles_mass_g"]     = "manus_muscle_mass"
@@ -120,7 +121,7 @@ names(dat_bird)[names(dat_bird) == "y_loc_of_humeral_insert_cm"] = "y_loc_humera
 names(dat_bird)[names(dat_bird) == "z_loc_of_humeral_insert_cm"] = "z_loc_humeral_insert"
 names(dat_bird)[names(dat_bird) == "whole_body_mass_g"]          = "total_bird_mass"
 
-#Correct the sign of the x measurement
+# Correct the sign of the x measurement
 dat_bird$x_loc_TorsotailCoG = - dat_bird$x_loc_TorsotailCoG
 
 # Adjust all body z measurements to be from the clavicle position (VRP) rather than the back of the bird
@@ -172,18 +173,14 @@ specimens  = specimens[-which(specimens$species == "ard_her" & specimens$BirdID 
 
 specimens  = specimens[order(specimens$species),]
 no_species = unique(specimens[,c("species")])
-
 # --------------------- Initialize variables -----------------------
-all_data           = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
-column_names       = c("species","BirdID","TestID","FrameID","prop_type","component","value")
-colnames(all_data) = column_names
 iter = 0
 
 ## ----------------------------------------------------
 ## --------- Iterate through each species -------------
 ## ----------------------------------------------------
 
-for (m in 1:length(no_species)){
+for (m in 8:length(no_species)){
 
   # ----------- Filter the data to the current species ---------
   species_curr   = no_species[m]
@@ -220,9 +217,21 @@ for (m in 1:length(no_species)){
   dat_feat_curr$w_vp   = 0.01*(dat_feat_curr$"proximal vane")/(dat_feat_curr$"vane length") # compute the average width of the proximal vane
   # rename last column
   names(dat_feat_curr)[names(dat_feat_curr) == "Group.1"] = "feather"
+  # create the alula row
+  row_alula = nrow(dat_feat_curr)+1
+  dat_feat_curr[row_alula, ]       = NA
+  dat_feat_curr$feather[row_alula] = "alula"
 
-  # ----------- Iterate through each species ---------
+  ## --------------------------------------------------------------------
+  ## ----------- Iterate through each specimen within a species ---------
+  ## --------------------------------------------------------------------
+
   for (k in 1:nrow(specimens_curr)){
+
+    # --------------------- Initialize variables -----------------------
+    all_data           = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
+    column_names       = c("species","BirdID","TestID","FrameID","prop_type","component","value")
+    colnames(all_data) = column_names
     iter = iter + 1
 
     # ----------- Filter the data to the current individual ---------
@@ -247,16 +256,17 @@ for (m in 1:length(no_species)){
 
     ## ----- Update to the correct feather masses ---------
     dat_feat_curr$m_f = NA
-    for (i in 1:nrow(dat_feat_curr)){
-      dat_feat_curr$m_f[i] = dat_bird_curr[1,paste(tolower(dat_feat_curr$feather[i]),"mass_g",sep = "_")]
-    }
+
     # save the combined alula feather masses
-    row_alula = nrow(dat_feat_curr)+1
-    dat_feat_curr[row_alula, ]       = NA
-    dat_feat_curr$feather[row_alula] = "alula"
     dat_feat_curr$m_f[row_alula]     = dat_bird_curr[1,"alular_mass_g"]
 
+    # save each individual feather mass
+    for (i in 1:(nrow(dat_feat_curr)-1)){
+      dat_feat_curr$m_f[i] = dat_bird_curr[1,paste(tolower(dat_feat_curr$feather[i]),"mass_g",sep = "_")]
+    }
+
     dat_feat_curr$species = species_curr
+
 
     ## ------- Create the bone specific data frame --------
     dat_bone_curr              = as.data.frame(matrix(nrow = 6, ncol = 5))
@@ -371,13 +381,13 @@ for (m in 1:length(no_species)){
       fullbird$I[1,3] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Ixz")]) + 2*curr_wing_data$value[which(curr_wing_data$object == "Ixz" & curr_wing_data$component == "wing")]
       fullbird$I[3,1] = fullbird$I[1,3]
 
-      fullbird$CG[1] = (subset(curr_torsotail_data, object == "CGx" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
+      fullbird$CG[1]  = (subset(curr_torsotail_data, object == "CGx" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
                           subset(curr_torsotail_data, object == "CGx" & component == "neck")$value*subset(curr_torsotail_data, object == "m" & component == "neck")$value +
                           subset(curr_torsotail_data, object == "CGx" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
                           subset(curr_torsotail_data, object == "CGx" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
                           2*subset(curr_wing_data, object == "CGx" & component == "wing")$value*subset(curr_wing_data, object == "m" & component == "wing")$value)/fullbird$m
-      # fullbird$CG[2] = 0; symmetric morphing this is equal and opposite between left and right
-      fullbird$CG[3] = (subset(curr_torsotail_data, object == "CGz" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
+      #fullbird$CG[2] = 0; symmetric morphing this is equal and opposite between left and right
+      fullbird$CG[3]  = (subset(curr_torsotail_data, object == "CGz" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
                           subset(curr_torsotail_data, object == "CGz" & component == "neck")$value*subset(curr_torsotail_data, object == "m" & component == "neck")$value +
                           subset(curr_torsotail_data, object == "CGz" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
                           subset(curr_torsotail_data, object == "CGz" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
@@ -385,7 +395,7 @@ for (m in 1:length(no_species)){
 
       # Save the error between the measured bird mass and the final output mass
       err_mass = fullbird$m - dat_bird_curr$total_bird_mass
-      dat_err = data.frame(species = species_curr,BirdID = birdid_curr,TestID = dat_id_curr$TestID, FrameID = dat_id_curr$frameID, component = "full",
+      dat_err  = data.frame(species = species_curr,BirdID = birdid_curr,TestID = dat_id_curr$TestID, FrameID = dat_id_curr$FrameID, component = "full",
                  object = "m_err", value = err_mass)
 
       # save the full data -
@@ -396,6 +406,7 @@ for (m in 1:length(no_species)){
       curr_full_bird     = store_data(dat_id_curr,fullbird,mass_properties,"full")
 
       all_data = rbind(all_data, curr_wing_data, curr_full_bird_vrp[1:6,], curr_full_bird, dat_err)
+
     }
     # for the sake of memory need to recast from long to wide format to save
     all_data = reshape2::dcast(all_data, species + BirdID + TestID + FrameID ~ component + object, value.var="value")
@@ -407,8 +418,10 @@ for (m in 1:length(no_species)){
   }
 }
 
+# --------------------------------------------------
+# --------------- Save combined data ---------------
+# --------------------------------------------------
 
-#Save combined data
 filename = paste(path_dataout_folder,format(Sys.Date(), "%Y_%m_%d"),"_allspecimen_winginfo.csv",sep="")
 write.csv(dat_wing_all,filename)
 
