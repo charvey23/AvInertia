@@ -327,7 +327,8 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   mass_outer = (4/3)*rho_cor*r_cor^2*l_r_cor                     # mass as if entire rachis was solid cortex
   mass_inner = (4/3)*rho_cor*r_med^2*l_r_med                     # mass as if hollow part of rachis was solid cortex
 
-  if (r_med > r_cor){
+  if (r_med > r_cor | m_rc < 0){
+    browser()
     warning("Incorrect feather medullary radius. Larger than the exterior radius.")
   }
 
@@ -598,7 +599,7 @@ massprop_head <- function(m,r,l,start,end){
 #'
 #' @export
 
-massprop_tail <- function(m,l_tail,w_tail,l_torso,start,end){
+massprop_tail <- function(m,l_tail,w_tail,start,end){
 
   # ------------------------------- Adjust axis -------------------------------------
   z_axis     = end-start
@@ -607,17 +608,18 @@ massprop_tail <- function(m,l_tail,w_tail,l_torso,start,end){
   VRP2object = calc_rot(z_axis,x_axis)
 
   # -------------------------- Moment of inertia --------------------------------
-
-  I_t1 = calc_inertia_platerect(w_tail, l_tail, m)         # Frame of reference: Tail | Origin: Tail CG
-  CG_t = c(0,0,l_torso + 0.5*l_tail)                       # Frame of reference: Tail | Origin: VRP
-  I_t2 = parallelaxis(I_t1,-CG_t,m,"CG")                   # Frame of reference: Tail | Origin: VRP
+  # calculate the tail offset
+  off  = VRP2object %*% start                          # Frame of reference: Tail | Origin: VRP
+  I_t1 = calc_inertia_platerect(w_tail, l_tail, m)     # Frame of reference: Tail | Origin: Tail CG
+  CG_t = off + c(0,0,0.5*l_tail)                       # Frame of reference: Tail | Origin: VRP
+  I_t2 = parallelaxis(I_t1,-CG_t,m,"CG")               # Frame of reference: Tail | Origin: VRP
 
   mass_prop = list() # pre-define
   # Adjust frame to VRP axes
   mass_prop$I  = t(VRP2object) %*% I_t2 %*% VRP2object     # Frame of reference: VRP | Origin: VRP
   mass_prop$CG = t(VRP2object) %*% CG_t                    # Frame of reference: VRP | Origin: VRP
   mass_prop$m  = m
-
+  browser()
   return(mass_prop)
 }
 

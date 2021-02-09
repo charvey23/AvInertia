@@ -64,7 +64,11 @@ massprop_restbody <- function(dat_wingID_curr, dat_bird_curr){
   tail_start  = c(-(dat_bird_curr$torsotail_length-dat_bird_curr$tail_length),0,0)
   tail_end    = c(-dat_bird_curr$torsotail_length,0,0)
   m_legs      = dat_bird_curr$right_leg_mass + dat_bird_curr$left_leg_mass
-  tail        = massprop_tail(dat_bird_curr$tail_mass, dat_bird_curr$tail_length,dat_bird_curr$tail_width,dat_bird_curr$torsotail_length,tail_start,tail_end)
+  tail        = massprop_tail(dat_bird_curr$tail_mass, dat_bird_curr$tail_length,dat_bird_curr$tail_width,tail_start,tail_end)
+
+  if(abs(tail$CG[1]) > abs(tail_end[1]) | abs(tail$CG[1]) < abs(tail_start[1])){
+    warning("Tail CG is incorrect")
+  }
 
   # adjust the COG from the torso tail to be torso only
   m_torso    = dat_bird_curr$torsotail_mass - dat_bird_curr$tail_mass

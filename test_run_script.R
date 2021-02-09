@@ -179,8 +179,8 @@ iter = 0
 ## ----------------------------------------------------
 ## --------- Iterate through each species -------------
 ## ----------------------------------------------------
-#length(no_species)
-for (m in 1:2){
+
+for (m in 1:length(no_species)){
 
   # ----------- Filter the data to the current species ---------
   species_curr   = no_species[m]
