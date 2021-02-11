@@ -556,15 +556,15 @@ massprop_head <- function(m,r,l,start,end){
   off = VRP2object %*% start                               # Frame of reference: Head | Origin: VRP
 
   # determine the offset vector for each component
-  I_h_off  = c(0,0,0.25*l)+ off                             # Frame of reference: Head | Origin: VRP
+  CG_1  = c(0,0,0.25*l)+ off                               # Frame of reference: Head | Origin: VRP
 
   # need to adjust the moment of inertia tensor
-  I_h_vrp   = parallelaxis(I_h,-I_h_off,m,"CG")            # Frame of reference: Head | Origin: VRP
+  I_h_vrp   = parallelaxis(I_h,-CG_1,m,"CG")               # Frame of reference: Head | Origin: VRP
 
   mass_prop = list() # pre-define
   # Adjust frame to VRP axes
   mass_prop$I  = t(VRP2object) %*% I_h_vrp %*% VRP2object  # Frame of reference: VRP | Origin: VRP
-  mass_prop$CG = 0.5*(start + end)                         # Frame of reference: VRP | Origin: VRP
+  mass_prop$CG = t(VRP2object) %*% CG_1                    # Frame of reference: VRP | Origin: VRP
   mass_prop$m  = m
 
   return(mass_prop)
@@ -619,7 +619,7 @@ massprop_tail <- function(m,l_tail,w_tail,start,end){
   mass_prop$I  = t(VRP2object) %*% I_t2 %*% VRP2object     # Frame of reference: VRP | Origin: VRP
   mass_prop$CG = t(VRP2object) %*% CG_t                    # Frame of reference: VRP | Origin: VRP
   mass_prop$m  = m
-  browser()
+
   return(mass_prop)
 }
 
