@@ -11,6 +11,7 @@ library(stringr)
 
 setwd("/Users/christinaharvey/Google Drive/DoctoralThesis/WingMorphology/")
 source('jointangles.R')
+library(stringr)
 
 # ------------------------- Set file directory -------------------------
 setwd("/Users/christinaharvey/Dropbox (University of Michigan)/Bird Mass Distribution/05_subsampled_optitrack")
@@ -33,7 +34,7 @@ for (i in 1:nrow(dat_info)){
   rawdat   <- read.csv(filename, stringsAsFactors = FALSE, strip.white = TRUE, na.strings = c("NA") )
 
   if (i < 12){
-    rawdat[,3:35] <- rawdat[,3:35]/1000}  #First few are in mm
+    rawdat[,3:35] <- rawdat[,3:35]/1000}  # First few are in mm
 
   # check ulna/radius length to be sure on units
   dat_info$ur_length[i] = mean(sqrt((rawdat$pt3_X - rawdat$pt2_X)^2 + (rawdat$pt3_Y - rawdat$pt2_Y)^2 + (rawdat$pt3_Z - rawdat$pt2_Z)^2))
