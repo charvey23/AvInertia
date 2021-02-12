@@ -156,9 +156,17 @@ for (i in 1:nrow(dat_info)){
   }
 
   # ------------------------------ Save data
-  filename_new <- paste("2020_01_14_",dat_info$species[i],"_",dat_info$birdid[i],"_00",dat_info$testid[i],"_aligned.csv",sep = "")
+  filename_new <- paste(format(Sys.Date(), "%Y_%m_%d"),dat_info$species[i],"_",dat_info$birdid[i],"_00",dat_info$testid[i],"_aligned.csv",sep = "")
   write.csv(dat_clean,filename_new)
 }
+dat_clean$S_proj <- NA
+for (i in 1:nrow(dat_clean)){
+  # Calculate the projected area for each wing - this is the correct order because X is negative and Y is positive
+  x_vertices = c(dat_clean$pt6_X[i],dat_clean$pt7_X[i],dat_clean$pt8_X[i],dat_clean$pt9_X[i],dat_clean$pt10_X[i],dat_clean$pt11_X[i],dat_clean$pt12_X[i])
+  y_vertices = c(dat_clean$pt6_Y[i],dat_clean$pt7_Y[i],dat_clean$pt8_Y[i],dat_clean$pt9_Y[i],dat_clean$pt10_Y[i],dat_clean$pt11_Y[i],dat_clean$pt12_Y[i])
+  dat_clean$S_proj[i] <- polyarea(x_vertices, y_vertices)
+}
+
 
 # Visualize the wings as required - For each calibration verify that the axis is RH
 m = 1:nrow(dat_clean)
@@ -168,7 +176,7 @@ points(dat_clean$pt3_Y[m],dat_clean$pt3_X[m],xlim =c(-max,max), ylim = c(-max,ma
 points(dat_clean$pt4_Y[m], dat_clean$pt4_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "green")
 points(dat_clean$pt1_Y[m],dat_clean$pt1_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "red")
 points(dat_clean$pt8_Y[m],dat_clean$pt8_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "purple")
-points(dat_clean$pt11_Y[m],dat_clean$pt11_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "yellow")
+points(dat_clean$pt9_Y[m],dat_clean$pt9_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "yellow")
 
 plot(dat_clean$pt2_Y[m],dat_clean$pt2_Z[m], xlim =c(-max,max), ylim = c(-max,max))
 points(dat_clean$pt3_Y[m],dat_clean$pt3_Z[m],xlim =c(-max,max), ylim = c(-max,max),col = "blue")

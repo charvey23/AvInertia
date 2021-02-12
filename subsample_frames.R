@@ -122,8 +122,8 @@ for (i in 1:length(filename.3d)){
 
   # ---- Save output data ----
   setwd("/Users/christinaharvey/Dropbox (University of Michigan)/Bird Mass Distribution/05_subsampled_optitrack")
-  filename <- paste("2020_12_15_",xyz_one$species[1],"_",xyz_one$birdid[1],"_",xyz_one$testid[1],"_subsampled.csv",sep = "")
+  filename <- paste(format(Sys.Date(), "%Y_%m_%d"),"_",xyz_one$species[1],"_",xyz_one$birdid[1],"_",xyz_one$testid[1],"_subsampled.csv",sep = "")
   write.csv(file = filename,dat_subsample, row.names = FALSE)
 }
 
-write.csv(file = "2020_12_15_IDfile.csv",dat_all, row.names = FALSE)
+write.csv(file = paste(format(Sys.Date(), "%Y_%m_%d"),"_IDfile.csv"),dat_all, row.names = FALSE)
