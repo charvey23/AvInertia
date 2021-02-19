@@ -2,6 +2,84 @@
 # all written by Christina Harvey
 # last updated: 2020-10-13
 
+# -------------------- Mass Properties - Combine all body components -------------------------------
+combine_inertialprop <- function(curr_torsotail_data,left_wing_data,right_wing_data, symmetric){
+  # Compute the full bird results
+  fullbird    = list()
+  fullbird$I  = matrix(0, nrow = 3, ncol = 3)
+  fullbird$CG = matrix(0, nrow = 3, ncol = 1)
+  # --- Mass ---
+  fullbird$m = sum(subset(curr_torsotail_data, object == "m")$value,
+                   subset(left_wing_data, object == "m" & component == "wing")$value,
+                   subset(right_wing_data, object == "m" & component == "wing")$value)
+  # --- Moment of Inertia tensor --- **Origin is about the VRP**
+  # Diagonal elements
+  fullbird$I[1,1] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Ixx")]) +
+                    left_wing_data$value[which(curr_wing_data$object == "Ixx" & curr_wing_data$component == "wing")]+
+                    right_wing_data$value[which(curr_wing_data$object == "Ixx" & curr_wing_data$component == "wing")]
+  fullbird$I[2,2] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Iyy")]) +
+                    left_wing_data$value[which(curr_wing_data$object == "Iyy" & curr_wing_data$component == "wing")]+
+                    right_wing_data$value[which(curr_wing_data$object == "Iyy" & curr_wing_data$component == "wing")]
+  fullbird$I[3,3] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Izz")]) +
+                    left_wing_data$value[which(curr_wing_data$object == "Izz" & curr_wing_data$component == "wing")] +
+                    right_wing_data$value[which(curr_wing_data$object == "Izz" & curr_wing_data$component == "wing")]
+
+  # Off-diagonal elements - only compute xz because the symmetry of the wing will cancel out xy and yz
+  fullbird$I[1,3] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Ixz")]) +
+                    left_wing_data$value[which(curr_wing_data$object == "Ixz" & curr_wing_data$component == "wing")] +
+                    right_wing_data$value[which(curr_wing_data$object == "Ixz" & curr_wing_data$component == "wing")]
+  fullbird$I[3,1] = fullbird$I[1,3]
+
+  fullbird$CG[1]  = (subset(curr_torsotail_data, object == "CGx" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
+                       subset(curr_torsotail_data, object == "CGx" & component == "neck")$value*subset(curr_torsotail_data, object == "m" & component == "neck")$value +
+                       subset(curr_torsotail_data, object == "CGx" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
+                       subset(curr_torsotail_data, object == "CGx" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
+                       2*subset(curr_wing_data, object == "CGx" & component == "wing")$value*subset(curr_wing_data, object == "m" & component == "wing")$value)/fullbird$m
+  fullbird$CG[3]  = (subset(curr_torsotail_data, object == "CGz" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
+                       subset(curr_torsotail_data, object == "CGz" & component == "neck")$value*subset(curr_torsotail_data, object == "m" & component == "neck")$value +
+                       subset(curr_torsotail_data, object == "CGz" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
+                       subset(curr_torsotail_data, object == "CGz" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
+                       2*subset(curr_wing_data, object == "CGz" & component == "wing")$value*subset(curr_wing_data, object == "m" & component == "wing")$value)/fullbird$m
+
+  if (!symmetric){
+    fullbird$I[1,3] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Ixz")]) +
+                      left_wing_data$value[which(curr_wing_data$object == "Ixz" & curr_wing_data$component == "wing")] +
+                      right_wing_data$value[which(curr_wing_data$object == "Ixz" & curr_wing_data$component == "wing")]
+    fullbird$I[3,1] = fullbird$I[1,3]
+    fullbird$I[2,3] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Iyz")]) +
+                      left_wing_data$value[which(curr_wing_data$object == "Iyz" & curr_wing_data$component == "wing")] +
+                      right_wing_data$value[which(curr_wing_data$object == "Iyz" & curr_wing_data$component == "wing")]
+    fullbird$I[3,2] = fullbird$I[2,3]
+    fullbird$I[1,2] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Ixy")]) +
+                      left_wing_data$value[which(curr_wing_data$object == "Ixy" & curr_wing_data$component == "wing")] +
+                      right_wing_data$value[which(curr_wing_data$object == "Ixy" & curr_wing_data$component == "wing")]
+    fullbird$I[2,1] = fullbird$I[1,2]
+
+    fullbird$CG[2]  = (subset(curr_torsotail_data, object == "CGy" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
+                         subset(curr_torsotail_data, object == "CGy" & component == "neck")$value*subset(curr_torsotail_data, object == "m" & component == "neck")$value +
+                         subset(curr_torsotail_data, object == "CGy" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
+                         subset(curr_torsotail_data, object == "CGy" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
+                         subset(left_wing_data, object == "CGy" & component == "wing")$value*subset(left_wing_data, object == "m" & component == "wing")$value+
+                         subset(right_wing_data, object == "CGy" & component == "wing")$value*subset(right_wing_data, object == "m" & component == "wing")$value)/fullbird$m
+  }
+
+  # Save the error between the measured bird mass and the final output mass
+  err_mass = fullbird$m - dat_bird_curr$total_bird_mass
+  dat_err  = data.frame(species = species_curr,BirdID = birdid_curr,TestID = dat_id_curr$TestID, FrameID = dat_id_curr$FrameID, component = "full",
+                        object = "m_err", value = err_mass)
+
+  # ------------------------- Save the full data -----------------------------
+  # origin about the VRP
+  curr_full_bird_vrp = store_data(dat_id_curr,fullbird,mass_properties,"full_VRP")
+
+  # ---------- Adjust the final moment of inertia tensor to be about the CG ------------
+  fullbird$I         = parallelaxis(fullbird$I,-fullbird$CG,fullbird$m,"A")
+
+  curr_full_bird     = store_data(dat_id_curr,fullbird,mass_properties,"full")
+
+  curr_full_bird     = rbind(curr_full_bird,curr_full_bird_vrp[1:6,])
+  return(curr_full_bird)
+}
 
 
 # -------------------- Mass Properties - Head and neck -------------------------------
@@ -17,6 +95,7 @@
 #'
 #' @param dat_bird_curr Dataframe related to the current bird wing that must include the following columns:
 #' \itemize{
+#' \item{extend_neck}{Logical input defining whether the neck should be modelled as extended or not}
 #' \item{head_length}{Mass of full bird for the current wing (kg)}
 #' \item{head_mass}{Mass of one wing, should be the current wing (kg)}
 #' \item{head_height}{Radius of feather barb  for current species (m)}
@@ -52,12 +131,20 @@ massprop_restbody <- function(dat_wingID_curr, dat_bird_curr){
   # ----------------- Head and neck data ------------------------
   # -------------------------------------------------------------
   neck_start = c(0,0,0)
-  neck_end   = c(dat_bird_curr$neck_length,0,0)
-  head_end   = neck_end + c(dat_bird_curr$head_length,0,0)
-  # Calculate the effects of the head
-  head       = massprop_head(dat_bird_curr$head_mass,0.5*dat_bird_curr$head_height,dat_bird_curr$head_length,neck_end,head_end)
-  # Calculate the effects of the neck
-  neck       = massprop_neck(dat_bird_curr$neck_mass,0.5*dat_bird_curr$neck_width,dat_bird_curr$neck_length,neck_start,neck_end)
+
+  if (dat_bird_curr$extend_neck){
+    neck_end   = c(dat_bird_curr$neck_length,0,0)
+    head_end   = neck_end + c(dat_bird_curr$head_length,0,0)
+    # Calculate the effects of the head
+    head       = massprop_head(dat_bird_curr$head_mass,0.5*dat_bird_curr$head_height,dat_bird_curr$head_length,neck_end,head_end)
+    # Calculate the effects of the neck
+    neck       = massprop_neck(dat_bird_curr$neck_mass,0.5*dat_bird_curr$neck_width,dat_bird_curr$neck_length,neck_start,neck_end)
+  } else{
+    head_end   = c(dat_bird_curr$head_length,0,0)
+    # Calculate the effects of the head + neck
+    head       = massprop_head((dat_bird_curr$head_mass+dat_bird_curr$neck_mass),0.5*dat_bird_curr$head_height,dat_bird_curr$head_length,neck_start,head_end)
+  }
+
   # -------------------------------------------------------------
   # ------------------- Torso and tail data -------------------------
   # -------------------------------------------------------------
@@ -87,7 +174,9 @@ massprop_restbody <- function(dat_wingID_curr, dat_bird_curr){
   # ---- Head ----
   mass_properties = store_data(dat_wingID_curr,head,mass_properties,"head")
   # ---- Neck ----
-  mass_properties = store_data(dat_wingID_curr,neck,mass_properties,"neck")
+  if (dat_bird_curr$extend_neck){
+    mass_properties = store_data(dat_wingID_curr,neck,mass_properties,"neck")
+  }
   # ---- Torso/Legs ----
   mass_properties = store_data(dat_wingID_curr,torso,mass_properties,"torso")
   # ---- Tail ----
