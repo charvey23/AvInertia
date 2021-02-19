@@ -3,6 +3,17 @@
 # last updated: 2020-10-13
 
 # -------------------- Mass Properties - Combine all body components -------------------------------
+#' Title
+#'
+#' @param curr_torsotail_data {Output dataframe from massprop_restbody}
+#' @param left_wing_data {Output dataframe from massprop_birdwing}
+#' @param right_wing_data {Output dataframe from massprop_birdwing}
+#' @param symmetric {Logical indicating if the input wings are symmetric or not. If True than left_wing_data = right_wing_data}
+#'
+#' @return
+#' @export
+#'
+#' @examples
 combine_inertialprop <- function(curr_torsotail_data,left_wing_data,right_wing_data, symmetric){
   # Compute the full bird results
   fullbird    = list()
@@ -15,52 +26,75 @@ combine_inertialprop <- function(curr_torsotail_data,left_wing_data,right_wing_d
   # --- Moment of Inertia tensor --- **Origin is about the VRP**
   # Diagonal elements
   fullbird$I[1,1] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Ixx")]) +
-                    left_wing_data$value[which(curr_wing_data$object == "Ixx" & curr_wing_data$component == "wing")]+
-                    right_wing_data$value[which(curr_wing_data$object == "Ixx" & curr_wing_data$component == "wing")]
+                    subset(left_wing_data, object == "Ixx" & component == "wing")$value +
+                    subset(right_wing_data, object == "Ixx" & component == "wing")$value
   fullbird$I[2,2] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Iyy")]) +
-                    left_wing_data$value[which(curr_wing_data$object == "Iyy" & curr_wing_data$component == "wing")]+
-                    right_wing_data$value[which(curr_wing_data$object == "Iyy" & curr_wing_data$component == "wing")]
+                    subset(left_wing_data, object == "Iyy" & component == "wing")$value +
+                    subset(right_wing_data, object == "Iyy" & component == "wing")$value
   fullbird$I[3,3] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Izz")]) +
-                    left_wing_data$value[which(curr_wing_data$object == "Izz" & curr_wing_data$component == "wing")] +
-                    right_wing_data$value[which(curr_wing_data$object == "Izz" & curr_wing_data$component == "wing")]
+                    subset(left_wing_data, object == "Izz" & component == "wing")$value +
+                    subset(right_wing_data, object == "Izz" & component == "wing")$value
 
-  # Off-diagonal elements - only compute xz because the symmetry of the wing will cancel out xy and yz
+  # ------ Off-diagonal elements ----
+  # only compute xz because the symmetry of the wing will cancel out xy and yz
   fullbird$I[1,3] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Ixz")]) +
-                    left_wing_data$value[which(curr_wing_data$object == "Ixz" & curr_wing_data$component == "wing")] +
-                    right_wing_data$value[which(curr_wing_data$object == "Ixz" & curr_wing_data$component == "wing")]
+                    subset(left_wing_data, object == "Ixz" & component == "wing")$value +
+                    subset(right_wing_data, object == "Ixz" & component == "wing")$value
   fullbird$I[3,1] = fullbird$I[1,3]
+  # --- Center of gravity vector ---
+  # include neck contribution if it was calculated seperate from the head
+  if(length(subset(curr_torsotail_data, object == "m" & component == "neck")$value) == 0){
+    fullbird$CG[1]  = (subset(curr_torsotail_data, object == "CGx" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
+                         subset(curr_torsotail_data, object == "CGx" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
+                         subset(curr_torsotail_data, object == "CGx" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
+                         subset(left_wing_data, object == "CGx" & component == "wing")$value*subset(left_wing_data, object == "m" & component == "wing")$value +
+                         subset(right_wing_data, object == "CGx" & component == "wing")$value*subset(right_wing_data, object == "m" & component == "wing")$value)/fullbird$m
+    fullbird$CG[3]  = (subset(curr_torsotail_data, object == "CGz" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
+                         subset(curr_torsotail_data, object == "CGz" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
+                         subset(curr_torsotail_data, object == "CGz" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
+                         subset(left_wing_data, object == "CGz" & component == "wing")$value*subset(left_wing_data, object == "m" & component == "wing")$value +
+                         subset(right_wing_data, object == "CGz" & component == "wing")$value*subset(right_wing_data, object == "m" & component == "wing")$value)/fullbird$m
+  } else {
+    fullbird$CG[1]  = (subset(curr_torsotail_data, object == "CGx" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
+                         subset(curr_torsotail_data, object == "CGx" & component == "neck")$value*subset(curr_torsotail_data, object == "m" & component == "neck")$value +
+                         subset(curr_torsotail_data, object == "CGx" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
+                         subset(curr_torsotail_data, object == "CGx" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
+                         subset(left_wing_data, object == "CGx" & component == "wing")$value*subset(left_wing_data, object == "m" & component == "wing")$value +
+                         subset(right_wing_data, object == "CGx" & component == "wing")$value*subset(right_wing_data, object == "m" & component == "wing")$value)/fullbird$m
 
-  fullbird$CG[1]  = (subset(curr_torsotail_data, object == "CGx" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
-                       subset(curr_torsotail_data, object == "CGx" & component == "neck")$value*subset(curr_torsotail_data, object == "m" & component == "neck")$value +
-                       subset(curr_torsotail_data, object == "CGx" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
-                       subset(curr_torsotail_data, object == "CGx" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
-                       2*subset(curr_wing_data, object == "CGx" & component == "wing")$value*subset(curr_wing_data, object == "m" & component == "wing")$value)/fullbird$m
-  fullbird$CG[3]  = (subset(curr_torsotail_data, object == "CGz" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
-                       subset(curr_torsotail_data, object == "CGz" & component == "neck")$value*subset(curr_torsotail_data, object == "m" & component == "neck")$value +
-                       subset(curr_torsotail_data, object == "CGz" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
-                       subset(curr_torsotail_data, object == "CGz" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
-                       2*subset(curr_wing_data, object == "CGz" & component == "wing")$value*subset(curr_wing_data, object == "m" & component == "wing")$value)/fullbird$m
+    fullbird$CG[3]  = (subset(curr_torsotail_data, object == "CGz" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
+                         subset(curr_torsotail_data, object == "CGz" & component == "neck")$value*subset(curr_torsotail_data, object == "m" & component == "neck")$value +
+                         subset(curr_torsotail_data, object == "CGz" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
+                         subset(curr_torsotail_data, object == "CGz" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
+                         subset(left_wing_data, object == "CGz" & component == "wing")$value*subset(left_wing_data, object == "m" & component == "wing")$value +
+                         subset(right_wing_data, object == "CGz" & component == "wing")$value*subset(right_wing_data, object == "m" & component == "wing")$value)/fullbird$m
+  }
 
   if (!symmetric){
-    fullbird$I[1,3] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Ixz")]) +
-                      left_wing_data$value[which(curr_wing_data$object == "Ixz" & curr_wing_data$component == "wing")] +
-                      right_wing_data$value[which(curr_wing_data$object == "Ixz" & curr_wing_data$component == "wing")]
-    fullbird$I[3,1] = fullbird$I[1,3]
     fullbird$I[2,3] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Iyz")]) +
-                      left_wing_data$value[which(curr_wing_data$object == "Iyz" & curr_wing_data$component == "wing")] +
-                      right_wing_data$value[which(curr_wing_data$object == "Iyz" & curr_wing_data$component == "wing")]
+                      subset(left_wing_data, object == "Iyz" & component == "wing")$value +
+                      subset(right_wing_data, object == "Iyz" & component == "wing")$value
     fullbird$I[3,2] = fullbird$I[2,3]
     fullbird$I[1,2] = sum(curr_torsotail_data$value[which(curr_torsotail_data$object == "Ixy")]) +
-                      left_wing_data$value[which(curr_wing_data$object == "Ixy" & curr_wing_data$component == "wing")] +
-                      right_wing_data$value[which(curr_wing_data$object == "Ixy" & curr_wing_data$component == "wing")]
+                      subset(left_wing_data, object == "Ixy" & component == "wing")$value +
+                      subset(right_wing_data, object == "Ixy" & component == "wing")$value
     fullbird$I[2,1] = fullbird$I[1,2]
-
-    fullbird$CG[2]  = (subset(curr_torsotail_data, object == "CGy" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
-                         subset(curr_torsotail_data, object == "CGy" & component == "neck")$value*subset(curr_torsotail_data, object == "m" & component == "neck")$value +
+    if(length(subset(curr_torsotail_data, object == "m" & component == "neck")$value) == 0){
+      fullbird$CG[2]  = (subset(curr_torsotail_data, object == "CGy" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
                          subset(curr_torsotail_data, object == "CGy" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
                          subset(curr_torsotail_data, object == "CGy" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
                          subset(left_wing_data, object == "CGy" & component == "wing")$value*subset(left_wing_data, object == "m" & component == "wing")$value+
                          subset(right_wing_data, object == "CGy" & component == "wing")$value*subset(right_wing_data, object == "m" & component == "wing")$value)/fullbird$m
+
+    }else{
+      fullbird$CG[2]  = (subset(curr_torsotail_data, object == "CGy" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
+                           subset(curr_torsotail_data, object == "CGy" & component == "neck")$value*subset(curr_torsotail_data, object == "m" & component == "neck")$value +
+                           subset(curr_torsotail_data, object == "CGy" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
+                           subset(curr_torsotail_data, object == "CGy" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
+                           subset(left_wing_data, object == "CGy" & component == "wing")$value*subset(left_wing_data, object == "m" & component == "wing")$value+
+                           subset(right_wing_data, object == "CGy" & component == "wing")$value*subset(right_wing_data, object == "m" & component == "wing")$value)/fullbird$m
+
+    }
   }
 
   # Save the error between the measured bird mass and the final output mass
