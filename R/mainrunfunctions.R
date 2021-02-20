@@ -111,7 +111,7 @@ combine_inertialprop <- function(curr_torsotail_data,left_wing_data,right_wing_d
 
   curr_full_bird     = store_data(dat_id_curr,fullbird,mass_properties,"full")
 
-  curr_full_bird     = rbind(curr_full_bird,curr_full_bird_vrp[1:6,])
+  curr_full_bird     = rbind(curr_full_bird,curr_full_bird_vrp[1:6,],dat_err)
   return(curr_full_bird)
 }
 
