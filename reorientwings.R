@@ -26,9 +26,9 @@ zaxis <- c(0, 0, 1)
 # ------------------------- Read in data -------------------------
 dat_info   <- read.csv(file = "2020_12_15_IDfile.csv")
 
-for (i in 1:nrow(dat_info)){
+for (i in 102:nrow(dat_info)){
   # Read in specific wing data
-  filename <- paste("2020_12_15_",dat_info$species[i],"_",dat_info$birdid[i],"_00",dat_info$testid[i],"_subsampled.csv",sep = "")
+  filename <- paste("2021_02_12_",dat_info$species[i],"_",dat_info$birdid[i],"_00",dat_info$testid[i],"_subsampled.csv",sep = "")
   wing = str_sub(dat_info$birdid[i],-1)
 
   rawdat   <- read.csv(filename, stringsAsFactors = FALSE, strip.white = TRUE, na.strings = c("NA") )
@@ -37,7 +37,7 @@ for (i in 1:nrow(dat_info)){
     rawdat[,3:35] <- rawdat[,3:35]/1000}  # First few are in mm
 
   # check ulna/radius length to be sure on units
-  dat_info$ur_length[i] = mean(sqrt((rawdat$pt3_X - rawdat$pt2_X)^2 + (rawdat$pt3_Y - rawdat$pt2_Y)^2 + (rawdat$pt3_Z - rawdat$pt2_Z)^2))
+  # dat_info$ur_length[i] = mean(sqrt((rawdat$pt3_X - rawdat$pt2_X)^2 + (rawdat$pt3_Y - rawdat$pt2_Y)^2 + (rawdat$pt3_Z - rawdat$pt2_Z)^2))
 
   ## ------- Reorient Wings ---------
   dat_clean <- rawdat
@@ -156,9 +156,10 @@ for (i in 1:nrow(dat_info)){
   }
 
   # ------------------------------ Save data
-  filename_new <- paste(format(Sys.Date(), "%Y_%m_%d"),dat_info$species[i],"_",dat_info$birdid[i],"_00",dat_info$testid[i],"_aligned.csv",sep = "")
+  filename_new <- paste(format(Sys.Date(), "%Y_%m_%d"),"_",dat_info$species[i],"_",dat_info$birdid[i],"_00",dat_info$testid[i],"_aligned.csv",sep = "")
   write.csv(dat_clean,filename_new)
 }
+
 dat_clean$S_proj <- NA
 for (i in 1:nrow(dat_clean)){
   # Calculate the projected area for each wing - this is the correct order because X is negative and Y is positive

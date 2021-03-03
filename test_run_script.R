@@ -13,7 +13,7 @@ no_pts = 11 # number of points that were digitized
 
 # identification info on each of the individual specimens
 dat_ind      = read.csv(file = paste(path_data_folder,"IDfile.csv",sep= ""))
-# all of the non-wing based measurements for all specimens - NEED TO RESAVE THIS - ALSO NEED TO CORRECT ONE ID NUMBER TO MATCH FEATHERS
+# all of the non-wing based measurements for all specimens
 dat_bird     = readxl::read_xlsx(paste(path_data_folder,"bird_measurements_readytorun.xlsx",sep= ""), sheet = 'Major body parts')
 
 # all of the wing based measurements for all specimens
@@ -164,7 +164,6 @@ for (k in 1:nrow(dat_feat[which(dat_feat$Component == "vane length"),c("Angle")]
 
 specimens  = unique(dat_ind[,c("species","BirdID")])
 # If there is a specimen that needs to be skipped remove it here
-specimens  = specimens[-which(specimens$species == "bra_can"),] # missing feather data
 specimens  = specimens[-which(specimens$species == "aec_occ"),] # missing tail data
 specimens  = specimens[-which(specimens$species == "oce_leu" & specimens$BirdID == "21_0203"),] # missing a lot of data
 specimens  = specimens[-which(specimens$species == "tyt_alb" & specimens$BirdID == "18_1"),] # missing a lot of data
@@ -224,13 +223,13 @@ for (m in 1:length(no_species)){
   dat_feat_curr$feather[row_alula] = "alula"
   # ---- Save the bird id to scale if these are not from the same individual ----
   dat_feat_ID = tmp$bird_id[1]
-
+  dat_feat_species = dat_feat_curr # save this
   ## --------------------------------------------------------------------
   ## ----------- Iterate through each specimen within a species ---------
   ## --------------------------------------------------------------------
 
   for (k in 1:nrow(specimens_curr)){
-
+    dat_feat_curr = dat_feat_species # make sure that this doesn't get overwritten by looping
     # --------------------- Initialize variables -----------------------
     all_data           = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
     column_names       = c("species","BirdID","TestID","FrameID","prop_type","component","value")
@@ -257,7 +256,11 @@ for (m in 1:length(no_species)){
     # Save the side of the wing and the bird ID out of the file path
     dat_wing_curr$wing_side = stringr::str_sub(dat_wing_curr$birdid, -1)
     dat_wing_curr$BirdID    = stringr::str_sub(dat_wing_curr$birdid, 1, stringr::str_length(dat_wing_curr$birdid)-1)
+    # adjust for the improperly saved coopers hawk
+    if (species_curr == "acc_coo"){
+      dat_wing_curr$species = "acc_coo"
 
+    }
     ## --- Limit all body dat to specifically this specimen ----------
     dat_bird_curr = subset(dat_bird, species == species_curr & BirdID == birdid_curr)
 
@@ -349,7 +352,7 @@ for (m in 1:length(no_species)){
     names(dat_wing_curr)[names(dat_wing_curr) == "frameID"] = "FrameID"
     names(dat_wing_curr)[names(dat_wing_curr) == "testid"] = "TestID"
     dat_id_curr = dat_wing_curr[1,c("species","BirdID","TestID","FrameID")]
-
+    dat_bird_curr$extend_neck = TRUE
     # Compute the CG and I for the body without the wings
     curr_torsotail_data = massprop_restbody(dat_id_curr, dat_bird_curr)
 
@@ -394,7 +397,7 @@ for (m in 1:length(no_species)){
       # Combine the torso and wing outputs
       curr_full_bird      = combine_inertialprop(curr_torsotail_data,curr_wing_data,curr_wing_data, symmetric=TRUE)
 
-      all_data = rbind(all_data, curr_wing_data, curr_full_bird, dat_err)
+      all_data = rbind(all_data, curr_wing_data, curr_full_bird)
     }
     # for the sake of memory need to recast from long to wide format to save
     all_data = reshape2::dcast(all_data, species + BirdID + TestID + FrameID ~ component + object, value.var="value")
@@ -419,5 +422,5 @@ write.csv(dat_bird_all,filename)
 filename = paste(path_dataout_folder,format(Sys.Date(), "%Y_%m_%d"),"_allspecimen_featherinfo.csv",sep="")
 write.csv(dat_feat_all,filename)
 
-filename = paste(path_dataout_folder,format(Sys.Date(), "%Y_%m_%d"),"_bodyCGandMOI.csv",sep="")
+filename = paste(path_dataout_folder,format(Sys.Date(), "%Y_%m_%d"),"_bodyCGandMOI_extendneck.csv",sep="")
 write.csv(dat_body_all,filename)

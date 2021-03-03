@@ -1,39 +1,15 @@
 # This script was written to analyse the data that is returned from the birdmoment package
+## Load up necessary packages
+library(phytools)
+library(ape)
+library(geiger)
+library(MCMCglmm)
+library(tidyverse)
+
 library(pracma)
 library(ggplot2)
+library(dplyr)
 
-th <- ggplot2::theme_classic() +
-  ggplot2::theme(
-    # Text
-    axis.title  = ggplot2::element_text(size = 10),
-    axis.text   = ggplot2::element_text(size = 10, colour = "black"),
-    axis.text.x = ggplot2::element_text(margin = ggplot2::margin(t = 10, unit = "pt")),
-    axis.text.y = ggplot2::element_text(margin = ggplot2::margin(r = 10)),
-    # Axis line
-    axis.line   = ggplot2::element_blank(),
-    axis.ticks.length = ggplot2::unit(-5,"pt"),
-    # Background transparency
-    # Background of panel
-    panel.background = ggplot2::element_rect(fill = "transparent"),
-    # Background behind actual data points
-    plot.background  = ggplot2::element_rect(fill = "transparent", color = NA))
-
-## TO CHECK DATA
-# x_vertices = c(dat_wing$pt1_X[i], dat_wing$pt6_X[i],dat_wing$pt7_X[i],dat_wing$pt8_X[i],dat_wing$pt9_X[i],dat_wing$pt10_X[i],dat_wing$pt11_X[i],dat_wing$pt12_X[i])
-# y_vertices = c(dat_wing$pt1_Y[i], dat_wing$pt6_Y[i],dat_wing$pt7_Y[i],dat_wing$pt8_Y[i],dat_wing$pt9_Y[i],dat_wing$pt10_Y[i],dat_wing$pt11_Y[i],dat_wing$pt12_Y[i])
-# z_vertices = c(dat_wing$pt1_Z[i], dat_wing$pt6_Z[i],dat_wing$pt7_Z[i],dat_wing$pt8_Z[i],dat_wing$pt9_Z[i],dat_wing$pt10_Z[i],dat_wing$pt11_Z[i],dat_wing$pt12_Z[i])
-
-
-# x = c(dat_wing$pt1_X[m],dat_wing$pt2_X[m],dat_wing$pt3_X[m],dat_wing$pt4_X[m],
-#       dat_wing$pt6_X[m],dat_wing$pt7_X[m],dat_wing$pt8_X[m],dat_wing$pt9_X[m],
-#       dat_wing$pt10_X[m],dat_wing$pt11_X[m],dat_wing$pt12_X[m])
-# y = c(dat_wing$pt1_Y[m],dat_wing$pt2_Y[m],dat_wing$pt3_Y[m],dat_wing$pt4_Y[m],
-#       dat_wing$pt6_Y[m],dat_wing$pt7_Y[m],dat_wing$pt8_Y[m],dat_wing$pt9_Y[m],
-#       dat_wing$pt10_Y[m],dat_wing$pt11_Y[m],dat_wing$pt12_Y[m])
-# z = c(dat_wing$pt1_Z[m],dat_wing$pt2_Z[m],dat_wing$pt3_Z[m],dat_wing$pt4_Z[m],
-#       dat_wing$pt6_Z[m],dat_wing$pt7_Z[m],dat_wing$pt8_Z[m],dat_wing$pt9_Z[m],
-#       dat_wing$pt10_Z[m],dat_wing$pt11_Z[m],dat_wing$pt12_Z[m])
-# plot3d(x, y, z, col = c("black","gray20","gray50","gray70","red", "orange", "yellow", "green", "blue", "navy", "purple"))
 
 # --------------------- Read in data -----------------------
 # CAUTION: All incoming measurements must be in SI units; adjust as required
@@ -49,15 +25,20 @@ dat_feat      = dat_feat[,-c(1,3:7)]
 
 filename_bird = list.files(path = path_data_folder, pattern = paste("allspecimen_birdinfo"))
 dat_bird      = read.csv(file = paste(path_data_folder,filename_bird,sep= ""))
-dat_bird$clade <- c("Accipitriformes","Accipitriformes","Galloanserae","Galloanserae","Aequorlitornithes","Aequorlitornithes","Strisores","Strisores",
-                    "Galloanserae","Columbaves","Columbaves","Columbaves","Passeriformes","Passeriformes","Passeriformes","Passeriformes","Strisores",
+dat_bird$clade = c("Accipitriformes","Accipitriformes","Galloanserae","Galloanserae","Aequorlitornithes","Aequorlitornithes","Galloanserae","Strisores","Strisores",
+                    "Galloanserae","Coraciimorphae","Coraciimorphae","Columbaves","Columbaves","Columbaves","Passeriformes","Passeriformes","Passeriformes","Passeriformes","Strisores",
                     "Australaves","Australaves","Australaves","Australaves","Galloanserae","Galloanserae","Coraciimorphae","Coraciimorphae",
                     "Coraciimorphae","Aequorlitornithes","Aequorlitornithes","Strigiformes","Strigiformes")
+dat_bird$binomial = dat_bird$binomial.x
 
-filename_body = list.files(path = path_data_folder, pattern = paste("bodyCGandMOI"))
-dat_body      = read.csv(file = paste(path_data_folder,filename_body,sep= ""))
-dat_body <- reshape2::dcast(dat_body, species + BirdID + TestID + FrameID ~ component + object, value.var="value")
-remove(filename_wing,filename_feat,filename_bird,filename_body)
+filename_body_e = list.files(path = path_data_folder, pattern = paste("bodyCGandMOI_extend"))
+dat_body_e      = read.csv(file = paste(path_data_folder,filename_body_e,sep= ""))
+dat_body_e      = reshape2::dcast(dat_body_e, species + BirdID + TestID + FrameID ~ component + object, value.var="value")
+
+filename_body_t = list.files(path = path_data_folder, pattern = paste("bodyCGandMOI_tucked"))
+dat_body_t      = read.csv(file = paste(path_data_folder,filename_body_t,sep= ""))
+dat_body_t      = reshape2::dcast(dat_body_t, species + BirdID + TestID + FrameID ~ component + object, value.var="value")
+remove(filename_wing,filename_feat,filename_bird,filename_body_e,filename_body_t)
 
 filename_results = list.files(path = path_data_folder, pattern = paste("results"))
 dat_results = read.csv(paste(path_data_folder,filename_results[1],sep=""))
@@ -66,163 +47,328 @@ for (i in 2:length(filename_results)){
 }
 # adjust the sharp-shinned hawk 20_1016 to a coopers hawk
 dat_wing$species[which(dat_wing$species == "acc_str" & dat_wing$BirdID == "20_1016")] = "acc_coo"
-dat_body$species[which(dat_body$species == "acc_str" & dat_body$BirdID == "20_1016")] = "acc_coo"
-
+dat_body_e$species[which(dat_body_e$species == "acc_str" & dat_body_e$BirdID == "20_1016")] = "acc_coo"
+dat_body_t$species[which(dat_body_t$species == "acc_str" & dat_body_t$BirdID == "20_1016")] = "acc_coo"
 # remove wings where they accidentally got flipped around 44 from chr_amh and 7 from oce_leu CHECK THIS as you add more
 # dat_results[which(dat_wing$pt2_X > 0 & dat_wing$species == "chr_amh")]
 
 # Merge with all info we have about the individual
-dat_all <- merge(dat_results,dat_wing[,c("species","BirdID","TestID","FrameID","elbow","manus","pt1_X","pt1_Z",
+dat_all <- merge(dat_results,dat_wing[,c("species","BirdID","TestID","FrameID","elbow","manus","pt1_X","pt1_Y","pt1_Z",
                                          "pt6_X","pt6_Y","pt7_X","pt7_Y","pt8_X","pt8_Y","pt9_X","pt9_Y","pt10_X","pt10_Y",
                                          "pt11_X","pt11_Y","pt11_Z","pt12_X","pt12_Y","pt12_Z")], by = c("species","BirdID","TestID","FrameID"))
-dat_all <- merge(dat_all,dat_body[,-c(3,4)], by = c("species","BirdID"))
 dat_all <- merge(dat_all,dat_bird[,-c(1,4)], by = c("species","BirdID"))
 dat_all$torso_length <- dat_all$torsotail_length - dat_all$tail_length
 
-# Adjust the calculations accordingly
-dat_all$full_VRP_Ixx <- dat_all$head_Ixx+dat_all$neck_Ixx+dat_all$tail_Ixx+dat_all$torso_Ixx+2*dat_all$wing_Ixx
-dat_all$full_VRP_Iyy <- dat_all$head_Iyy+dat_all$neck_Iyy+dat_all$tail_Iyy+dat_all$torso_Iyy+2*dat_all$wing_Iyy
-dat_all$full_VRP_Izz <- dat_all$head_Izz+dat_all$neck_Izz+dat_all$tail_Izz+dat_all$torso_Izz+2*dat_all$wing_Izz
-dat_all$full_VRP_Ixz <- dat_all$head_Ixz+dat_all$neck_Ixz+dat_all$tail_Ixz+dat_all$torso_Ixz+2*dat_all$wing_Ixz
+dat_all_e <- merge(dat_all,dat_body_e[,-c(3,4)], by = c("species","BirdID"))
+dat_all_t <- merge(dat_all,dat_body_t[,-c(3,4)], by = c("species","BirdID"))
+dat_all_e$extend_neck = 1
+dat_all_t$extend_neck = 0
 
-dat_all$full_CGx <- ((dat_all$head_CGx*dat_all$head_m)+(dat_all$neck_CGx*dat_all$neck_m)+(dat_all$tail_CGx*dat_all$tail_m)+
-                     (dat_all$torso_CGx*dat_all$torso_m)+2*(dat_all$wing_CGx*dat_all$wing_m))/dat_all$full_m
-dat_all$full_CGz <- ((dat_all$head_CGz*dat_all$head_m)+(dat_all$neck_CGz*dat_all$neck_m)+(dat_all$tail_CGz*dat_all$tail_m)+
-                       (dat_all$torso_CGz*dat_all$torso_m)+2*(dat_all$wing_CGz*dat_all$wing_m))/dat_all$full_m
+### ----------- Combine all outputs ----------------
 
-dat_all$S_proj <- 0
-for(i in 1:nrow(dat_all)){
+## ----------- Extended neck -----------
+dat_all_e$full_VRP_Ixx <- dat_all_e$head_Ixx+dat_all_e$neck_Ixx+dat_all_e$tail_Ixx+dat_all_e$torso_Ixx+2*dat_all_e$wing_Ixx
+dat_all_e$full_VRP_Iyy <- dat_all_e$head_Iyy+dat_all_e$neck_Iyy+dat_all_e$tail_Iyy+dat_all_e$torso_Iyy+2*dat_all_e$wing_Iyy
+dat_all_e$full_VRP_Izz <- dat_all_e$head_Izz+dat_all_e$neck_Izz+dat_all_e$tail_Izz+dat_all_e$torso_Izz+2*dat_all_e$wing_Izz
+dat_all_e$full_VRP_Ixz <- dat_all_e$head_Ixz+dat_all_e$neck_Ixz+dat_all_e$tail_Ixz+dat_all_e$torso_Ixz+2*dat_all_e$wing_Ixz
+
+dat_all_e$full_CGx <- ((dat_all_e$head_CGx*dat_all_e$head_m)+(dat_all_e$neck_CGx*dat_all_e$neck_m)+(dat_all_e$tail_CGx*dat_all_e$tail_m)+
+                     (dat_all_e$torso_CGx*dat_all_e$torso_m)+2*(dat_all_e$wing_CGx*dat_all_e$wing_m))/dat_all_e$full_m
+dat_all_e$full_CGz <- ((dat_all_e$head_CGz*dat_all_e$head_m)+(dat_all_e$neck_CGz*dat_all_e$neck_m)+(dat_all_e$tail_CGz*dat_all_e$tail_m)+
+                       (dat_all_e$torso_CGz*dat_all_e$torso_m)+2*(dat_all_e$wing_CGz*dat_all_e$wing_m))/dat_all_e$full_m
+
+## ----------- Tucked neck -----------
+dat_all_t$full_VRP_Ixx <- dat_all_t$head_Ixx+dat_all_t$tail_Ixx+dat_all_t$torso_Ixx+2*dat_all_t$wing_Ixx
+dat_all_t$full_VRP_Iyy <- dat_all_t$head_Iyy+dat_all_t$tail_Iyy+dat_all_t$torso_Iyy+2*dat_all_t$wing_Iyy
+dat_all_t$full_VRP_Izz <- dat_all_t$head_Izz+dat_all_t$tail_Izz+dat_all_t$torso_Izz+2*dat_all_t$wing_Izz
+dat_all_t$full_VRP_Ixz <- dat_all_t$head_Ixz+dat_all_t$tail_Ixz+dat_all_t$torso_Ixz+2*dat_all_t$wing_Ixz
+
+dat_all_t$full_CGx <- ((dat_all_t$head_CGx*dat_all_t$head_m)+(dat_all_t$tail_CGx*dat_all_t$tail_m)+
+                         (dat_all_t$torso_CGx*dat_all_t$torso_m)+2*(dat_all_t$wing_CGx*dat_all_t$wing_m))/dat_all_t$full_m
+dat_all_t$full_CGz <- ((dat_all_t$head_CGz*dat_all_t$head_m)+(dat_all_t$tail_CGz*dat_all_t$tail_m)+
+                         (dat_all_t$torso_CGz*dat_all_t$torso_m)+2*(dat_all_t$wing_CGz*dat_all_t$wing_m))/dat_all_t$full_m
+
+## -------------- Iterate through each wing shape to calculate
+dat_all_e$S_proj <- 0
+for(i in 1:nrow(dat_all_e)){
+  # ---------- Extended neck results -------------
   I_vrp = matrix(0, nrow = 3, ncol = 3)
-  I_vrp[1,1] = dat_all$full_VRP_Ixx[i]
-  I_vrp[2,2] = dat_all$full_VRP_Iyy[i]
-  I_vrp[3,3] = dat_all$full_VRP_Izz[i]
-  I_vrp[3,1] = dat_all$full_VRP_Ixz[i]
-  I_vrp[1,3] = dat_all$full_VRP_Ixz[i]
+  I_vrp[1,1] = dat_all_e$full_VRP_Ixx[i]
+  I_vrp[2,2] = dat_all_e$full_VRP_Iyy[i]
+  I_vrp[3,3] = dat_all_e$full_VRP_Izz[i]
+  I_vrp[3,1] = dat_all_e$full_VRP_Ixz[i]
+  I_vrp[1,3] = dat_all_e$full_VRP_Ixz[i]
 
-  CG = c(dat_all$full_CGx[i], 0, dat_all$full_CGz[i])
-  I = parallelaxis(I_vrp,-CG,dat_all$full_m[i],"A")
+  CG = c(dat_all_e$full_CGx[i], 0, dat_all_e$full_CGz[i])
+  I = parallelaxis(I_vrp,-CG,dat_all_e$full_m[i],"A")
 
-  dat_all$full_Ixx[i] = I[1,1]
-  dat_all$full_Iyy[i] = I[2,2]
-  dat_all$full_Izz[i] = I[3,3]
-  dat_all$full_Ixz[i] = I[3,1]
+  dat_all_e$full_Ixx[i] = I[1,1]
+  dat_all_e$full_Iyy[i] = I[2,2]
+  dat_all_e$full_Izz[i] = I[3,3]
+  dat_all_e$full_Ixz[i] = I[3,1]
+  # save the principal axes
+  pri_axes = eigen(I)
+  dat_all_e$intaxis_x = pri_axes$vectors[2,1]
+  dat_all_e$intaxis_y = pri_axes$vectors[2,2]
+  dat_all_e$intaxis_z = pri_axes$vectors[2,3]
+  dat_all_e$majoraxis_x = pri_axes$vectors[1,1]
+  dat_all_e$majoraxis_y = pri_axes$vectors[1,2]
+  dat_all_e$majoraxis_z = pri_axes$vectors[1,3]
+  dat_all_e$minoraxis_x = pri_axes$vectors[3,1]
+  dat_all_e$minoraxis_y = pri_axes$vectors[3,2]
+  dat_all_e$minoraxis_z = pri_axes$vectors[3,3]
+  # ---------- Tucked neck results -------------
+  I_vrp = matrix(0, nrow = 3, ncol = 3)
+  I_vrp[1,1] = dat_all_t$full_VRP_Ixx[i]
+  I_vrp[2,2] = dat_all_t$full_VRP_Iyy[i]
+  I_vrp[3,3] = dat_all_t$full_VRP_Izz[i]
+  I_vrp[3,1] = dat_all_t$full_VRP_Ixz[i]
+  I_vrp[1,3] = dat_all_t$full_VRP_Ixz[i]
+
+  CG = c(dat_all_t$full_CGx[i], 0, dat_all_t$full_CGz[i])
+  I = parallelaxis(I_vrp,-CG,dat_all_t$full_m[i],"A")
+
+  dat_all_t$full_Ixx[i] = I[1,1]
+  dat_all_t$full_Iyy[i] = I[2,2]
+  dat_all_t$full_Izz[i] = I[3,3]
+  dat_all_t$full_Ixz[i] = I[3,1]
+  # save the principal axes
+  pri_axes = eigen(I)
+  dat_all_t$intaxis_x = pri_axes$vectors[2,1]
+  dat_all_t$intaxis_y = pri_axes$vectors[2,2]
+  dat_all_t$intaxis_z = pri_axes$vectors[2,3]
+  dat_all_t$majoraxis_x = pri_axes$vectors[1,1]
+  dat_all_t$majoraxis_y = pri_axes$vectors[1,2]
+  dat_all_t$majoraxis_z = pri_axes$vectors[1,3]
+  dat_all_t$minoraxis_x = pri_axes$vectors[3,1]
+  dat_all_t$minoraxis_y = pri_axes$vectors[3,2]
+  dat_all_t$minoraxis_z = pri_axes$vectors[3,3]
   # Calculate the projected area for each wing - this is the correct order because X is negative and Y is positive
-  x_vertices = c(dat_all$pt6_X[i],dat_all$pt7_X[i],dat_all$pt8_X[i],dat_all$pt9_X[i],dat_all$pt10_X[i],dat_all$pt11_X[i],dat_all$pt12_X[i])
-  y_vertices = c(dat_all$pt6_Y[i],dat_all$pt7_Y[i],dat_all$pt8_Y[i],dat_all$pt9_Y[i],dat_all$pt10_Y[i],dat_all$pt11_Y[i],dat_all$pt12_Y[i])
-  dat_all$S_proj[i] <- polyarea(x_vertices, y_vertices)
+  x_vertices = c(dat_all_e$pt6_X[i],dat_all_e$pt7_X[i],dat_all_e$pt8_X[i],dat_all_e$pt9_X[i],dat_all_e$pt10_X[i],dat_all_e$pt11_X[i],dat_all_e$pt12_X[i])
+  y_vertices = c(dat_all_e$pt6_Y[i],dat_all_e$pt7_Y[i],dat_all_e$pt8_Y[i],dat_all_e$pt9_Y[i],dat_all_e$pt10_Y[i],dat_all_e$pt11_Y[i],dat_all_e$pt12_Y[i])
+  dat_all_e$S_proj[i] <- polyarea(x_vertices, y_vertices)
+  dat_all_t$S_proj[i] <- dat_all_e$S_proj[i] # wing shapes have not changed between the neck positions
 }
 
+# Create the final combined data set
+dat_final <- bind_rows(subset(dat_all_t, !(species %in% c("col_liv","lop_imp","lop_nyc","chr_amh","ana_pla","meg_alc","bra_can","aec_occ"))), # tucked neck species
+                       subset(dat_all_e, species %in% c("col_liv","lop_imp","lop_nyc","chr_amh","ana_pla","meg_alc","bra_can","aec_occ"))) # extended neck species
+dat_final$full_length = (dat_final$torsotail_length+dat_final$head_length+dat_final$neck_length)
 
-dat_all$full_CGx_specific <- (dat_all$full_CGx-dat_all$pt1_X)/dat_all$torso_length
-dat_all$full_CGz_specific <- (dat_all$full_CGz-dat_all$pt1_Z)/dat_all$torso_length
+dat_final <- dat_final[-c(which(dat_final$species == "cor_cor" & dat_final$BirdID == "20_2526")),]
+dat_bird  <- dat_bird[-c(which(dat_bird$species == "cor_cor" & dat_bird$BirdID == "20_2526")),]
 
+dat_final$shoulderx_specific  <- (dat_final$pt1_X-dat_final$head_length)/dat_final$full_length
+dat_final$shouldery_specific  <- (dat_final$pt1_Y)/dat_final$full_length
+dat_final$shoulderz_specific  <- (dat_final$pt1_Z)/dat_final$full_length
+
+dat_final$full_Ixx_specific = dat_final$full_Ixx/(dat_final$full_m*dat_final$torso_length^2)
+dat_final$full_Iyy_specific = dat_final$full_Iyy/(dat_final$full_m*dat_final$torso_length^2)
+dat_final$full_Izz_specific = dat_final$full_Izz/(dat_final$full_m*dat_final$torso_length^2)
+dat_final$full_Ixz_specific = dat_final$full_Ixz/(dat_final$full_m*dat_final$torso_length^2)
+
+dat_final$full_CGx_specific <- (dat_final$full_CGx-dat_final$head_length)/dat_final$full_length
+dat_final$full_CGz_specific <- (dat_final$full_CGz)/dat_final$body_height_max
+
+dat_final$wing_span_cm[which(dat_final$species == "col_aur" & dat_final$BirdID == "21_0203")] = 0.489
+dat_final$wing_CGy_specific = dat_final$wing_CGy/(0.5*dat_final$wing_span_cm)
+dat_final$wing_CGx_specific = dat_final$wing_CGx/(0.5*dat_final$wing_span_cm)
+dat_final$wing_CGz_specific = dat_final$wing_CGz/(0.5*dat_final$wing_span_cm)
+
+dat_final$elbow_scaled = dat_final$elbow*0.001
+dat_final$manus_scaled = dat_final$manus*0.001
 ### ------------- Compute summed quantities -----------------
 
 # Maximum projected wing area
-test     <- aggregate(list(S_proj_max = dat_all$S_proj),  by=list(species = dat_all$species, BirdID = dat_all$BirdID), max)
-dat_bird <- merge(dat_bird[,-c(1)],test, by = c("species","BirdID"))
-dat_all  <- merge(dat_all,test, by = c("species","BirdID"))
-# Range of CGx specific
-test     <- aggregate(list(range_CGx_specific = dat_all$full_CGx_specific),  by=list(species = dat_all$species, BirdID = dat_all$BirdID), FUN=function(x){max(x)-min(x)})
+test       <- aggregate(list(S_proj_max = dat_final$S_proj),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
+dat_bird   <- merge(dat_bird,test, by = c("species","BirdID"))
+dat_final  <- merge(dat_final,test, by = c("species","BirdID"))
+
+# Shoulder position specific
+test     <- aggregate(list(shoulderx_specific = dat_final$shoulderx_specific),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
 dat_bird <- merge(dat_bird,test, by = c("species","BirdID"))
-# Maximum of CGx specific
-test     <- aggregate(list(max_CGx_specific = dat_all$full_CGx_specific),  by=list(species = dat_all$species, BirdID = dat_all$BirdID), max)
-dat_bird <- merge(dat_bird,test, by = c("species","BirdID"))
-# Minimum of CGx specific
-test     <- aggregate(list(min_CGx_specific = dat_all$full_CGx_specific),  by=list(species = dat_all$species, BirdID = dat_all$BirdID), min)
-dat_bird <- merge(dat_bird,test, by = c("species","BirdID"))
-# Range of CGz specific
-test     <- aggregate(list(range_CGz_specific = dat_all$full_CGz_specific),  by=list(species = dat_all$species, BirdID = dat_all$BirdID), FUN=function(x){max(x)-min(x)})
-dat_bird <- merge(dat_bird,test, by = c("species","BirdID"))
-# Maximum of CGz specific
-test     <- aggregate(list(max_CGz_specific = dat_all$full_CGz_specific),  by=list(species = dat_all$species, BirdID = dat_all$BirdID), max)
-dat_bird <- merge(dat_bird,test, by = c("species","BirdID"))
-# Minimum of CGz specific
-test     <- aggregate(list(min_CGz_specific = dat_all$full_CGz_specific),  by=list(species = dat_all$species, BirdID = dat_all$BirdID), min)
+test     <- aggregate(list(shoulderz_specific = dat_final$shoulderz_specific),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
 dat_bird <- merge(dat_bird,test, by = c("species","BirdID"))
 
-# Maximum of wing Ixx
-test     <- aggregate(list(max_wing_Ixx = dat_all$wing_Ixx),  by=list(species = dat_all$species, BirdID = dat_all$BirdID), max)
+test     <- aggregate(list(full_m = dat_final$full_m),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
 dat_bird <- merge(dat_bird,test, by = c("species","BirdID"))
-# Mean "root chord"
-test     <- aggregate(list(mean_rc = sqrt((dat_all$pt11_X-dat_all$pt12_X)^2+(dat_all$pt11_Y-dat_all$pt12_Y)^2+(dat_all$pt11_Z-dat_all$pt12_Z)^2)),
-                  by=list(species = dat_all$species, BirdID = dat_all$BirdID), mean)
-dat_bird <- merge(dat_bird,test, by = c("species","BirdID"))
-dat_all  <- merge(dat_all, test, by = c("species","BirdID"))
+
 ### ---------------------- Compute inertial metrics -------------------------
 
 # uses scaling from:
 # Alerstam, T., Rosén, M., Bäckman, J., Ericson, P. G., & Hellgren, O. (2007).
 # Flight speeds among bird species: allometric and phylogenetic effects. PLoS Biol, 5(8), e197.
-dat_all$prop_q_dot     <- (-(dat_all$full_CGx-dat_all$pt1_X)*dat_all$S_proj_max*dat_all$full_m^0.24)/(dat_all$full_Iyy)
-dat_all$prop_q_dot_nd  <- (-(dat_all$full_CGx-dat_all$pt1_X)*dat_all$S_proj_max*dat_all$body_length^2)/(dat_all$full_Iyy)
-dat_all$del_M_specific <- dat_all$prop_q_dot*dat_all$full_Iyy/(dat_all$full_m*dat_all$body_length)
-
+dat_final$prop_q_dot     <- (-(dat_final$full_CGx-dat_final$pt1_X)*dat_final$S_proj_max*dat_final$full_m^0.24)/(dat_final$full_Iyy)
+dat_final$prop_q_dot_nd  <- (-(dat_final$full_CGx-dat_final$pt1_X)*dat_final$S_proj_max*dat_final$torso_length^2)/(dat_final$full_Iyy)
+dat_final$del_M_specific <- dat_final$prop_q_dot*dat_final$full_Iyy/(dat_final$full_m*dat_final$torso_length)
 
 filename = paste(format(Sys.Date(), "%Y_%m_%d"),"_alldata.csv",sep="")
-write.csv(dat_all,filename)
+write.csv(dat_final,filename)
+dat_final$elbow_scaled = dat_final$elbow*0.001
+dat_final$manus_scaled = dat_final$manus*0.001
 
-CG_range_plot <- ggplot()+
-  geom_point(data = dat_bird, aes(x = clade, y = max_CGx_specific, col = species), pch = 17) +
-  geom_point(data = dat_bird, aes(x = clade, y = min_CGx_specific, col = species), pch = 15) + th
+## ---- Compute the regression coefficients for each species for each variable -------
+no_specimens <- nrow(dat_bird)
+dat_model_out        <- data.frame(matrix(nrow = no_specimens*7*2, ncol = 5))
+names(dat_model_out) <- c("species","model_variable","elb","man","elbman")
+varlist_sp       <- c("full_Ixx_specific","full_Iyy_specific","full_Izz_specific","full_Ixz_specific",
+                   "full_CGx_specific","wing_CGy_specific","full_CGz_specific")
+short_varlist_sp <- c("Ixx_sp","Iyy_sp","Izz_sp","Ixz_sp","CGx_sp","CGy_sp","CGz_sp")
+varlist_abs      <- c("full_Ixx","full_Iyy","full_Izz","full_Ixz",
+                      "full_CGx","wing_CGy","full_CGz")
+short_varlist_abs<- c("Ixx","Iyy","Izz","Ixz","CGx","CGy","CGz")
+success = TRUE
+count = 1
+for (i in 1:no_specimens){
+  # subset data to the current species
+  tmp = subset(dat_final, species == dat_bird$species[i] & BirdID == dat_bird$BirdID[i])
 
-ROM_plot <- ggplot()+
-  geom_point(data = subset(dat_all, species != "oce_leu"), aes(x = elbow, y = manus, col = abs(full_Ixz/full_Izz))) + th + facet_wrap(~species)
+  for (m in 1:2){
 
-q_dot_plot <- ggplot()+
-  geom_point(data = subset(dat_all, species != "oce_leu"), aes(x = full_m, y = prop_q_dot, col = species)) + th +
-  scale_x_continuous(trans='log10')+
-  scale_y_continuous(trans='log10')
+    if(m == 1){
+      varlist = varlist_abs
+      short_varlist = short_varlist_abs
+    } else{
+      varlist = varlist_sp
+      short_varlist = short_varlist_sp
+    }
 
-del_M_plot <- ggplot()+
-  geom_point(data = subset(dat_all, species != "oce_leu"), aes(x = full_m, y = del_M_specific, col = clade)) + th +
-  scale_x_continuous(trans='log10')+
-  scale_y_continuous(trans='log10')
+    # --------------- Fit models ------------------
+    # full models
+    models <- lapply(varlist, function(x) {lm(substitute(k ~ elbow_scaled*manus_scaled, list(k = as.name(x))), data = tmp)})
+    # null models
+    model_null <- lapply(varlist, function(x) {lm(substitute(k ~ 1, list(k = as.name(x))), data = tmp)})
+    # models with interactive effect removed
+    model_red_elbman <- lapply(varlist, function(x) {lm(substitute(k ~ elbow_scaled+manus_scaled, list(k = as.name(x))), data = tmp)})
+    # models with elbow only effect removed
+    model_red_elb <- lapply(varlist, function(x) {lm(substitute(k ~ elbow_scaled:manus_scaled+manus_scaled, list(k = as.name(x))), data = tmp)})
+    # models with wrist only effect removed
+    model_red_man <- lapply(varlist, function(x) {lm(substitute(k ~ elbow_scaled:manus_scaled+elbow_scaled, list(k = as.name(x))), data = tmp)})
 
-cg_plot <- ggplot()+
-  geom_point(data = subset(dat_all, species != "oce_leu"), aes(x = torso_length, y = mean_rc, col = species)) + th  +
-  scale_x_continuous(trans='log10')
+    CI_values      = lapply(models, confint)
+    coef_values    = lapply(models, coef)
 
-CG_range_plot <- ggplot()+
-  geom_point(data = dat_bird, aes(x = total_bird_mass, y = range_CGx_specific, col = clade)) + th +
-  scale_x_continuous(trans='log10')
+    for (j in 1:length(models)){
+      dat_model_out$species[count]        <- dat_bird$species[i]
+      dat_model_out$BirdID[count]         <- dat_bird$BirdID[i]
+      dat_model_out$model_variable[count] <- short_varlist[j]
+      dat_model_out$int[count]            <- coef_values[[j]]["(Intercept)"]
+      dat_model_out$elb[count]            <- coef_values[[j]]["elbow_scaled"]
+      dat_model_out$man[count]            <- coef_values[[j]]["manus_scaled"]
+      dat_model_out$elbman[count]         <- coef_values[[j]]["elbow_scaled:manus_scaled"]
+      dat_model_out$int_lb[count]         <- CI_values[[j]]["(Intercept)",1]
+      dat_model_out$elb_lb[count]         <- CI_values[[j]]["elbow_scaled",1]
+      dat_model_out$man_lb[count]         <- CI_values[[j]]["manus_scaled",1]
+      dat_model_out$elbman_lb[count]      <- CI_values[[j]]["elbow_scaled:manus_scaled",1]
+      dat_model_out$int_ub[count]         <- CI_values[[j]]["(Intercept)",2]
+      dat_model_out$elb_ub[count]         <- CI_values[[j]]["elbow_scaled",2]
+      dat_model_out$man_ub[count]         <- CI_values[[j]]["manus_scaled",2]
+      dat_model_out$elbman_ub[count]      <- CI_values[[j]]["elbow_scaled:manus_scaled",2]
 
-Ixz_plot <- ggplot()+
-  geom_point(data = subset(dat_all, species != "oce_leu"), aes(x = full_m, y = wing_Ixz/(full_m*torso_length^2), col = species)) + th
+      dat_model_out$elb_eff[count]        <- cohen_f2(summary(models[[j]])$sigma,
+                                                      summary(model_red_elb[[j]])$sigma,
+                                                      summary(model_null[[j]])$sigma)
+      dat_model_out$man_eff[count]        <- cohen_f2(summary(models[[j]])$sigma,
+                                                      summary(model_red_man[[j]])$sigma,
+                                                      summary(model_null[[j]])$sigma)
+      dat_model_out$elbman_eff[count]     <- cohen_f2(summary(models[[j]])$sigma,
+                                                      summary(model_red_elbman[[j]])$sigma,
+                                                      summary(model_null[[j]])$sigma)
+      count = count + 1
+    }
+  }
+}
 
-test <- lmer(prop_q_dot ~ elbow*manus+species+full_m+(1|BirdID), data = dat_all)
-test <- lm((full_Ixz/full_Izz) ~ elbow*manus+species+full_m, data = dat_all)
+tmp           = reshape2::melt(dat_model_out, id = c("species","BirdID","model_variable"))
+dat_model_out = reshape2::dcast(tmp, species + BirdID ~ model_variable + variable, value.var="value")
+dat_model_out <- subset(dat_model_out, species != "oce_leu")
 
-#Compare to Kirkpatrick
-plot(as.factor(dat_results$species), dat_results$full_Ixx)
-points(as.factor(dat_results$species),3.76*10^-3*dat_results$full_m^2.05, col = "red")
+# Include basic geometry effects
+tmp       = aggregate(list(mass = dat_bird$full_m),  by=list(species = dat_bird$species, binomial = dat_bird$binomial, BirdID = dat_bird$BirdID), mean)
+dat_comp  = merge(tmp, dat_model_out, by = c("species","BirdID"))
+dat_model_out  = merge(tmp, dat_model_out, by = c("species","BirdID"))
+tmp       = aggregate(list(torsotail_length = dat_bird$torsotail_length),  by=list(species = dat_bird$species, BirdID = dat_bird$BirdID), mean)
+dat_comp  = merge(dat_comp, tmp, by = c("species","BirdID"))
 
+# Include other important factors
+# Range of each component
+test     <- aggregate(list(range_CGx = dat_final$full_CGx,
+                           range_CGx_specific = dat_final$full_CGx_specific,
+                           range_wing_CGy = dat_final$wing_CGy,
+                           range_wing_CGy_specific = dat_final$wing_CGy_specific,
+                           range_CGz = dat_final$full_CGz,
+                           range_CGz_specific = dat_final$full_CGz_specific,
+                           range_Ixx = dat_final$full_Ixx,
+                           range_Ixx_specific = dat_final$full_Ixx_specific,
+                           range_Iyy = dat_final$full_Iyy,
+                           range_Iyy_specific = dat_final$full_Iyy_specific,
+                           range_Izz = dat_final$full_Izz,
+                           range_Izz_specific = dat_final$full_Izz_specific),
+                      by=list(species = dat_final$species, BirdID = dat_final$BirdID), FUN=function(x){max(x)-min(x)})
+dat_comp <- merge(dat_comp,test, by = c("species","BirdID"))
 
-## ----------------- Plots for sharing with others -----------------
+# Maximum values
+test     <- aggregate(list(max_CGx = dat_final$full_CGx,
+                           max_CGx_specific = dat_final$full_CGx_specific,
+                           max_wing_CGy = dat_final$wing_CGy,
+                           max_wing_CGy_specific = dat_final$wing_CGy_specific,
+                           max_CGz = dat_final$full_CGz,
+                           max_Ixx = dat_final$full_Ixx,
+                           max_Ixx_specific = dat_final$full_Ixx_specific,
+                           max_Iyy = dat_final$full_Ixx,
+                           max_Iyy_specific = dat_final$full_Ixx_specific,
+                           max_Izz = dat_final$full_Ixx,
+                           max_Izz_specific = dat_final$full_Ixx_specific,
+                           max_q = dat_final$prop_q_dot,
+                           max_q_nd = dat_final$prop_q_dot_nd,
+                           max_wingspan = dat_final$wing_span_cm,
+                           max_length = dat_final$full_length),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
+dat_comp <- merge(dat_comp,test, by = c("species","BirdID"))
+# Minimum values
+test     <- aggregate(list(min_CGx = dat_final$full_CGx,
+                           min_CGx_specific = dat_final$full_CGx_specific,
+                           min_CGz = dat_final$full_CGz,
+                           min_wing_CGy_specific = dat_final$wing_CGy_specific,
+                           min_CGz = dat_final$full_CGz,
+                           min_CGz_specific = dat_final$full_CGz_specific),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
+dat_comp <- merge(dat_comp,test, by = c("species","BirdID"))
 
-validation_Ixx_plot <- ggplot()+
-  geom_point(data = dat_all, aes(x = full_m, y = wing_Ixx, col = clade)) +
-  geom_line(data = unique(dat_all[,c("species","BirdID","full_m")]), aes(x = full_m, y = 3.76*10^-3*full_m^2.05),col = "black") + # Kirkpatrick, 1994
-  geom_line(data = unique(dat_all[,c("species","BirdID","full_m")]), aes(x = full_m, y = 1.94*10^-3*full_m^1.953),col = "gray") + # Berg and Rayner, 1995
-  geom_point(data = unique(dat_all[,c("species","BirdID","full_m","wing_m","wing_span_cm")]), aes(x = full_m, y = full_m*(sqrt((0.14*wing_m/full_m))*wing_span_cm*0.5)^2),col = "black",pch = "-",size = 7) + # Sachs, 2005
-  th  +
-  scale_x_continuous(trans='log10')+
-  scale_y_continuous(trans='log10')
+dat_comp <- subset(dat_comp, species != "oce_leu")
 
-validation_Izz_plot <- ggplot()+
-  geom_point(data = dat_all, aes(x = full_m, y = wing_Izz, col = clade)) +
-  geom_line(data = unique(dat_all[,c("species","BirdID","full_m")]), aes(x = full_m, y = 3.76*10^-3*full_m^2.05),col = "black") + # Kirkpatrick, 1994
-  geom_line(data = unique(dat_all[,c("species","BirdID","full_m")]), aes(x = full_m, y = 1.94*10^-3*full_m^1.953),col = "gray") + # Berg and Rayner, 1995
-  geom_point(data = unique(dat_all[,c("species","BirdID","full_m","wing_m","wing_span_cm")]), aes(x = full_m, y = full_m*(sqrt((0.14*wing_m/full_m))*wing_span_cm*0.5)^2),col = "black",pch = "-",size = 7) + # Sachs, 2005
-  th  +
-  scale_x_continuous(trans='log10')+
-  scale_y_continuous(trans='log10')
+### --------------------- Phylogeny info ---------------------
+## Read in tree
+full_tree <-
+  read.nexus("vikROM_passerines_403sp.tre")
 
-validation_Ixx_body_plot <- ggplot()+
-  geom_point(data = dat_all, aes(x = full_m, y = full_Ixx, col = clade)) +
-  geom_point(aes(x = 0.0875, y = 928/(100^2*1000)), col = "black") + # Hedrick and Biewener
-  geom_point(aes(x = 0.2893, y = 12889/(100^2*1000)), col = "black") + # Hedrick and Biewener
-  th +
-  scale_x_continuous(trans='log10') +
-  scale_y_continuous(trans='log10')
+## Species means
+morpho_data_means <-
+  mutate(dat_comp, phylo = binomial)# %>%
+  ## turn binomial names into rownames
+  #column_to_rownames(var = "binomial")
 
+## Prune down the tree to the relevant species
+sp_mean_matched <-
+  geiger::treedata(
+    phy = full_tree,
+    data = morpho_data_means,
+    sort = TRUE
+  )
+
+## pruned tree
+## ladderization rotates nodes to make it easier to see basal vs derived
+pruned_mcc <-
+  ape::ladderize(
+    sp_mean_matched$phy
+  )
+plot(pruned_mcc)
+
+## matched species mean data
+sp_mean_data <-
+  subset(morpho_data_means,
+         phylo %in% pruned_mcc$tip.label
+  )
+
+cohen_f2 <- function(V_ab, V_a, V_null){
+  f2 = (((V_null-V_ab)/V_null)-((V_null-V_a)/V_null))/(1-((V_null-V_ab)/V_null))
+  return(f2)
+}
