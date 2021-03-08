@@ -175,9 +175,11 @@ subsample_frames <- function(dat_keep,dat_dup,curr_BirdID,max_sample_no){
 
     # Save the selected rows
     if (j == 1){
-      dat_subsample <- rbind(dat_keep,tmp)
+      dat_subsample = rbind(dat_keep,tmp)
+    }else{
+      dat_subsample = rbind(dat_subsample,tmp)
     }
-    dat_subsample <- rbind(dat_subsample,tmp)
+
   } # end of the loop through joint angle bins
 
   return(dat_subsample)

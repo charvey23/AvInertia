@@ -7,8 +7,9 @@ library(Morpho)
 library(geomorph)
 library(stringr)
 library(gtools)
+library(pracma)
 
-source('/Users/christinaharvey/Documents/birdmoment/ROM_transformation_functions.R')
+source('/Users/christinaharvey/Documents/birdmoment/transformROM_supportingfunctions.R')
 
 ### -------------- Read in all morphological measurements ------------
 run_data_path = "/Users/christinaharvey/Dropbox (University of Michigan)/Bird Mass Distribution/rundata/"
@@ -39,7 +40,11 @@ bin_size      = 2 # #deg x #deg bins that will have the max amount of samples
 
 # create blank data frame
 dat_ID = as.data.frame(matrix(nrow = length(filename.3d), ncol = 4))
-colnames(dat_ID) = c("species","BirdID","TestID","wing_side")
+colnames(dat_ID) = c("species","BirdID","TestID","wing")
+
+## ----------------------------------------------------
+## --------- Save identifying information -------------
+## ----------------------------------------------------
 
 # Save all the identifying information
 for (i in 1:length(filename.3d)){
@@ -51,31 +56,38 @@ for (i in 1:length(filename.3d)){
 
 no_species = length(unique(dat_ID$species))
 
-## ------------ Loop through each species ---------------
+## ----------------------------------------------------
+## --------- Iterate through each species -------------
+## ----------------------------------------------------
 
 for (i in 1:no_species){
   curr_species  = unique(dat_ID$species)[i]
-  if(curr_species == "lar_gla"){next} # deal with the gull data seperately
+
   # identify which filenames belong to the current species
   files_to_read = which(dat_ID$species == curr_species)
   # identify how many body measurements we have for the current species
   dat_body_curr = subset(dat_bird, use_body == "Y" & species == curr_species)
 
+  # deal with the gull data separately due to different info
+  if(curr_species == "lar_gla"){
+    #transformgullROM(curr_species,dat_raw,dat_ID,dat_body_curr,col_dat_raw)
+    next}
+
   # Read in all optitrack data from the given species
-  dat_raw         = read.csv(filename.3d[files_to_read[1]], stringsAsFactors = FALSE,strip.white = TRUE, na.strings = c("NA"))
+  dat_raw         = read.csv(paste(working_path,filename.3d[files_to_read[1]],sep = ""), stringsAsFactors = FALSE,strip.white = TRUE, na.strings = c("NA"))
   dat_raw$BirdID  = dat_ID$BirdID[files_to_read[1]]
   dat_raw$TestID  = dat_ID$TestID[files_to_read[1]]
   dat_raw$wing    = dat_ID$wing[files_to_read[1]]
   # First few are in mm adjust to cm
-  if (files_to_read[1] < 12){dat_raw[,3:35] <- dat_raw[,3:35]*0.001}
+  if (files_to_read[1] < 21 & files_to_read[1] > 8){dat_raw[,3:35] <- dat_raw[,3:35]*0.001}
 
   for (j in 2:length(files_to_read)){
-    tmp = read.csv(filename.3d[files_to_read[j]], stringsAsFactors = FALSE,strip.white = TRUE, na.strings = c("NA"))
+    tmp = read.csv(paste(working_path,filename.3d[files_to_read[j]],sep = ""), stringsAsFactors = FALSE,strip.white = TRUE, na.strings = c("NA"))
     tmp$BirdID  = dat_ID$BirdID[files_to_read[j]]
     tmp$TestID  = dat_ID$TestID[files_to_read[j]]
     tmp$wing    = dat_ID$wing[files_to_read[j]]
     # First few are in mm adjust to cm
-    if (files_to_read[j] < 12){tmp[,3:35] <- tmp[,3:35]*0.001}
+    if (files_to_read[j] < 21 & files_to_read[j] > 8){tmp[,3:35] <- tmp[,3:35]*0.001}
     # The storm petrel had one wing track all points but not the other
     if (ncol(tmp) > ncol(dat_raw)){
       dat_raw$humerus_leading_position_x = dat_raw$humerus_position_x
@@ -94,6 +106,10 @@ for (i in 1:no_species){
   }
 
   dat_raw$species = curr_species
+  col_dat_raw = c("FrameID","time_sec","pt4_X","pt4_Y","pt4_Z" , "pt7_X","pt7_Y","pt7_Z","pt2_X","pt2_Y","pt2_Z","pt1_X","pt1_Y","pt1_Z",
+                  "pt12_X","pt12_Y","pt12_Z","pt8_X","pt8_Y","pt8_Z","pt9_X","pt9_Y","pt9_Z","pt10_X","pt10_Y","pt10_Z","pt11_X","pt11_Y",
+                  "pt11_Z","pt3_X","pt3_Y","pt3_Z","pt6_X","pt6_Y","pt6_Z","BirdID","TestID","wing","species" )
+
 
   ### ---------------- Rename the columns appropriately -----------------
   dat_raw <- as_tibble(dat_raw)
@@ -113,9 +129,6 @@ for (i in 1:no_species){
                       pt6_X = wrist_leading_position_x,    pt6_Y = wrist_leading_position_y,    pt6_Z = wrist_leading_position_z,
                       pt7_X = cmc_leading_position_x,      pt7_Y = cmc_leading_position_y,      pt7_Z = cmc_leading_position_z,
                       pt12_X = humerus_leading_position_x, pt12_Y = humerus_leading_position_y, pt12_Z = humerus_leading_position_z)
-    if(i == 1){
-      col_dat_raw = colnames(dat_raw) # save the order of the row names
-    }
   }else{
     dat_raw$pt12_X = dat_raw$pt1_X
     dat_raw$pt12_Y = dat_raw$pt1_Y
@@ -153,8 +166,9 @@ for (i in 1:no_species){
 
   dat_raw$BirdID_FrameSpec = dat_raw$BirdID
 
-
-  ## ---- Loop through each body and subsample, resize, reorient the wings appropriately ------
+  ## ----------------------------------------------------
+  ## --------- Iterate through each specimen -------------
+  ## ----------------------------------------------------
 
   for (ind in 1:nrow(dat_body_curr)){
 
@@ -197,4 +211,6 @@ for (i in 1:no_species){
     write.csv(dat_complete,filename_new)
   } # end of the specimen loop
 } # end of the species loop
+filename_new <- paste(run_data_path,format(Sys.Date(), "%Y_%m_%d"),"_IDfile.csv",sep = "")
+write.csv(dat_ID,filename_new)
 
