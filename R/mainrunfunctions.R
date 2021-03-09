@@ -108,10 +108,41 @@ combine_inertialprop <- function(curr_torsotail_data,left_wing_data,right_wing_d
 
   # ---------- Adjust the final moment of inertia tensor to be about the CG ------------
   fullbird$I         = parallelaxis(fullbird$I,-fullbird$CG,fullbird$m,"A")
-
+  # store data so far
   curr_full_bird     = store_data(dat_id_curr,fullbird,mass_properties,"full")
 
-  curr_full_bird     = rbind(curr_full_bird,curr_full_bird_vrp[1:6,],dat_err)
+  # calculate the principal axes
+  pri_axes = eigen(fullbird$I)
+
+  # --- saves the principal axes -----
+  pri_axes = eigen(fullbird$I)
+  new_row1 = data.frame(species = curr_full_bird$species[1], BirdID = curr_full_bird$BirdID[1],TestID = curr_full_bird$TestID[1], FrameID = curr_full_bird$FrameID[1],
+                        component = "full", object = "maj_axis_x", value = pri_axes$vectors[1,1])
+  new_row2 = data.frame(species = curr_full_bird$species[1], BirdID = curr_full_bird$BirdID[1],TestID = curr_full_bird$TestID[1], FrameID = curr_full_bird$FrameID[1],
+                        component = "full", object = "maj_axis_y", value = pri_axes$vectors[2,1])
+  new_row3 = data.frame(species = curr_full_bird$species[1], BirdID = curr_full_bird$BirdID[1],TestID = curr_full_bird$TestID[1], FrameID = curr_full_bird$FrameID[1],
+                        component = "full", object = "maj_axis_z", value = pri_axes$vectors[3,1])
+  new_row4 = data.frame(species = curr_full_bird$species[1], BirdID = curr_full_bird$BirdID[1],TestID = curr_full_bird$TestID[1], FrameID = curr_full_bird$FrameID[1],
+                        component = "full", object = "int_axis_x", value = pri_axes$vectors[1,2])
+  new_row5 = data.frame(species = curr_full_bird$species[1], BirdID = curr_full_bird$BirdID[1],TestID = curr_full_bird$TestID[1], FrameID = curr_full_bird$FrameID[1],
+                        component = "full", object = "int_axis_y", value = pri_axes$vectors[2,2])
+  new_row6 = data.frame(species = curr_full_bird$species[1], BirdID = curr_full_bird$BirdID[1],TestID = curr_full_bird$TestID[1], FrameID = curr_full_bird$FrameID[1],
+                        component = "full", object = "int_axis_z", value = pri_axes$vectors[3,2])
+  new_row7 = data.frame(species = curr_full_bird$species[1], BirdID = curr_full_bird$BirdID[1],TestID = curr_full_bird$TestID[1], FrameID = curr_full_bird$FrameID[1],
+                        component = "full", object = "min_axis_x", value = pri_axes$vectors[1,3])
+  new_row8 = data.frame(species = curr_full_bird$species[1], BirdID = curr_full_bird$BirdID[1],TestID = curr_full_bird$TestID[1], FrameID = curr_full_bird$FrameID[1],
+                        component = "full", object = "min_axis_y", value = pri_axes$vectors[2,3])
+  new_row9 = data.frame(species = curr_full_bird$species[1], BirdID = curr_full_bird$BirdID[1],TestID = curr_full_bird$TestID[1], FrameID = curr_full_bird$FrameID[1],
+                        component = "full", object = "min_axis_z", value = pri_axes$vectors[3,3])
+  new_row10 = data.frame(species = curr_full_bird$species[1], BirdID = curr_full_bird$BirdID[1],TestID = curr_full_bird$TestID[1], FrameID = curr_full_bird$FrameID[1],
+                        component = "full", object = "max_eign", value = pri_axes$values[1])
+  new_row11 = data.frame(species = curr_full_bird$species[1], BirdID = curr_full_bird$BirdID[1],TestID = curr_full_bird$TestID[1], FrameID = curr_full_bird$FrameID[1],
+                        component = "full", object = "int_eign", value = pri_axes$values[2])
+  new_row12 = data.frame(species = curr_full_bird$species[1], BirdID = curr_full_bird$BirdID[1],TestID = curr_full_bird$TestID[1], FrameID = curr_full_bird$FrameID[1],
+                        component = "full", object = "min_eign", value = pri_axes$values[3])
+
+  curr_full_bird     = rbind(curr_full_bird,curr_full_bird_vrp[1:6,],dat_err,
+                             new_row1,new_row2,new_row3,new_row4,new_row5,new_row6,new_row7,new_row8,new_row9,new_row10,new_row11,new_row12)
   return(curr_full_bird)
 }
 
@@ -286,6 +317,7 @@ massprop_restbody <- function(dat_wingID_curr, dat_bird_curr){
 #' \item{pt9x, pt9y, pt9z}{Point that defines the end of carpometacarpus}
 #' \item{pt10x, pt10y, pt10z}{Point on tip of last primary to model as if on the end of the carpometacarpus}
 #' \item{pt11x, pt11y, pt11z}{Point on tip of most proximal feather (wing root trailing edge)}
+#' \item{pt12x, pt12y, pt12z}{Point on exterior shoulder position  (wing root leading edge)}
 #' }
 #'
 #' @section CAUTION:

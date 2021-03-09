@@ -313,8 +313,8 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,rho_med,w_vp
   r_cor = 0.5*w_cal # radius of the cortex part of the calamus
 
   # mass of each component of the feather
-  m_vp = rho_cor*(l_r_cor/(d_b+2*r_b))*w_vp*pi*r_b^2 # mass of the proximal vane
-  m_vd = rho_cor*(l_r_cor/(d_b+2*r_b))*w_vd*pi*r_b^2 # mass of the distal vane
+  m_vp = rho_cor*(l_r_cor/(d_b+(2*r_b)))*w_vp*pi*r_b^2 # mass of the proximal vane
+  m_vd = rho_cor*(l_r_cor/(d_b+(2*r_b)))*w_vd*pi*r_b^2 # mass of the distal vane
   m_rc = m_f - m_vp - m_vd                   # mass of the rachis and calamus
 
   #assumes that the interior medullary pyramid has the same height as the cortex exterior
