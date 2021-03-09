@@ -37,14 +37,14 @@ th <- ggplot2::theme_classic() +
 # plot3d(x, y, z, col = c("black","gray20","gray50","gray70","red", "orange", "yellow", "green", "blue", "navy", "purple"))
 
 CG_side_view <- ggplot()+
-  geom_point(data = dat_bird, aes(x = -shoulderx_specific, y = -shoulderz_specific, col = log(full_m)), pch = 2) +
-  geom_point(data = dat_final, aes(x = -full_CGx_specific, y = -full_CGz_specific, col = log(full_m)), pch = 10) + th +
-  scale_y_continuous(name = "z (m)",limits = c(-0.15,0.15)) +
-  scale_x_continuous(name = "x (m)",limits = c(0,1)) +
-  coord_fixed() + facet_wrap(~species, ncol = 2)
+  #geom_point(data = dat_bird, aes(x = -shoulderx_specific, y = -shoulderz_specific, col = log(full_m)), pch = 2) +
+  geom_point(data = dat_final, aes(x = -full_CGx_specific, y = -full_CGz_specific, col = clade), pch = 10) + th +
+  #scale_y_continuous(name = "z (m)",limits = c(-0.15,0.15)) +
+  #scale_x_continuous(name = "x (m)",limits = c(0,1)) +
+  coord_fixed() + facet_wrap(~species, ncol = 3)
 
 CG_top_view <- ggplot()+
-  geom_point(data = dat_final, aes(y = wing_CGx_specific, x = wing_CGy_specific, col = elbow), pch = 10) + th +
+  geom_point(data = dat_final, aes(y = wing_CGy_specific, x = full_m, col = clade), pch = 10) + th +
   scale_y_continuous(name = "x (m)",limits = c(-0.15,0.15)) +
   scale_x_continuous(name = "y (m)",limits = c(0,1)) +
   coord_fixed() + facet_wrap(~species, ncol = 2)
@@ -74,14 +74,11 @@ del_M_plot <- ggplot()+
   scale_y_continuous(trans='log10')
 
 cg_plot <- ggplot()+
-  geom_point(data = subset(dat_final, species == "col_liv"), aes(x = manus, y = -full_CGx_specific, col = elbow)) + th
+  geom_point(data = dat_final, aes(x = full_m, y = full_CGz_specific, col = clade)) + th
 
 CG_range_plot <- ggplot()+
   geom_point(data = dat_bird, aes(x = total_bird_mass, y = range_CGx_specific, col = clade)) + th +
   scale_x_continuous(trans='log10')
-
-Ixz_plot <- ggplot()+
-  geom_point(data = subset(dat_all, species != "oce_leu"), aes(x = full_m, y = wing_Ixz/(full_m*torso_length^2), col = species)) + th
 
 
 ## ----------------- Plot of linear model outputs ------------------
@@ -267,3 +264,51 @@ validation_Ixx_body_plot <- ggplot()+
   th +
   scale_x_continuous(trans='log10') +
   scale_y_continuous(trans='log10')
+
+
+
+
+
+# Visualize the wings as required - For each calibration verify that the axis is RH
+m = 1:nrow(dat_clean)
+max = 0.4
+plot(dat_wing$pt2_Y[m],dat_wing$pt2_X[m], xlim =c(-max,max), ylim = c(-max,max))
+points(dat_wing$pt3_Y[m],dat_wing$pt3_X[m],xlim =c(-max,max), ylim = c(-max,max),col = "blue")
+points(dat_wing$pt4_Y[m], dat_wing$pt4_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "green")
+points(dat_wing$pt1_Y[m],dat_wing$pt1_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "red")
+points(dat_wing$pt8_Y[m],dat_wing$pt8_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "purple")
+points(dat_wing$pt10_Y[m],dat_wing$pt10_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "yellow")
+
+plot(dat_clean$pt2_Y[m],dat_clean$pt2_Z[m], xlim =c(-max,max), ylim = c(-max,max))
+points(dat_clean$pt3_Y[m],dat_clean$pt3_Z[m],xlim =c(-max,max), ylim = c(-max,max),col = "blue")
+points(dat_clean$pt4_Y[m], dat_clean$pt4_Z[m], xlim =c(-max,max), ylim = c(-max,max), col = "green")
+points(dat_clean$pt8_Y[m],dat_clean$pt8_Z[m], xlim =c(-max,max), ylim = c(-max,max), col = "purple")
+points(dat_clean$pt11_Y[m],dat_clean$pt11_Z[m], xlim =c(-max,max), ylim = c(-max,max), col = "yellow")
+points(dat_clean$pt1_Y[m],dat_clean$pt1_Z[m], xlim =c(-max,max), ylim = c(-max,max), col = "red")
+
+plot(dat_clean$pt2_Z[m],dat_clean$pt2_X[m], xlim =c(-max,max), ylim = c(-max,max))
+points(dat_clean$pt3_Z[m],dat_clean$pt3_X[m],xlim =c(-max,max), ylim = c(-max,max),col = "blue")
+points(dat_clean$pt4_Z[m], dat_clean$pt4_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "green")
+points(dat_clean$pt1_Z[m],dat_clean$pt1_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "red")
+points(dat_clean$pt8_Z[m],dat_clean$pt8_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "purple")
+points(dat_clean$pt10_Z[m],dat_clean$pt10_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "yellow")
+
+x = c(dat_clean$pt1_X[m],dat_clean$pt2_X[m],dat_clean$pt3_X[m],dat_clean$pt4_X[m],
+      dat_clean$pt6_X[m],dat_clean$pt7_X[m],dat_clean$pt8_X[m],dat_clean$pt9_X[m],
+      dat_clean$pt10_X[m],dat_clean$pt11_X[m],dat_clean$pt12_X[m])
+y = c(dat_clean$pt1_Y[m],dat_clean$pt2_Y[m],dat_clean$pt3_Y[m],dat_clean$pt4_Y[m],
+      dat_clean$pt6_Y[m],dat_clean$pt7_Y[m],dat_clean$pt8_Y[m],dat_clean$pt9_Y[m],
+      dat_clean$pt10_Y[m],dat_clean$pt11_Y[m],dat_clean$pt12_Y[m])
+z = c(dat_clean$pt1_Z[m],dat_clean$pt2_Z[m],dat_clean$pt3_Z[m],dat_clean$pt4_Z[m],
+      dat_clean$pt6_Z[m],dat_clean$pt7_Z[m],dat_clean$pt8_Z[m],dat_clean$pt9_Z[m],
+      dat_clean$pt10_Z[m],dat_clean$pt11_Z[m],dat_clean$pt12_Z[m])
+plot3d(x, y, z, col = c("black","gray20","gray50","gray70","red", "orange", "yellow", "green", "blue", "navy", "purple"))
+
+plot(dat_clean$elbow,dat_clean$manus)
+
+plot(rawdat$pt2_Z[m],rawdat$pt2_X[m], xlim =c(-max,max), ylim = c(-max,max))
+points(rawdat$pt3_Z[m],rawdat$pt3_X[m],xlim =c(-max,max), ylim = c(-max,max),col = "blue")
+points(rawdat$pt4_Z[m], rawdat$pt4_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "green")
+points(rawdat$pt1_Z[m],rawdat$pt1_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "red")
+points(rawdat$pt8_Z[m],rawdat$pt8_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "purple")
+points(rawdat$pt9_Z[m],rawdat$pt9_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "yellow")

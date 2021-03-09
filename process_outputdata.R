@@ -18,6 +18,7 @@ path_data_folder = "/Users/christinaharvey/Dropbox (University of Michigan)/Bird
 
 filename_wing = list.files(path = path_data_folder, pattern = paste("allspecimen_winginfo"))
 dat_wing      = read.csv(file = paste(path_data_folder,filename_wing,sep= ""))
+dat_wing     = dat_wing[,-c(1)]
 
 filename_feat = list.files(path = path_data_folder, pattern = paste("allspecimen_featherinfo"))
 dat_feat      = read.csv(file = paste(path_data_folder,filename_feat,sep= ""))
@@ -25,172 +26,67 @@ dat_feat      = dat_feat[,-c(1,3:7)]
 
 filename_bird = list.files(path = path_data_folder, pattern = paste("allspecimen_birdinfo"))
 dat_bird      = read.csv(file = paste(path_data_folder,filename_bird,sep= ""))
-dat_bird$clade = c("Accipitriformes","Accipitriformes","Galloanserae","Galloanserae","Aequorlitornithes","Aequorlitornithes","Galloanserae","Strisores","Strisores",
+dat_bird$clade = c("Accipitriformes","Accipitriformes","Aequorlitornithes","Aequorlitornithes","Galloanserae","Galloanserae","Aequorlitornithes","Aequorlitornithes","Galloanserae","Strisores","Strisores",
                     "Galloanserae","Coraciimorphae","Coraciimorphae","Columbaves","Columbaves","Columbaves","Passeriformes","Passeriformes","Passeriformes","Passeriformes","Strisores",
                     "Australaves","Australaves","Australaves","Australaves","Galloanserae","Galloanserae","Coraciimorphae","Coraciimorphae",
                     "Coraciimorphae","Aequorlitornithes","Aequorlitornithes","Strigiformes","Strigiformes")
-dat_bird$binomial = dat_bird$binomial.x
+names(dat_bird)[names(dat_bird) == "binomial.x"] = "binomial"
+dat_bird     = dat_bird[,-c(1)]
 
-filename_body_e = list.files(path = path_data_folder, pattern = paste("bodyCGandMOI_extend"))
-dat_body_e      = read.csv(file = paste(path_data_folder,filename_body_e,sep= ""))
-dat_body_e      = reshape2::dcast(dat_body_e, species + BirdID + TestID + FrameID ~ component + object, value.var="value")
+filename_body = list.files(path = path_data_folder, pattern = paste("bodyCGandMOI_correct"))
+dat_body      = read.csv(file = paste(path_data_folder,filename_body,sep= ""))
+dat_body      = reshape2::dcast(dat_body, species + BirdID + TestID + FrameID ~ component + object, value.var="value")
 
-filename_body_t = list.files(path = path_data_folder, pattern = paste("bodyCGandMOI_tucked"))
-dat_body_t      = read.csv(file = paste(path_data_folder,filename_body_t,sep= ""))
-dat_body_t      = reshape2::dcast(dat_body_t, species + BirdID + TestID + FrameID ~ component + object, value.var="value")
-remove(filename_wing,filename_feat,filename_bird,filename_body_e,filename_body_t)
-
+# Read in each individual result
 filename_results = list.files(path = path_data_folder, pattern = paste("results"))
 dat_results = read.csv(paste(path_data_folder,filename_results[1],sep=""))
 for (i in 2:length(filename_results)){
   dat_results = rbind(dat_results,read.csv(paste(path_data_folder,filename_results[i],sep="")))
 }
-# adjust the sharp-shinned hawk 20_1016 to a coopers hawk
-dat_wing$species[which(dat_wing$species == "acc_str" & dat_wing$BirdID == "20_1016")] = "acc_coo"
-dat_body_e$species[which(dat_body_e$species == "acc_str" & dat_body_e$BirdID == "20_1016")] = "acc_coo"
-dat_body_t$species[which(dat_body_t$species == "acc_str" & dat_body_t$BirdID == "20_1016")] = "acc_coo"
-# remove wings where they accidentally got flipped around 44 from chr_amh and 7 from oce_leu CHECK THIS as you add more
-# dat_results[which(dat_wing$pt2_X > 0 & dat_wing$species == "chr_amh")]
+# clean up environments
+remove(filename_wing,filename_feat,filename_bird,filename_body,filename_results)
 
-# Merge with all info we have about the individual
-dat_all <- merge(dat_results,dat_wing[,c("species","BirdID","TestID","FrameID","elbow","manus","pt1_X","pt1_Y","pt1_Z",
-                                         "pt6_X","pt6_Y","pt7_X","pt7_Y","pt8_X","pt8_Y","pt9_X","pt9_Y","pt10_X","pt10_Y",
+# -------------  Merge with all info -----------------
+dat_final = merge(dat_results,dat_wing[,c("species","BirdID","TestID","FrameID","BirdID_FrameSpec","elbow","manus","pt1_X","pt1_Y","pt1_Z",
+                                         "pt6_X","pt6_Y","pt7_X","pt7_Y","pt8_X","pt8_Y","pt8_Z","pt9_X","pt9_Y","pt10_X","pt10_Y",
                                          "pt11_X","pt11_Y","pt11_Z","pt12_X","pt12_Y","pt12_Z")], by = c("species","BirdID","TestID","FrameID"))
-dat_all <- merge(dat_all,dat_bird[,-c(1,4)], by = c("species","BirdID"))
-dat_all$torso_length <- dat_all$torsotail_length - dat_all$tail_length
+dat_final = merge(dat_final,dat_bird, by = c("species","BirdID"))
 
-dat_all_e <- merge(dat_all,dat_body_e[,-c(3,4)], by = c("species","BirdID"))
-dat_all_t <- merge(dat_all,dat_body_t[,-c(3,4)], by = c("species","BirdID"))
-dat_all_e$extend_neck = 1
-dat_all_t$extend_neck = 0
+dat_final = merge(dat_final,dat_body[,-c(3,4)], by = c("species","BirdID"))
 
-### ----------- Combine all outputs ----------------
+dat_final$full_length  = (dat_final$torsotail_length+dat_final$head_length+dat_final$neck_length)
+dat_final$torso_length = dat_final$torsotail_length - dat_final$tail_length
 
-## ----------- Extended neck -----------
-dat_all_e$full_VRP_Ixx <- dat_all_e$head_Ixx+dat_all_e$neck_Ixx+dat_all_e$tail_Ixx+dat_all_e$torso_Ixx+2*dat_all_e$wing_Ixx
-dat_all_e$full_VRP_Iyy <- dat_all_e$head_Iyy+dat_all_e$neck_Iyy+dat_all_e$tail_Iyy+dat_all_e$torso_Iyy+2*dat_all_e$wing_Iyy
-dat_all_e$full_VRP_Izz <- dat_all_e$head_Izz+dat_all_e$neck_Izz+dat_all_e$tail_Izz+dat_all_e$torso_Izz+2*dat_all_e$wing_Izz
-dat_all_e$full_VRP_Ixz <- dat_all_e$head_Ixz+dat_all_e$neck_Ixz+dat_all_e$tail_Ixz+dat_all_e$torso_Ixz+2*dat_all_e$wing_Ixz
+dat_final$shoulderx_specific = (dat_final$pt1_X-dat_final$head_length)/dat_final$full_length
+dat_final$shouldery_specific = (dat_final$pt1_Y)/dat_final$full_length
+dat_final$shoulderz_specific = (dat_final$pt1_Z)/dat_final$full_length
 
-dat_all_e$full_CGx <- ((dat_all_e$head_CGx*dat_all_e$head_m)+(dat_all_e$neck_CGx*dat_all_e$neck_m)+(dat_all_e$tail_CGx*dat_all_e$tail_m)+
-                     (dat_all_e$torso_CGx*dat_all_e$torso_m)+2*(dat_all_e$wing_CGx*dat_all_e$wing_m))/dat_all_e$full_m
-dat_all_e$full_CGz <- ((dat_all_e$head_CGz*dat_all_e$head_m)+(dat_all_e$neck_CGz*dat_all_e$neck_m)+(dat_all_e$tail_CGz*dat_all_e$tail_m)+
-                       (dat_all_e$torso_CGz*dat_all_e$torso_m)+2*(dat_all_e$wing_CGz*dat_all_e$wing_m))/dat_all_e$full_m
+dat_final$full_Ixx_specific = dat_final$full_Ixx/(dat_final$full_m*dat_final$wing_span_cm^2)
+dat_final$full_Iyy_specific = dat_final$full_Iyy/(dat_final$full_m*dat_final$full_length^2)
+dat_final$full_Izz_specific = dat_final$full_Izz/(dat_final$full_m*dat_final$wing_span_cm*dat_final$full_length)
+dat_final$full_Ixz_specific = dat_final$full_Ixz/(dat_final$full_m*dat_final$wing_span_cm*dat_final$full_length)
 
-## ----------- Tucked neck -----------
-dat_all_t$full_VRP_Ixx <- dat_all_t$head_Ixx+dat_all_t$tail_Ixx+dat_all_t$torso_Ixx+2*dat_all_t$wing_Ixx
-dat_all_t$full_VRP_Iyy <- dat_all_t$head_Iyy+dat_all_t$tail_Iyy+dat_all_t$torso_Iyy+2*dat_all_t$wing_Iyy
-dat_all_t$full_VRP_Izz <- dat_all_t$head_Izz+dat_all_t$tail_Izz+dat_all_t$torso_Izz+2*dat_all_t$wing_Izz
-dat_all_t$full_VRP_Ixz <- dat_all_t$head_Ixz+dat_all_t$tail_Ixz+dat_all_t$torso_Ixz+2*dat_all_t$wing_Ixz
+dat_final$full_CGx_specific = (dat_final$full_CGx-dat_final$head_length)/dat_final$full_length
+dat_final$full_CGz_specific = (dat_final$full_CGz)/dat_final$body_height_max
 
-dat_all_t$full_CGx <- ((dat_all_t$head_CGx*dat_all_t$head_m)+(dat_all_t$tail_CGx*dat_all_t$tail_m)+
-                         (dat_all_t$torso_CGx*dat_all_t$torso_m)+2*(dat_all_t$wing_CGx*dat_all_t$wing_m))/dat_all_t$full_m
-dat_all_t$full_CGz <- ((dat_all_t$head_CGz*dat_all_t$head_m)+(dat_all_t$tail_CGz*dat_all_t$tail_m)+
-                         (dat_all_t$torso_CGz*dat_all_t$torso_m)+2*(dat_all_t$wing_CGz*dat_all_t$wing_m))/dat_all_t$full_m
-
-## -------------- Iterate through each wing shape to calculate
-dat_all_e$S_proj <- 0
-for(i in 1:nrow(dat_all_e)){
-  # ---------- Extended neck results -------------
-  I_vrp = matrix(0, nrow = 3, ncol = 3)
-  I_vrp[1,1] = dat_all_e$full_VRP_Ixx[i]
-  I_vrp[2,2] = dat_all_e$full_VRP_Iyy[i]
-  I_vrp[3,3] = dat_all_e$full_VRP_Izz[i]
-  I_vrp[3,1] = dat_all_e$full_VRP_Ixz[i]
-  I_vrp[1,3] = dat_all_e$full_VRP_Ixz[i]
-
-  CG = c(dat_all_e$full_CGx[i], 0, dat_all_e$full_CGz[i])
-  I = parallelaxis(I_vrp,-CG,dat_all_e$full_m[i],"A")
-
-  dat_all_e$full_Ixx[i] = I[1,1]
-  dat_all_e$full_Iyy[i] = I[2,2]
-  dat_all_e$full_Izz[i] = I[3,3]
-  dat_all_e$full_Ixz[i] = I[3,1]
-  # save the principal axes
-  pri_axes = eigen(I)
-  dat_all_e$intaxis_x = pri_axes$vectors[2,1]
-  dat_all_e$intaxis_y = pri_axes$vectors[2,2]
-  dat_all_e$intaxis_z = pri_axes$vectors[2,3]
-  dat_all_e$majoraxis_x = pri_axes$vectors[1,1]
-  dat_all_e$majoraxis_y = pri_axes$vectors[1,2]
-  dat_all_e$majoraxis_z = pri_axes$vectors[1,3]
-  dat_all_e$minoraxis_x = pri_axes$vectors[3,1]
-  dat_all_e$minoraxis_y = pri_axes$vectors[3,2]
-  dat_all_e$minoraxis_z = pri_axes$vectors[3,3]
-  # ---------- Tucked neck results -------------
-  I_vrp = matrix(0, nrow = 3, ncol = 3)
-  I_vrp[1,1] = dat_all_t$full_VRP_Ixx[i]
-  I_vrp[2,2] = dat_all_t$full_VRP_Iyy[i]
-  I_vrp[3,3] = dat_all_t$full_VRP_Izz[i]
-  I_vrp[3,1] = dat_all_t$full_VRP_Ixz[i]
-  I_vrp[1,3] = dat_all_t$full_VRP_Ixz[i]
-
-  CG = c(dat_all_t$full_CGx[i], 0, dat_all_t$full_CGz[i])
-  I = parallelaxis(I_vrp,-CG,dat_all_t$full_m[i],"A")
-
-  dat_all_t$full_Ixx[i] = I[1,1]
-  dat_all_t$full_Iyy[i] = I[2,2]
-  dat_all_t$full_Izz[i] = I[3,3]
-  dat_all_t$full_Ixz[i] = I[3,1]
-  # save the principal axes
-  pri_axes = eigen(I)
-  dat_all_t$intaxis_x = pri_axes$vectors[2,1]
-  dat_all_t$intaxis_y = pri_axes$vectors[2,2]
-  dat_all_t$intaxis_z = pri_axes$vectors[2,3]
-  dat_all_t$majoraxis_x = pri_axes$vectors[1,1]
-  dat_all_t$majoraxis_y = pri_axes$vectors[1,2]
-  dat_all_t$majoraxis_z = pri_axes$vectors[1,3]
-  dat_all_t$minoraxis_x = pri_axes$vectors[3,1]
-  dat_all_t$minoraxis_y = pri_axes$vectors[3,2]
-  dat_all_t$minoraxis_z = pri_axes$vectors[3,3]
-  # Calculate the projected area for each wing - this is the correct order because X is negative and Y is positive
-  x_vertices = c(dat_all_e$pt6_X[i],dat_all_e$pt7_X[i],dat_all_e$pt8_X[i],dat_all_e$pt9_X[i],dat_all_e$pt10_X[i],dat_all_e$pt11_X[i],dat_all_e$pt12_X[i])
-  y_vertices = c(dat_all_e$pt6_Y[i],dat_all_e$pt7_Y[i],dat_all_e$pt8_Y[i],dat_all_e$pt9_Y[i],dat_all_e$pt10_Y[i],dat_all_e$pt11_Y[i],dat_all_e$pt12_Y[i])
-  dat_all_e$S_proj[i] <- polyarea(x_vertices, y_vertices)
-  dat_all_t$S_proj[i] <- dat_all_e$S_proj[i] # wing shapes have not changed between the neck positions
-}
-
-# Create the final combined data set
-dat_final <- bind_rows(subset(dat_all_t, !(species %in% c("col_liv","lop_imp","lop_nyc","chr_amh","ana_pla","meg_alc","bra_can","aec_occ"))), # tucked neck species
-                       subset(dat_all_e, species %in% c("col_liv","lop_imp","lop_nyc","chr_amh","ana_pla","meg_alc","bra_can","aec_occ"))) # extended neck species
-dat_final$full_length = (dat_final$torsotail_length+dat_final$head_length+dat_final$neck_length)
-
-dat_final <- dat_final[-c(which(dat_final$species == "cor_cor" & dat_final$BirdID == "20_2526")),]
-dat_bird  <- dat_bird[-c(which(dat_bird$species == "cor_cor" & dat_bird$BirdID == "20_2526")),]
-
-dat_final$shoulderx_specific  <- (dat_final$pt1_X-dat_final$head_length)/dat_final$full_length
-dat_final$shouldery_specific  <- (dat_final$pt1_Y)/dat_final$full_length
-dat_final$shoulderz_specific  <- (dat_final$pt1_Z)/dat_final$full_length
-
-dat_final$full_Ixx_specific = dat_final$full_Ixx/(dat_final$full_m*dat_final$torso_length^2)
-dat_final$full_Iyy_specific = dat_final$full_Iyy/(dat_final$full_m*dat_final$torso_length^2)
-dat_final$full_Izz_specific = dat_final$full_Izz/(dat_final$full_m*dat_final$torso_length^2)
-dat_final$full_Ixz_specific = dat_final$full_Ixz/(dat_final$full_m*dat_final$torso_length^2)
-
-dat_final$full_CGx_specific <- (dat_final$full_CGx-dat_final$head_length)/dat_final$full_length
-dat_final$full_CGz_specific <- (dat_final$full_CGz)/dat_final$body_height_max
-
-dat_final$wing_span_cm[which(dat_final$species == "col_aur" & dat_final$BirdID == "21_0203")] = 0.489
 dat_final$wing_CGy_specific = dat_final$wing_CGy/(0.5*dat_final$wing_span_cm)
 dat_final$wing_CGx_specific = dat_final$wing_CGx/(0.5*dat_final$wing_span_cm)
 dat_final$wing_CGz_specific = dat_final$wing_CGz/(0.5*dat_final$wing_span_cm)
 
 dat_final$elbow_scaled = dat_final$elbow*0.001
 dat_final$manus_scaled = dat_final$manus*0.001
+
 ### ------------- Compute summed quantities -----------------
 
-# Maximum projected wing area
-test       <- aggregate(list(S_proj_max = dat_final$S_proj),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
+# Maximum projected wing area and maximum wing span
+test       <- aggregate(list(S_proj_max = dat_final$wing_S_proj),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
 dat_bird   <- merge(dat_bird,test, by = c("species","BirdID"))
 dat_final  <- merge(dat_final,test, by = c("species","BirdID"))
 
-# Shoulder position specific
-test     <- aggregate(list(shoulderx_specific = dat_final$shoulderx_specific),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
-dat_bird <- merge(dat_bird,test, by = c("species","BirdID"))
-test     <- aggregate(list(shoulderz_specific = dat_final$shoulderz_specific),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
-dat_bird <- merge(dat_bird,test, by = c("species","BirdID"))
-
-test     <- aggregate(list(full_m = dat_final$full_m),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
+# Shoulder position specific and mass
+test     <- aggregate(list(shoulderx_specific = dat_final$shoulderx_specific,
+                           shoulderz_specific = dat_final$shoulderz_specific,
+                           full_m = dat_final$full_m),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
 dat_bird <- merge(dat_bird,test, by = c("species","BirdID"))
 
 ### ---------------------- Compute inertial metrics -------------------------
@@ -204,8 +100,6 @@ dat_final$del_M_specific <- dat_final$prop_q_dot*dat_final$full_Iyy/(dat_final$f
 
 filename = paste(format(Sys.Date(), "%Y_%m_%d"),"_alldata.csv",sep="")
 write.csv(dat_final,filename)
-dat_final$elbow_scaled = dat_final$elbow*0.001
-dat_final$manus_scaled = dat_final$manus*0.001
 
 ## ---- Compute the regression coefficients for each species for each variable -------
 no_specimens <- nrow(dat_bird)
@@ -281,7 +175,6 @@ for (i in 1:no_specimens){
 
 tmp           = reshape2::melt(dat_model_out, id = c("species","BirdID","model_variable"))
 dat_model_out = reshape2::dcast(tmp, species + BirdID ~ model_variable + variable, value.var="value")
-dat_model_out <- subset(dat_model_out, species != "oce_leu")
 
 # Include basic geometry effects
 tmp       = aggregate(list(mass = dat_bird$full_m),  by=list(species = dat_bird$species, binomial = dat_bird$binomial, BirdID = dat_bird$BirdID), mean)
@@ -333,8 +226,6 @@ test     <- aggregate(list(min_CGx = dat_final$full_CGx,
                            min_CGz_specific = dat_final$full_CGz_specific),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
 dat_comp <- merge(dat_comp,test, by = c("species","BirdID"))
 
-dat_comp <- subset(dat_comp, species != "oce_leu")
-
 ### --------------------- Phylogeny info ---------------------
 ## Read in tree
 full_tree <-
@@ -342,7 +233,7 @@ full_tree <-
 
 ## Species means
 morpho_data_means <-
-  mutate(dat_comp, phylo = binomial)# %>%
+  mutate(dat_comp, phylo = binomial) #%>%
   ## turn binomial names into rownames
   #column_to_rownames(var = "binomial")
 
