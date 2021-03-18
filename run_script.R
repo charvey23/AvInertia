@@ -317,10 +317,15 @@ for (m in 1:length(no_species)){
       }
     }
 
-    # Make sure that no wing data points are tucked past the body edge
-    row_keep      = which(dat_wing_curr$pt2_Y > 0 & dat_wing_curr$pt3_Y > 0 & dat_wing_curr$pt4_Y > 0 &
-                          dat_wing_curr$pt6_Y > 0 & dat_wing_curr$pt7_Y > 0 & dat_wing_curr$pt8_Y > 0 &
-                          dat_wing_curr$pt9_Y > 0 & dat_wing_curr$pt10_Y > 0 & dat_wing_curr$pt11_Y > 0 & dat_wing_curr$pt12_Y > 0)
+    # Subset to only physically reasonable ranges
+                          # Elbow can't go past the shoulder
+    row_keep      = which(dat_wing_curr$pt2_Y > dat_wing_curr$pt1_Y &
+                          #Pt 3, 4, 6, 7 can't go past the edge of body Pt 12.
+                          dat_wing_curr$pt3_Y > dat_wing_curr$pt12_Y & dat_wing_curr$pt4_Y > dat_wing_curr$pt12_Y &
+                          dat_wing_curr$pt6_Y > dat_wing_curr$pt12_Y & dat_wing_curr$pt7_Y > dat_wing_curr$pt12_Y &
+                          # Pt 8 and 9 can't cross body centerline and body edge can't be more interior than shoulder
+                          dat_wing_curr$pt8_Y > 0 & dat_wing_curr$pt9_Y > 0 & dat_wing_curr$pt12_Y > dat_wing_curr$pt1_Y)
+
     dat_wing_curr = dat_wing_curr[row_keep,]
 
     # Need a blank data frame to save each iteration
@@ -334,18 +339,6 @@ for (m in 1:length(no_species)){
     # Compute the CG and I for the body without the wings
     curr_torsotail_data = massprop_restbody(dat_id_curr, dat_bird_curr)
 
-    # ---- save all the individual info that does not change with wing position -------
-    if (iter == 1){
-      dat_wing_all = dat_wing_curr        # wing specimen info
-      dat_feat_all = dat_feat_curr        # feather specimen info
-      dat_bird_all = dat_bird_curr        # entire body specimen info
-      dat_body_all = curr_torsotail_data  # CG and MOI from the torso, tail, head and neck for this individual
-    }else{
-      dat_wing_all = rbind(dat_wing_all,dat_wing_curr)
-      dat_feat_all = rbind(dat_feat_all,dat_feat_curr)
-      dat_bird_all = rbind(dat_bird_all,dat_bird_curr)
-      dat_body_all = rbind(dat_body_all,curr_torsotail_data)
-    }
 
     ## --------------------------------------------------------------------------------
     ## ------------------ Iterate through all wing configurations ---------------------
@@ -366,7 +359,28 @@ for (m in 1:length(no_species)){
 
       Pt8  = c(dat_pt_curr$pt8_X, dat_pt_curr$pt8_Y, dat_pt_curr$pt8_Z)    # Tip of most distal primary
       Pt9  = c(dat_pt_curr$pt9_X, dat_pt_curr$pt9_Y, dat_pt_curr$pt9_Z)    # Tip of last primary to model as if on the end of the carpometacarpus
+
+      # if the first secondary goes into where body would be rotate the last secondary back outwards - use the shoulder to approximate the width of the body at this point
+      if(dat_pt_curr$pt10_Y < dat_pt_curr$pt1_Y){
+        dat_pt_curr$pt10_X = dat_pt_curr$pt2_X - sqrt((dat_pt_curr$pt10_Y-dat_pt_curr$pt2_Y)^2+
+                                                        (dat_pt_curr$pt10_X-dat_pt_curr$pt2_X)^2-
+                                                        ((dat_pt_curr$pt1_Y + 0.005)-dat_pt_curr$pt2_Y)^2)
+        dat_pt_curr$pt10_Y = dat_pt_curr$pt1_Y + 0.005 # leave 5mm gap to properly distribute the feathers in this range
+        dat_wing_curr$pt10_Y[ind_wing] = dat_pt_curr$pt10_Y
+        dat_wing_curr$pt10_X[ind_wing] = dat_pt_curr$pt10_X
+      }
+
       Pt10 = c(dat_pt_curr$pt10_X, dat_pt_curr$pt10_Y, dat_pt_curr$pt10_Z) # S1
+
+      # if the last secondary goes into where body would be rotate the last secondary back outwards - use the shoulder to approximate the width of the body at this point
+      if(dat_pt_curr$pt11_Y < dat_pt_curr$pt1_Y){
+        dat_pt_curr$pt11_X = dat_pt_curr$pt2_X - sqrt((dat_pt_curr$pt11_Y-dat_pt_curr$pt2_Y)^2+
+                                                        (dat_pt_curr$pt11_X-dat_pt_curr$pt2_X)^2-
+                                                        (dat_pt_curr$pt1_Y-dat_pt_curr$pt2_Y)^2)
+        dat_pt_curr$pt11_Y = dat_pt_curr$pt1_Y
+        dat_wing_curr$pt11_Y[ind_wing] = dat_pt_curr$pt11_Y
+        dat_wing_curr$pt11_X[ind_wing] = dat_pt_curr$pt11_X
+      }
       Pt11 = c(dat_pt_curr$pt11_X, dat_pt_curr$pt11_Y, dat_pt_curr$pt11_Z) # Wing root trailing edge
       Pt12 = c(dat_pt_curr$pt12_X, dat_pt_curr$pt12_Y, dat_pt_curr$pt12_Z) # Wing root leading edge
       clean_pts = rbind(Pt1,Pt2,Pt3,Pt4,Pt8,Pt9,Pt10,Pt11,Pt12)
@@ -386,6 +400,19 @@ for (m in 1:length(no_species)){
 
     filename_output = paste(path_dataout_folder,format(Sys.Date(), "%Y_%m_%d"),"_",species_curr,"_",birdid_curr,"_results.csv",sep="")
     write.csv(all_data,filename_output)
+
+    # ---- save all the individual info that does not change with wing position -------
+    if (iter == 1){
+      dat_wing_all = dat_wing_curr        # wing specimen info
+      dat_feat_all = dat_feat_curr        # feather specimen info
+      dat_bird_all = dat_bird_curr        # entire body specimen info
+      dat_body_all = curr_torsotail_data  # CG and MOI from the torso, tail, head and neck for this individual
+    }else{
+      dat_wing_all = rbind(dat_wing_all,dat_wing_curr)
+      dat_feat_all = rbind(dat_feat_all,dat_feat_curr)
+      dat_bird_all = rbind(dat_bird_all,dat_bird_curr)
+      dat_body_all = rbind(dat_body_all,curr_torsotail_data)
+    }
 
     remove(all_data)
    } # end of the specimen loop
