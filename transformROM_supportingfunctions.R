@@ -71,48 +71,25 @@ scale_the_wing <- function(specimens, ## MUST BE $rotated component of procSym o
 }
 
 ## This function re-sizes the optitrack data for a specimen (specimen_to_adjust)
-## based on the size of a second specimen (target_specimen)
-resize_to <- function(specimen_to_adjust,target_specimen,char_colnames,tol = 5e-3){
+## based on the size of a second specimen (target_length)
+resize_to <- function(specimen_to_adjust,char_colnames,adjust_length,target_length,tol = 5e-3){
 
-  ## make names shorter for ease of coding later
   x1 <- specimen_to_adjust %>%
     select(-char_colnames) %>%
     drop_na() %>%
     arrayspecs(p = 11, k = 3) %>%
     procSym(scale = FALSE, CSinit=FALSE)
-  x2 <- target_specimen %>%
-    select(-char_colnames) %>%
-    drop_na() %>%
-    arrayspecs(p = 11, k = 3) %>%
-    procSym(scale = FALSE, CSinit=FALSE)
-
   ## get into 2d array
   x1_two_d <- two.d.array(x1$rotated)
-  x2_two_d <- two.d.array(x2$rotated)
 
-  ## get the length of the humerus in each specimen
-  x1_humerus_lengths <-
-    calc_dist(x1_two_d[,7:12])
-  x2_humerus_lengths <-
-    calc_dist(x2_two_d[,7:12])
-
-  ## set the scale_factor based on the means of the humerus lengths
-  scale_factor <- mean(x2_humerus_lengths)/mean(x1_humerus_lengths)
+  ## set the scale_factor based on the means of the bone lengths
+  # length of target bone/length of bone in wing that will be resized
+  scale_factor <- target_length/adjust_length
 
   ## rescale the wing according to the scale factor
   rescaled <- scale_the_wing(x1$rotated, scale_factor = scale_factor)
 
   rescaled_two_d <- two.d.array(rescaled)
-
-  ## check humerus lengths
-  rescaled_hums <-
-    calc_dist(rescaled_two_d[,7:12])
-
-  hum_diffs <- mean(rescaled_hums) - mean(x2_humerus_lengths)
-
-  if (abs(hum_diffs) > tol) {
-    stop("shit happened. give up.")
-  }
 
   ## isolate the frames and times
   spec_framtimes <-
@@ -121,9 +98,7 @@ resize_to <- function(specimen_to_adjust,target_specimen,char_colnames,tol = 5e-
     select(char_colnames)
 
   ## paste it back together
-  export_dat <-
-    data.frame(spec_framtimes,
-               rescaled_two_d)
+  export_dat           <- data.frame(spec_framtimes, rescaled_two_d)
   colnames(export_dat) <- colnames(specimen_to_adjust)
 
   ## export

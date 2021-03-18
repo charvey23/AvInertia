@@ -32,10 +32,22 @@ for (i in 1:nrow(dat_bird)){
   }
 }
 
+dat_wingspec$species = NA
+dat_wingspec$BirdID  = NA
+for (i in 1:nrow(dat_wingspec)){
+  if (strsplit(dat_wingspec$bird_id, "_")[[i]][1] == "COLLI"){
+    dat_wingspec$species[i] = "col_liv"
+    dat_wingspec$BirdID[i]  = paste(strsplit(dat_wingspec$bird_id, "_")[[i]][2],strsplit(dat_wingspec$bird_id, "_")[[i]][3], sep = "_")
+  }else{
+    dat_wingspec$species[i] = paste(tolower(strsplit(dat_wingspec$bird_id, "_")[[i]][1]),strsplit(dat_wingspec$bird_id, "_")[[i]][2], sep = "_")
+    dat_wingspec$BirdID[i]  = paste(strsplit(dat_wingspec$bird_id, "_")[[i]][3],strsplit(dat_wingspec$bird_id, "_")[[i]][4], sep = "_")
+  }
+}
+
 #-------- Find all file names necessary -------
 working_path  = "/Users/christinaharvey/Dropbox (University of Michigan)/Bird Mass Distribution/03_processed_optitrack/"
 filename.3d   = list.files(path = working_path, pattern = paste('*',".csv",sep=""))
-max_sample_no = 2 # maximum amount of samples to have within one bin
+max_sample_no = 1 # maximum amount of samples to have within one bin
 bin_size      = 2 # #deg x #deg bins that will have the max amount of samples
 
 # create blank data frame
@@ -67,19 +79,15 @@ for (i in 1:no_species){
   files_to_read = which(dat_ID$species == curr_species)
   # identify how many body measurements we have for the current species
   dat_body_curr = subset(dat_bird, use_body == "Y" & species == curr_species)
+  dat_allbody_curr = subset(dat_bird, species == curr_species)
 
-  # deal with the gull data separately due to different info
-  if(curr_species == "lar_gla"){
-    #transformgullROM(curr_species,dat_raw,dat_ID,dat_body_curr,col_dat_raw)
-    next}
-
-  # Read in all optitrack data from the given species
+    # Read in all optitrack data from the given species
   dat_raw         = read.csv(paste(working_path,filename.3d[files_to_read[1]],sep = ""), stringsAsFactors = FALSE,strip.white = TRUE, na.strings = c("NA"))
   dat_raw$BirdID  = dat_ID$BirdID[files_to_read[1]]
   dat_raw$TestID  = dat_ID$TestID[files_to_read[1]]
   dat_raw$wing    = dat_ID$wing[files_to_read[1]]
   # First few are in mm adjust to cm
-  if (files_to_read[1] < 21 & files_to_read[1] > 8){dat_raw[,3:35] <- dat_raw[,3:35]*0.001}
+  if (files_to_read[1] < 13){dat_raw[,3:35] <- dat_raw[,3:35]*0.001}
 
   for (j in 2:length(files_to_read)){
     tmp = read.csv(paste(working_path,filename.3d[files_to_read[j]],sep = ""), stringsAsFactors = FALSE,strip.white = TRUE, na.strings = c("NA"))
@@ -87,7 +95,7 @@ for (i in 1:no_species){
     tmp$TestID  = dat_ID$TestID[files_to_read[j]]
     tmp$wing    = dat_ID$wing[files_to_read[j]]
     # First few are in mm adjust to cm
-    if (files_to_read[j] < 21 & files_to_read[j] > 8){tmp[,3:35] <- tmp[,3:35]*0.001}
+    if (files_to_read[j] < 13){tmp[,3:35] <- tmp[,3:35]*0.001}
     # The storm petrel had one wing track all points but not the other
     if (ncol(tmp) > ncol(dat_raw)){
       dat_raw$humerus_leading_position_x = dat_raw$humerus_position_x
@@ -178,17 +186,37 @@ for (i in 1:no_species){
     col_all  = c(col_char, colnames(dat_raw[,3:35]))
 
     #### ------- Resize the applicable wings --------
-    for (j in 1:nrow(dat_body_curr)){
-      if (dat_body_curr$BirdID[j] != curr_BirdID){
-        tmp = resize_to(specimen_to_adjust = subset(dat_raw, species == curr_species & BirdID == dat_body_curr$BirdID[j]),
-                        target_specimen = subset(dat_raw, species == curr_species & BirdID == curr_BirdID),
-                        char_colnames = col_char)
+    for (j in 1:nrow(dat_allbody_curr)){
+      # catch each case where resizing is necessary
+      if (dat_allbody_curr$BirdID[j] != curr_BirdID | curr_species == "lar_gla"){
+
+        if (curr_species == "lar_gla" & dat_allbody_curr$BirdID[j]== "20_0341"){
+          adjust = subset(dat_raw, species == curr_species & BirdID == "21_0310")
+
+          target_bone_len    = subset(dat_wingspec, species == curr_species & BirdID == "20_0341")$ulna_length_mm*0.001
+          adjust_bone_length = mean(calc_dist(adjust[,c(9:11,30:32)]))
+        } else{
+          target = subset(dat_raw, species == curr_species & BirdID == curr_BirdID)
+          adjust = subset(dat_raw, species == curr_species & BirdID == dat_allbody_curr$BirdID[j])
+          # if there is no data for the wing ROM move onto the next wing
+          if(nrow(adjust) == 0){next}
+          target_bone_len    = subset(dat_wingspec, species == curr_species & BirdID == curr_BirdID)$humerus_length_mm*0.001
+          adjust_bone_length = subset(dat_wingspec, species == curr_species & BirdID == dat_allbody_curr$BirdID[j])$humerus_length_mm*0.001
+        }
+
+        tmp = resize_to(specimen_to_adjust = adjust, char_colnames = col_char,
+                        adjust_length = adjust_bone_length, target_length = target_bone_len)
+
         colnames(tmp) = col_all
+        # Check:
+        # scale_factor = target_bone_len/adjust_bone_length # length of target bone/length of bone in wing that will be resized
+        # mean(calc_dist(tmp[,c(18:20,39:41)]))/mean(calc_dist(adjust[,c(9:11,30:32)])) == scale_factor
       }else {
         tmp = subset(dat_raw, species == curr_species & BirdID == curr_BirdID)
-        tmp = tmp[,col_all]}
+        tmp = tmp[,col_all]
+      }
 
-      if(j == 1){
+      if(!exists("dat_resized")){
         dat_resized = tmp} else{
         dat_resized = rbind(dat_resized,tmp)}
     }
@@ -209,6 +237,7 @@ for (i in 1:no_species){
     # ------------------------------ Save data
     filename_new <- paste(output_path,format(Sys.Date(), "%Y_%m_%d"),"_",curr_species,"_",curr_BirdID,"_transformed.csv",sep = "")
     write.csv(dat_complete,filename_new)
+    remove(dat_resized) # must be remove to avoid saving from different species
   } # end of the specimen loop
 } # end of the species loop
 filename_new <- paste(run_data_path,format(Sys.Date(), "%Y_%m_%d"),"_IDfile.csv",sep = "")
