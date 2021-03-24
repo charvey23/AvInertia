@@ -318,13 +318,13 @@ for (m in 1:length(no_species)){
     }
 
     # Subset to only physically reasonable ranges
-                          # Elbow can't go past the shoulder
-    row_keep      = which(dat_wing_curr$pt2_Y > dat_wing_curr$pt1_Y &
+                          # Elbow can't go past the center line
+    row_keep      = which(dat_wing_curr$pt2_Y > 0 &
                           #Pt 3, 4, 6, 7 can't go past the edge of body Pt 12.
                           dat_wing_curr$pt3_Y > dat_wing_curr$pt12_Y & dat_wing_curr$pt4_Y > dat_wing_curr$pt12_Y &
                           dat_wing_curr$pt6_Y > dat_wing_curr$pt12_Y & dat_wing_curr$pt7_Y > dat_wing_curr$pt12_Y &
-                          # Pt 8 and 9 can't cross body centerline and body edge can't be more interior than shoulder
-                          dat_wing_curr$pt8_Y > 0 & dat_wing_curr$pt9_Y > 0 & dat_wing_curr$pt12_Y > dat_wing_curr$pt1_Y)
+                          # Pt 8 and 9 can't cross body center line
+                          dat_wing_curr$pt8_Y > 0 & dat_wing_curr$pt9_Y > 0)
 
     dat_wing_curr = dat_wing_curr[row_keep,]
 
@@ -338,7 +338,6 @@ for (m in 1:length(no_species)){
 
     # Compute the CG and I for the body without the wings
     curr_torsotail_data = massprop_restbody(dat_id_curr, dat_bird_curr)
-
 
     ## --------------------------------------------------------------------------------
     ## ------------------ Iterate through all wing configurations ---------------------
@@ -369,9 +368,6 @@ for (m in 1:length(no_species)){
         dat_wing_curr$pt10_Y[ind_wing] = dat_pt_curr$pt10_Y
         dat_wing_curr$pt10_X[ind_wing] = dat_pt_curr$pt10_X
       }
-
-      Pt10 = c(dat_pt_curr$pt10_X, dat_pt_curr$pt10_Y, dat_pt_curr$pt10_Z) # S1
-
       # if the last secondary goes into where body would be rotate the last secondary back outwards - use the shoulder to approximate the width of the body at this point
       if(dat_pt_curr$pt11_Y < dat_pt_curr$pt1_Y){
         dat_pt_curr$pt11_X = dat_pt_curr$pt2_X - sqrt((dat_pt_curr$pt11_Y-dat_pt_curr$pt2_Y)^2+
@@ -381,6 +377,8 @@ for (m in 1:length(no_species)){
         dat_wing_curr$pt11_Y[ind_wing] = dat_pt_curr$pt11_Y
         dat_wing_curr$pt11_X[ind_wing] = dat_pt_curr$pt11_X
       }
+
+      Pt10 = c(dat_pt_curr$pt10_X, dat_pt_curr$pt10_Y, dat_pt_curr$pt10_Z) # S1
       Pt11 = c(dat_pt_curr$pt11_X, dat_pt_curr$pt11_Y, dat_pt_curr$pt11_Z) # Wing root trailing edge
       Pt12 = c(dat_pt_curr$pt12_X, dat_pt_curr$pt12_Y, dat_pt_curr$pt12_Z) # Wing root leading edge
       clean_pts = rbind(Pt1,Pt2,Pt3,Pt4,Pt8,Pt9,Pt10,Pt11,Pt12)

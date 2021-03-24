@@ -34,8 +34,8 @@ plot_CGloc <- function(clean_pts,mass_properties,mass_properties_skin,mass_prope
     # Theme
     th +
     # Axis control
-    ggplot2::scale_y_continuous(name = "y (m)",limits = c(-0.4,0.01)) +
-    ggplot2::scale_x_continuous(name = "x (m)", limits = c(0,0.6), position = "top") +
+    ggplot2::scale_y_continuous(name = "x (m)",limits = c(-0.4,0.01)) +
+    ggplot2::scale_x_continuous(name = "y (m)", limits = c(0,0.6), position = "top") +
     ggthemes::geom_rangeframe() +
     ggplot2::coord_fixed() +
     ggplot2::annotate(geom = "segment", x = log(0), xend = log(0), y = -0.4, yend = 0) +
