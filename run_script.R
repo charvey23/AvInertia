@@ -322,9 +322,7 @@ for (m in 1:length(no_species)){
     row_keep      = which(dat_wing_curr$pt2_Y > 0 &
                           #Pt 3, 4, 6, 7 can't go past the edge of body Pt 12.
                           dat_wing_curr$pt3_Y > dat_wing_curr$pt12_Y & dat_wing_curr$pt4_Y > dat_wing_curr$pt12_Y &
-                          dat_wing_curr$pt6_Y > dat_wing_curr$pt12_Y & dat_wing_curr$pt7_Y > dat_wing_curr$pt12_Y &
-                          # Pt 8 and 9 can't cross body center line
-                          dat_wing_curr$pt8_Y > 0 & dat_wing_curr$pt9_Y > 0)
+                          dat_wing_curr$pt6_Y > dat_wing_curr$pt12_Y & dat_wing_curr$pt7_Y > dat_wing_curr$pt12_Y)
 
     dat_wing_curr = dat_wing_curr[row_keep,]
 
@@ -356,6 +354,8 @@ for (m in 1:length(no_species)){
       Pt3  = c(dat_pt_curr$pt3_X, dat_pt_curr$pt3_Y, dat_pt_curr$pt3_Z) # Wrist
       Pt4  = c(dat_pt_curr$pt4_X, dat_pt_curr$pt4_Y, dat_pt_curr$pt4_Z) # End of carpometacarpus
 
+      Pt6  = c(dat_pt_curr$pt6_X, dat_pt_curr$pt6_Y, dat_pt_curr$pt6_Z) # Leading edge in front of wrist
+
       Pt8  = c(dat_pt_curr$pt8_X, dat_pt_curr$pt8_Y, dat_pt_curr$pt8_Z)    # Tip of most distal primary
       Pt9  = c(dat_pt_curr$pt9_X, dat_pt_curr$pt9_Y, dat_pt_curr$pt9_Z)    # Tip of last primary to model as if on the end of the carpometacarpus
 
@@ -381,7 +381,7 @@ for (m in 1:length(no_species)){
       Pt10 = c(dat_pt_curr$pt10_X, dat_pt_curr$pt10_Y, dat_pt_curr$pt10_Z) # S1
       Pt11 = c(dat_pt_curr$pt11_X, dat_pt_curr$pt11_Y, dat_pt_curr$pt11_Z) # Wing root trailing edge
       Pt12 = c(dat_pt_curr$pt12_X, dat_pt_curr$pt12_Y, dat_pt_curr$pt12_Z) # Wing root leading edge
-      clean_pts = rbind(Pt1,Pt2,Pt3,Pt4,Pt8,Pt9,Pt10,Pt11,Pt12)
+      clean_pts = rbind(Pt1,Pt2,Pt3,Pt4,Pt6,Pt8,Pt9,Pt10,Pt11,Pt12)
 
       # Compute the CG and I for the wing configuration
       curr_wing_data      = massprop_birdwing(dat_id_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts, feather_inertia)

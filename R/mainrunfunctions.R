@@ -313,6 +313,7 @@ massprop_restbody <- function(dat_wingID_curr, dat_bird_curr){
 #' \item{pt2x, pt1y, pt2z}{Point on the elbow joint}
 #' \item{pt3x, pt3y, pt3z}{Point on the wrist joint}
 #' \item{pt4x, pt4y, pt4z}{Point on the end of carpometacarpus}
+#' \item{pt6x, pt6y, pt6z}{Point on the leading edge of the wing in front of the wrist joint}
 #' \item{pt8x, pt8y, pt8z}{Point on tip of most distal primary}
 #' \item{pt9x, pt9y, pt9z}{Point that defines the end of carpometacarpus}
 #' \item{pt10x, pt10y, pt10z}{Point on tip of last primary to model as if on the end of the carpometacarpus}
@@ -353,11 +354,13 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
   Pt3 = clean_pts[3,] # wrist
   Pt4 = clean_pts[4,] # end of carpometacarpus
 
-  Pt8  = clean_pts[5,] # tip of most distal primary
-  Pt9  = clean_pts[6,] # tip of last primary to model as if on the end of the carpometacarpus
-  Pt10 = clean_pts[7,] # tip of S1
-  Pt11 = clean_pts[8,] # tip of last secondary feather at wing root
-  Pt12 = clean_pts[9,] # leading edge where wing was removed from the body on the wing root
+  Pt6 = clean_pts[5,] # leading edge in front of wrist
+
+  Pt8  = clean_pts[6,] # tip of most distal primary
+  Pt9  = clean_pts[7,] # tip of last primary to model as if on the end of the carpometacarpus
+  Pt10 = clean_pts[8,] # tip of S1
+  Pt11 = clean_pts[9,] # tip of last secondary feather at wing root
+  Pt12 = clean_pts[10,] # leading edge where wing was removed from the body on the wing root
   # --------------------------------------------------
   # --------------- Bone Data ------------------------
   # --------------------------------------------------
@@ -480,7 +483,7 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
 
   rho_skin   = dat_mat$density[which(dat_mat$material == "Skin")]
   mass_skin  = dat_bird_curr$wing_mass - prop_feathers$m - prop_bone$m - prop_muscles$m
-  prop_skin  = massprop_skin(mass_skin,rho_skin,rbind(Pt12,Pt3,Pt2))
+  prop_skin  = massprop_skin(mass_skin,rho_skin,rbind(Pt12,Pt6,Pt2))
 
   # ----------------------------------------------------
   # ----------------- Save Data ------------------------
