@@ -461,7 +461,7 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
 
   # ----------------------------------- Alula -----------------------------------
   m_alula = subset(dat_feat_curr,feather == "alula")$m_f
-  alula   = massprop_pm(m_alula, Pt3)
+  alula   = massprop_pm(m_alula, Pt6)
 
   # ----------------------------------- Tertiaries -----------------------------------
   edge_tert      = c(Pt11[1],Pt12[2],Pt12[3]) # position where the teritaries likely encounter the body
