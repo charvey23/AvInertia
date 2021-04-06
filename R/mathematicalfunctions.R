@@ -196,10 +196,10 @@ orient_feather <- function(no_pri,no_sec,Pt1,Pt2,Pt3,Pt4,Pt9,Pt10,Pt11){
       # Note: We don't want last primary to be exact same spot as S1 or P7 to be at same spot as P8
       #       this requires that we skip the first and last position
 
-      # -- Start -- Primaries less than P7 distribute linearly along the carpometacarpus
+      # -- Start -- Primaries less than P7 distribute linearly along the carpometacarpus - needs to be 1/8 so that P7 is not right on Pt4
       feather$loc_start[count,] = Pt3 + (1/8)*(i)*(Pt4-Pt3)
-      # -- End -- Distributes linearly between P7 and S1
-      feather$loc_end[count,]   = Pt10 + (1/8)*(i)*(Pt9-Pt10)
+      # -- End -- Distributes linearly between P7 and S1 - needs to be 1/7 so that at i = 7 the end = pt9
+      feather$loc_end[count,]   = Pt10 + (1/7)*(i)*(Pt9-Pt10)
 
     } else {
       # -- Start -- Any primary past P7 starts on the end of the carpometacarpus

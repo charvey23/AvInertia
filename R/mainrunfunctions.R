@@ -537,9 +537,8 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
   mass_properties  = store_data(dat_wingID_curr,prop_wing,mass_properties,"wing")
 
   # Plot to verify correct outputs
-  # CGplot = plot_CGloc(clean_pts,mass_properties,mass_properties_skin,mass_properties_bone,mass_properties_feathers,mass_properties_muscle)
-  # plot(CGplot)
-
+  #CGplot = plot_CGloc(clean_pts,mass_properties,mass_properties_skin,mass_properties_bone,mass_properties_feathers,mass_properties_muscle)
+  #plot(CGplot)
   return(mass_properties)
 }
 
