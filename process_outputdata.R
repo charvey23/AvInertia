@@ -67,7 +67,8 @@ dat_final$shoulderz_specific = (dat_final$pt1_Z+dat_final$z_dist_to_veh_ref_poin
 dat_final$full_CGx_specific  = dat_final$full_CGx/dat_final$full_length
 dat_final$full_CGz_specific  = dat_final$full_CGz/dat_final$body_height_max
 
-test <- aggregate(list(dist_shoulderx = dat_final$full_CGx_specific-dat_final$shoulderx_specific),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), min)
+test <- aggregate(list(dist_shoulderx = (dat_final$full_CGz_specific-dat_final$shoulderz_specific)),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
+test <- aggregate(list(humerus_per = dat_final$humerus_length_mm/dat_final$span),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), min)
 
 dat_final$elbow_scaled = dat_final$elbow*0.001
 dat_final$manus_scaled = dat_final$manus*0.001
@@ -248,15 +249,16 @@ test     <- aggregate(list(min_CGx = dat_final$full_CGx,
                            min_Izz = dat_final$full_Izz,
                            min_Izz_specific = dat_final$full_Izz_specific,
                            min_Ixz_specific = dat_final$full_Ixz_specific,
-                           dist_shoulderx = dat_final$full_CGx_specific-dat_final$shoulderx_specific),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), min)
+                           dist_CGhumx = dat_final$full_CGx_specific-dat_final$shoulderx_specific,
+                           dist_shoulderx = dat_final$shoulderx_specific),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), min)
 dat_comp <- merge(dat_comp,test, by = c("species","BirdID"))
 
 # Stats
 general_CGx <- lm(full_CGx_specific ~ elbow_scaled*manus_scaled+species, data = dat_final)
 general_CGy <- lm(wing_CGy_specific ~ elbow_scaled*manus_scaled+species, data = dat_final)
 general_CGz <- lm(full_CGz_specific ~ elbow_scaled*manus_scaled+species, data = dat_final)
-min((dat_final$full_CGx-dat_final$head_length)/dat_final$full_length)
-max((dat_final$full_CGx-dat_final$head_length)/dat_final$full_length)
+min((dat_final$full_CGx)/dat_final$full_length)
+max((dat_final$full_CGx)/dat_final$full_length)
 
 ### --------------------- Phylogeny info ---------------------
 ## Read in tree
@@ -284,7 +286,7 @@ univ_prior <-
 ## Model
 pgls_model_mcmc <-
   MCMCglmm::MCMCglmm(
-    log(abs(CGx_sp_man)) ~ log(full_m),
+    log(max_q) ~ log(full_m),
     random = ~ phylo,
     scale = FALSE, ## whether you use this is up to you -- whatever is fair
     ginverse = list(phylo = inv.phylo$Ainv),
@@ -296,7 +298,7 @@ pgls_model_mcmc <-
     pr = TRUE, pl = TRUE ## this saves some model output stuff
   )
 summary(pgls_model_mcmc)
-(pgls_model_mcmc$VCV[, 1] / (pgls_model_mcmc$VCV[, 1] + pgls_model_mcmc$VCV[, 2])) %>%
+  (pgls_model_mcmc$VCV[, 1] / (pgls_model_mcmc$VCV[, 1] + pgls_model_mcmc$VCV[, 2])) %>%
   mean
 
 filename = paste(format(Sys.Date(), "%Y_%m_%d"),"_alldata.csv",sep="")

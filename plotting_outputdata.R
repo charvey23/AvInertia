@@ -689,12 +689,9 @@ Iyy_iso_model <- lm(log(max_Iyy) ~ 1 + offset((5/3)*log(full_m)), data = dat_com
 Izz_iso_model <- lm(log(max_Izz) ~ 1 + offset((5/3)*log(full_m)), data = dat_comp)
 
 I_isometry <- ggplot() +
-  geom_point(data = dat_comp, aes (x = full_m, y = max_Ixx), col = col_x)+
+  geom_point(data = dat_comp, aes (x = full_m, y = max_Ixx), col = col_x) +
   geom_point(data = dat_comp, aes (x = full_m, y = max_Iyy), col = "#479030")+
   geom_point(data = dat_comp, aes (x = full_m, y = max_Izz), col = col_z)+
-  #geom_smooth(data = dat_comp, aes (x = full_m, y = max_Ixx), method='lm', formula= y~x, col = col_x, fill = col_x) +
-  #geom_smooth(data = dat_comp, aes (x = full_m, y = max_Iyy), method='lm', formula= y~x, col = "#479030", fill = "#479030") +
-  #geom_smooth(data = dat_comp, aes (x = full_m, y = max_Izz), method='lm', formula= y~x, col = col_z, fill = col_z) +
   geom_line(data = dat_comp, aes(x = full_m, y = exp(coef(Ixx_iso_model)[1])*full_m^(5/3)), col = col_x, linetype = 2) +
   geom_line(data = dat_comp, aes(x = full_m, y = exp(coef(Iyy_iso_model)[1])*full_m^(5/3)), col = "#479030", linetype = 2) +
   geom_line(data = dat_comp, aes(x = full_m, y = exp(coef(Izz_iso_model)[1])*full_m^(5/3)), col = col_z, linetype = 2) +
@@ -706,17 +703,25 @@ I_isometry <- ggplot() +
   geom_rangeframe() +
   annotate(geom = "segment", x = 0, xend = 0, y = 1E-6, yend = 1E-1) +
   annotate(geom = "segment", x = 0.01, xend = 10, y = 0, yend = 0)
+
+
+
 # export as 5x5
-CGx_iso_model <- lm(log(-max_CGx) ~ 1 + offset((1/3)*log(full_m)), data = dat_comp)
+CGx_iso_model <- lm(log(-min_CGx) ~ 1 + offset((1/3)*log(full_m)), data = dat_comp)
 CGy_iso_model <- lm(log(max_wing_CGy) ~ 1 + offset((1/3)*log(full_m)), data = dat_comp)
 CGz_iso_model <- lm(log(max_CGz) ~ 1 + offset((1/3)*log(full_m)), data = dat_comp)
 
+
+
 CG_isometry <- ggplot() +
-  geom_point(data = dat_comp, aes (x = full_m, y = -max_CGx), col = col_x)+
+  geom_point(data = dat_comp, aes (x = full_m, y = -min_CGx), col = col_x)+
   geom_point(data = dat_comp, aes (x = full_m, y = max_wing_CGy), col = "#479030")+
   geom_point(data = dat_comp, aes (x = full_m, y = max_CGz), col = col_z)+
-  #geom_smooth(data = dat_comp, aes (x = full_m, y = -max_CGx), method='lm', formula= y~x, col = col_x, fill = col_x) +
-  #geom_smooth(data = dat_comp, aes (x = full_m, y = max_wing_CGy), method='lm', formula= y~x, col = "#479030", fill = "#479030") +
+  # verify the fits match PGLSS model
+  geom_line(data = test, aes(x = full_m, y = exp(fit)), col = col_x) +
+  geom_ribbon(data = test,
+              aes(x = full_m, ymin = exp(lwr), ymax = exp(upr)),
+              col = col_x, fill = col_x, alpha = 0.4) +
   geom_line(data = dat_comp, aes(x = full_m, y = exp(coef(CGx_iso_model)[1])*full_m^(1/3)), col = col_x, linetype = 2) +
   geom_line(data = dat_comp, aes(x = full_m, y = exp(coef(CGy_iso_model)[1])*full_m^(1/3)), col = "#479030", linetype = 2) +
   geom_line(data = dat_comp, aes(x = full_m, y = exp(coef(CGz_iso_model)[1])*full_m^(1/3)), col = col_z, linetype = 2) +
@@ -756,14 +761,25 @@ gull_Ixz <- ggplot()+
   geom_point(data = subset(dat_final,species == "lar_gla"), aes(x = elbow, y = manus, col = full_Ixz)) + th
 
 ## ----------------- Plots for sharing with others -----------------
+# Species rainbow colours
+cc_rain1  <- scales::seq_gradient_pal("#DA9101", "#CA302F", "Lab")(seq(0,1,length.out=6))
+cc_rain2  <- scales::seq_gradient_pal("#FCC201", "#DA9101", "Lab")(seq(0,1,length.out=3))
+cc_rain3  <- scales::seq_gradient_pal("#138715", "#FCC201", "Lab")(seq(0,1,length.out=6))
+cc_rain4  <- scales::seq_gradient_pal("#1FC3CD", "#138715", "Lab")(seq(0,1,length.out=4))
+cc_rain5  <- scales::seq_gradient_pal("#304CC8", "#1FC3CD", "Lab")(seq(0,1,length.out=5))
+cc_rain6  <- scales::seq_gradient_pal("#5F2CC8", "#304CC8", "Lab")(seq(0,1,length.out=3))
+cc_rain   <- c(cc_rain6, cc_rain5[2:5], cc_rain4[2:4], cc_rain3[2:6],cc_rain2[2:3],cc_rain1[2:6])
 
 validation_Ixx_plot <- ggplot()+
   geom_errorbar(data = dat_comp, aes(x = full_m, ymax = max_wing_Ixx, ymin = sachs_pred_Ixx, col = species_order), alpha = 0.5) +
   geom_line(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, y = 3.76*10^-3*full_m^2.05),col = "gray") + # Kirkpatrick, 1994
   geom_line(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, y = 1.94*10^-3*full_m^1.953),col = "gray", linetype = 2) + # Berg and Rayner, 1995
-  geom_point(data = dat_comp, aes(x = full_m, y = sachs_pred_Ixx, fill = species_order), col = "gray", pch = 22, size = 1.5) + # Sachs, 2005
-  geom_point(data = dat_comp, aes(x = full_m, y = max_wing_Ixx, fill = species_order), pch = 21, col = "black")+
+  geom_point(data = dat_comp, aes(x = full_m, y = sachs_pred_Ixx, fill = species_order, col = species_order), pch = 22, size = 1.5) + # Sachs, 2005
+  geom_point(data = dat_comp, aes(x = full_m, y = max_wing_Ixx, fill = species_order), pch = 21, col = "black", size = 2)+
   th  +
+  # colour control
+  scale_fill_manual(values = rev(cc_rain), name = "species") +
+  scale_colour_manual(values = rev(cc_rain), name = "species") +
   scale_x_continuous(trans='log10', name = "Mass (kg)",
                      breaks = c(0.01,0.1,1,10), labels = c(expression(10^-2),expression(10^-1),expression(10^0),expression(10^1)))+
   scale_y_continuous(trans='log10', name = expression(paste("Maximum wing I"["xx"]," (kg-m"^2,")", sep = "")),
@@ -771,6 +787,25 @@ validation_Ixx_plot <- ggplot()+
   geom_rangeframe() +
   annotate(geom = "segment", x = 0, xend = 0, y = 1E-6, yend = 1E-1) +
   annotate(geom = "segment", x = 0.01, xend = 10, y = 0, yend = 0)
+
+chulls_xz <- ddply(dat_final[,c("species_order","BirdID","elbow","manus")], .(species_order, BirdID),
+                   function(df) df[chull(df$elbow, df$manus), ])
+
+ROM_plot <- ggplot()+
+  geom_polygon(data = chulls_xz, aes(x = elbow, y = manus, fill = species_order), col = NA) +
+  #stat_contour_filled(data = data.fit, aes(x = elbow, y = manus, z = prop_q, colour = ..level..),
+  #             breaks = quantile(data.fit$prop_q, seq(0, 1, 0.05)), size = 0.8) +
+  facet_wrap(~species_order, nrow = 2) +
+  # colour control
+  scale_fill_manual(values = rev(cc_rain), name = "species") +
+  theme(strip.background = element_blank(),
+        panel.background = ggplot2::element_rect(fill = "transparent"),
+        # Background behind actual data points
+        plot.background  = ggplot2::element_rect(fill = "transparent", color = NA),
+        axis.line =  element_line(colour = "black", linetype=1))+
+  coord_fixed() +
+  scale_x_continuous(name='Elbow angle (°)') +
+  scale_y_continuous(name='Wrist angle (°)') + theme(legend.position="none")
 
 validation_Izz_plot <- ggplot()+
   geom_point(data = dat_final, aes(x = full_m, y = wing_Izz, col = clade)) +
@@ -820,18 +855,24 @@ ROM_plot <- ggplot()+
   scale_x_continuous(name='Elbow angle (°)') +
   scale_y_continuous(name='Wrist angle (°)')
 
+# Species rainbow colours
+cc_rain1  <- scales::seq_gradient_pal("#DA9101", "#CA302F", "Lab")(seq(0,1,length.out=6))
+cc_rain2  <- scales::seq_gradient_pal("#FCC201", "#DA9101", "Lab")(seq(0,1,length.out=3))
+cc_rain3  <- scales::seq_gradient_pal("#138715", "#FCC201", "Lab")(seq(0,1,length.out=6))
+cc_rain4  <- scales::seq_gradient_pal("#304CC8", "#138715", "Lab")(seq(0,1,length.out=6))
+cc_rain5  <- scales::seq_gradient_pal("#4E2388", "#304CC8", "Lab")(seq(0,1,length.out=5))
+cc_rain   <- c(cc_rain5, cc_rain4[2:6], cc_rain3[2:6],cc_rain2[2:3],cc_rain1[2:6])
+
 chulls_xz <- ddply(dat_final[,c("species_order","BirdID","elbow","manus")], .(species_order, BirdID),
                    function(df) df[chull(df$elbow, df$manus), ])
-test_max = aggregate(list(prop_q_dot = dat_final$prop_q_dot, full_m = dat_final$full_m),  by=list(species = dat_final$species_order, BirdID = dat_final$BirdID), max)
-test_min = aggregate(list(prop_q_dot = dat_final$prop_q_dot, full_m = dat_final$full_m),  by=list(species = dat_final$species_order, BirdID = dat_final$BirdID), min)
 
 ROM_plot <- ggplot()+
-  geom_polygon(data = chulls_xz, aes(x = elbow, y = manus), col = "black", fill = NA, alpha = 0.5) +
-  geom_point(data = dat_final[which(dat_final$species %in% test_max$species & dat_final$prop_q_dot %in% test_max$prop_q_dot),],
-             aes(x = elbow, y = manus, col = log(prop_q_dot)), alpha = 0.9) +
-  geom_point(data = dat_final[which(dat_final$species %in% test_min$species & dat_final$prop_q_dot %in% test_min$prop_q_dot),],
-             aes(x = elbow, y = manus, col = log(prop_q_dot)), alpha = 0.9, pch = 17) +
+  geom_polygon(data = chulls_xz, aes(x = elbow, y = manus, fill = species_order), col = NA, alpha = 0.5) +
+  #stat_contour_filled(data = data.fit, aes(x = elbow, y = manus, z = prop_q, colour = ..level..),
+  #             breaks = quantile(data.fit$prop_q, seq(0, 1, 0.05)), size = 0.8) +
   facet_wrap(~species_order, nrow = 2) +
+  # colour control
+  scale_fill_manual(values = rev(cc_rain), name = "species") +
   theme(strip.background = element_blank(),
         panel.background = ggplot2::element_rect(fill = "transparent"),
         # Background behind actual data points
@@ -839,22 +880,7 @@ ROM_plot <- ggplot()+
         axis.line =  element_line(colour = "black", linetype=1))+
   coord_fixed() +
   scale_x_continuous(name='Elbow angle (°)') +
-  scale_y_continuous(name='Wrist angle (°)')
-
-
-ROM_plot <- ggplot()+
-  geom_polygon(data = chulls_xz, aes(x = elbow, y = manus), col = "black", fill = NA, alpha = 0.5) +
-  stat_contour_filled(data = data.fit, aes(x = elbow, y = manus, z = prop_q, colour = ..level..),
-               breaks = quantile(data.fit$prop_q, seq(0, 1, 0.05)), size = 0.8) +
-  facet_wrap(~species_order, nrow = 2) +
-  theme(strip.background = element_blank(),
-        panel.background = ggplot2::element_rect(fill = "transparent"),
-        # Background behind actual data points
-        plot.background  = ggplot2::element_rect(fill = "transparent", color = NA),
-        axis.line =  element_line(colour = "black", linetype=1))+
-  coord_fixed() +
-  scale_x_continuous(name='Elbow angle (°)') +
-  scale_y_continuous(name='Wrist angle (°)')+ theme(legend.position="none")
+  scale_y_continuous(name='Wrist angle (°)') + theme(legend.position="none")
 
 
 test <- lm(prop_q_dot_nd ~ elbow*manus + species_order, data = dat_final)
