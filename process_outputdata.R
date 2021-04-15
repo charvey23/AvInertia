@@ -5,6 +5,7 @@ library(ape)
 library(geiger)
 library(MCMCglmm)
 library(tidyverse)
+library(effectsize) # needed for eta_squared calculation
 
 library(pracma)
 library(ggplot2)
@@ -60,41 +61,101 @@ dat_final$full_length  = (dat_final$torsotail_length+dat_final$head_length+dat_f
 dat_final$torso_length = dat_final$torsotail_length - dat_final$tail_length
 dat_final$span         = 2*sqrt(dat_final$pt8_X^2+dat_final$pt8_Y^2+dat_final$pt8_Z^2)
 
-dat_final$full_CGx = (dat_final$full_CGx-dat_final$head_length-dat_final$neck_length)
-dat_final$full_CGz = (dat_final$full_CGz+dat_final$z_dist_to_veh_ref_point_cm)
-dat_final$shoulderx_specific = (dat_final$pt1_X-dat_final$head_length-dat_final$neck_length)/dat_final$full_length
-dat_final$shoulderz_specific = (dat_final$pt1_Z+dat_final$z_dist_to_veh_ref_point_cm)/dat_final$body_height_max
-dat_final$full_CGx_specific  = dat_final$full_CGx/dat_final$full_length
-dat_final$full_CGz_specific  = dat_final$full_CGz/dat_final$body_height_max
+dat_final$full_CGx_specific_orgBeak    = (dat_final$full_CGx-dat_final$head_length-dat_final$neck_length)/dat_final$full_length
+dat_final$full_CGz_specific_orgDorsal  = (dat_final$full_CGz+dat_final$z_dist_to_veh_ref_point_cm)/dat_final$full_length
+dat_final$shoulderx_specific_orgBeak   = (dat_final$pt1_X-dat_final$head_length-dat_final$neck_length)/dat_final$full_length
+dat_final$shoulderz_specific_orgDorsal = (dat_final$pt1_Z+dat_final$z_dist_to_veh_ref_point_cm)/dat_final$full_length
 
-test <- aggregate(list(dist_shoulderx = (dat_final$full_CGz_specific-dat_final$shoulderz_specific)),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
+dat_final$full_CGx_specific_orgShoulder = (dat_final$full_CGx-dat_final$pt1_X)/dat_final$full_length
+dat_final$full_CGz_specific_orgShoulder = (dat_final$full_CGz-dat_final$pt1_Z)/dat_final$full_length
+dat_final$BeakTipx_orgShoulder          = (dat_final$head_length+dat_final$neck_length+dat_final$pt1_X)/dat_final$full_length
+dat_final$Centrez_orgShoulder           = (dat_final$pt1_Z)/dat_final$full_length
+dat_final$TailTipx_orgShoulder          = (-dat_final$torsotail_length-dat_final$pt1_X)/dat_final$full_length
+dat_final$MaxWidthx_orgShoulder         = (-dat_final$x_loc_of_body_max-dat_final$pt1_X)/dat_final$full_length
+dat_final$Dorsalz_orgShoulder           = -(dat_final$z_dist_to_veh_ref_point_cm+dat_final$pt1_Z)/dat_final$full_length
+dat_final$Ventralz_orgShoulder          = (dat_final$body_height_max-(dat_final$z_dist_to_veh_ref_point_cm+dat_final$pt1_Z))/dat_final$full_length
+
 test <- aggregate(list(humerus_per = dat_final$humerus_length_mm/dat_final$span),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), min)
 
 dat_final$elbow_scaled = dat_final$elbow*0.001
 dat_final$manus_scaled = dat_final$manus*0.001
 
-### ------------- Compute summed quantities -----------------
+### ---------------------------------------------------------------------------------------
+### ------------- Compute extremes of the CG position due to shoulder motion --------------
+### ---------------------------------------------------------------------------------------
 
+angle_shoulder = 80
+
+dat_final$shoulderCG_dist <- ((dat_final$wing_CGx-dat_final$pt1_X)^2+(dat_final$wing_CGy-dat_final$pt1_Y)^2+(dat_final$wing_CGz-dat_final$pt1_Z)^2)
+tmp <- aggregate(list(max_wingCG = dat_final$shoulderCG_dist),
+                       by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
+shoulder_motion <- dat_final[which(dat_final$shoulderCG_dist %in% tmp$max_wingCG),c("species","BirdID","elbow","manus","wing_CGx","wing_CGy","wing_CGz","pt1_X","pt1_Y","pt1_Z",
+                                                                             "wing_m","full_m","full_CGx","full_CGy","full_CGz","full_length","head_length","neck_length")]
+shoulder_motion$rest_m   = (shoulder_motion$full_m-2*shoulder_motion$wing_m)
+shoulder_motion$rest_CGx = (shoulder_motion$full_m*shoulder_motion$full_CGx - 2*(shoulder_motion$wing_m*shoulder_motion$wing_CGx))/shoulder_motion$rest_m
+shoulder_motion$rest_CGz = (shoulder_motion$full_m*shoulder_motion$full_CGz - 2*(shoulder_motion$wing_m*shoulder_motion$wing_CGz))/shoulder_motion$rest_m
+
+# - Rotate the wing forward about the shoulder in the x-y plane
+new_wing_CGx = (cosd(angle_shoulder)*(shoulder_motion$wing_CGx-shoulder_motion$pt1_X) + sind(angle_shoulder)*(shoulder_motion$wing_CGy-shoulder_motion$pt1_Y)) + shoulder_motion$pt1_X
+new_wing_CGy = (-sind(angle_shoulder)*(shoulder_motion$wing_CGx-shoulder_motion$pt1_X) + cosd(angle_shoulder)*(shoulder_motion$wing_CGy-shoulder_motion$pt1_Y)) +shoulder_motion$pt1_Y
+
+shoulder_motion$forward_CGx          = (shoulder_motion$rest_m*shoulder_motion$rest_CGx + 2*shoulder_motion$wing_m*new_wing_CGx)/shoulder_motion$full_m
+shoulder_motion$forward_CGx_specific = (shoulder_motion$forward_CGx-shoulder_motion$pt1_X)/shoulder_motion$full_length
+# - Rotate the wing backwards about the shoulder in the x-y plane
+new_wing_CGx = (cosd(-angle_shoulder)*(shoulder_motion$wing_CGx-shoulder_motion$pt1_X) + sind(-angle_shoulder)*(shoulder_motion$wing_CGy-shoulder_motion$pt1_Y)) + shoulder_motion$pt1_X
+new_wing_CGy = (-sind(-angle_shoulder)*(shoulder_motion$wing_CGx-shoulder_motion$pt1_X) + cosd(-angle_shoulder)*(shoulder_motion$wing_CGy-shoulder_motion$pt1_Y)) + shoulder_motion$pt1_Y
+
+shoulder_motion$backwards_CGx          = (shoulder_motion$rest_m*shoulder_motion$rest_CGx + 2*shoulder_motion$wing_m*new_wing_CGx)/shoulder_motion$full_m
+shoulder_motion$backwards_CGx_specific = (shoulder_motion$backwards_CGx-shoulder_motion$pt1_X)/shoulder_motion$full_length
+shoulder_motion$range_CGx = (shoulder_motion$forward_CGx-shoulder_motion$backwards_CGx)
+shoulder_motion$range_CGx_specific = (shoulder_motion$forward_CGx-shoulder_motion$backwards_CGx)/(shoulder_motion$full_length)
+
+# - Rotate the wing up about the shoulder in the y-z plane
+new_wing_CGz = (cosd(angle_shoulder)*(shoulder_motion$wing_CGz-shoulder_motion$pt1_Z) - sind(angle_shoulder)*(shoulder_motion$wing_CGy-shoulder_motion$pt1_Y)) + shoulder_motion$pt1_Z
+new_wing_CGy = (sind(angle_shoulder)*(shoulder_motion$wing_CGz-shoulder_motion$pt1_Z) + cosd(angle_shoulder)*(shoulder_motion$wing_CGy-shoulder_motion$pt1_Y)) + shoulder_motion$pt1_Y
+
+shoulder_motion$upwards_CGz          = (shoulder_motion$rest_m*shoulder_motion$rest_CGz + 2*shoulder_motion$wing_m*new_wing_CGz)/shoulder_motion$full_m
+shoulder_motion$upwards_CGz_specific = (shoulder_motion$upwards_CGz-shoulder_motion$pt1_Z)/shoulder_motion$full_length
+# - Rotate the wing down about the shoulder in the y-z plane
+new_wing_CGz = (cosd(-angle_shoulder)*(shoulder_motion$wing_CGz-shoulder_motion$pt1_Z) - sind(-angle_shoulder)*(shoulder_motion$wing_CGy-shoulder_motion$pt1_Y)) + shoulder_motion$pt1_Z
+new_wing_CGy = (sind(-angle_shoulder)*(shoulder_motion$wing_CGz-shoulder_motion$pt1_Z) + cosd(-angle_shoulder)*(shoulder_motion$wing_CGy-shoulder_motion$pt1_Y)) + shoulder_motion$pt1_Y
+
+shoulder_motion$downwards_CGz          = (shoulder_motion$rest_m*shoulder_motion$rest_CGz + 2*shoulder_motion$wing_m*new_wing_CGz)/shoulder_motion$full_m
+shoulder_motion$downwards_CGz_specific = (shoulder_motion$downwards_CGz-shoulder_motion$pt1_Z)/shoulder_motion$full_length
+
+shoulder_motion$range_CGz = (shoulder_motion$downwards_CGz-shoulder_motion$upwards_CGz)
+shoulder_motion$range_CGz_specific = shoulder_motion$range_CGz/(shoulder_motion$full_length)
+
+### ---------------------------------------------------------------------------------------
+### --------------------------- Compute summed quantities ---------------------------------
+### ---------------------------------------------------------------------------------------
 # Maximum projected wing area and maximum wing span
 test       <- aggregate(list(S_proj_max = dat_final$wing_S_proj,
                              b_max = dat_final$span),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
 dat_bird   <- merge(dat_bird,test, by = c("species","BirdID"))
 dat_final  <- merge(dat_final,test, by = c("species","BirdID"))
 
-dat_final$wing_CGy_specific  = (dat_final$wing_CGy)/(0.5*dat_final$b_max)
-dat_final$wing_CGx_specific  = (dat_final$wing_CGx-dat_final$pt1_X)/(0.5*dat_final$b_max)
-dat_final$wing_CGz_specific  = dat_final$wing_CGz/(0.5*dat_final$b_max)
-dat_final$shouldery_specific = (dat_final$pt1_Y)/(0.5*dat_final$b_max)
+dat_final$wing_CGy_specific              = (dat_final$wing_CGy)/(0.5*dat_final$b_max)
+dat_final$wing_CGy_specific_orgShoulder  = (dat_final$wing_CGy-dat_final$pt1_Y)/(0.5*dat_final$b_max)
+dat_final$wing_CGx_specific_orgBeak      = (dat_final$wing_CGx-dat_final$head_length-dat_final$neck_length)/(0.5*dat_final$b_max)
+dat_final$wing_CGx_specific_orgShoulder  = (dat_final$wing_CGx-dat_final$pt1_X)/(0.5*dat_final$b_max)
+dat_final$wing_CGz_specific              = dat_final$wing_CGz/(0.5*dat_final$b_max)
+# pull out the maximum wing shapes
+max_wing_prop <- aggregate(list(b_max = dat_final$span),  by=list(species = dat_final$species), max)
+max_wing <- subset(dat_final[,c("species","pt6_X","pt6_Y","pt7_X","pt7_Y","pt8_X","pt8_Y","pt8_Z","pt9_X","pt9_Y","pt10_X","pt10_Y",
+                                "pt11_X","pt11_Y","pt11_Z","pt12_X","pt12_Y","pt12_Z","span")], span %in% max_wing_prop$b_max)
+max_wing$edge_X = max_wing$pt11_X
+max_wing$edge_Y = 0
+max_wing[,2:21] <- max_wing[,2:21]/(0.5*max_wing$span)
+remove(max_wing_prop)
+
 dat_final$full_Ixx_specific  = dat_final$full_Ixx/(dat_final$full_m*dat_final$b_max*dat_final$full_length)
 dat_final$full_Iyy_specific  = dat_final$full_Iyy/(dat_final$full_m*dat_final$b_max*dat_final$full_length)
 dat_final$full_Izz_specific  = dat_final$full_Izz/(dat_final$full_m*dat_final$b_max*dat_final$full_length)
 dat_final$full_Ixz_specific  = dat_final$full_Ixz/(dat_final$full_m*dat_final$b_max*dat_final$full_length)
 
 # Shoulder position specific and mass
-test     <- aggregate(list(shoulderx_specific = dat_final$shoulderx_specific,
-                           shouldery_specific = dat_final$shouldery_specific,
-                           shoulderz_specific = dat_final$shoulderz_specific,
-                           full_m = dat_final$full_m),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
+test     <- aggregate(list(full_m = dat_final$full_m),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
 dat_bird <- merge(dat_bird,test, by = c("species","BirdID"))
 
 ### ---------------------- Compute inertial metrics -------------------------
@@ -111,14 +172,14 @@ dat_final$sachs_pred_Ixx <- dat_final$full_m*(sqrt((0.14*dat_final$wing_m/dat_fi
 ## ---- Compute the regression coefficients for each species for each variable -------
 
 no_specimens <- nrow(dat_bird)
-dat_model_out        <- data.frame(matrix(nrow = no_specimens*7*2, ncol = 5))
+dat_model_out        <- data.frame(matrix(nrow = no_specimens*8*2, ncol = 5))
 names(dat_model_out) <- c("species","model_variable","elb","man","elbman")
 varlist_sp       <- c("full_Ixx_specific","full_Iyy_specific","full_Izz_specific","full_Ixz_specific",
-                   "full_CGx_specific","wing_CGy_specific","full_CGz_specific")
+                   "full_CGx_specific_orgBeak","wing_CGy_specific","full_CGz_specific_orgDorsal","wing_CGx_specific_orgBeak")
 short_varlist_sp <- c("Ixx_sp","Iyy_sp","Izz_sp","Ixz_sp","CGx_sp","CGy_sp","CGz_sp")
 varlist_abs      <- c("full_Ixx","full_Iyy","full_Izz","full_Ixz",
-                      "full_CGx","wing_CGy","full_CGz")
-short_varlist_abs<- c("Ixx","Iyy","Izz","Ixz","CGx","CGy","CGz")
+                      "full_CGx","wing_CGy","full_CGz","wing_CGx")
+short_varlist_abs<- c("Ixx","Iyy","Izz","Ixz","CGx","CGy","CGz", "CGx_wing")
 dat_bird$species <- as.character(dat_bird$species)
 success = TRUE
 count = 1
@@ -187,11 +248,11 @@ dat_comp  = merge(dat_comp, tmp, by = c("species","BirdID"))
 # Include other important factors
 # Range of each component
 test     <- aggregate(list(range_CGx = dat_final$full_CGx,
-                           range_CGx_specific = dat_final$full_CGx_specific,
+                           range_CGx_specific = dat_final$full_CGx_specific_orgBeak,
                            range_wing_CGy = dat_final$wing_CGy,
                            range_wing_CGy_specific = dat_final$wing_CGy_specific,
                            range_CGz = dat_final$full_CGz,
-                           range_CGz_specific = dat_final$full_CGz_specific,
+                           range_CGz_specific = dat_final$full_CGz_specific_orgDorsal,
                            range_Ixx = dat_final$full_Ixx,
                            range_Ixx_specific = dat_final$full_Ixx_specific,
                            range_Iyy = dat_final$full_Iyy,
@@ -203,9 +264,11 @@ dat_comp <- merge(dat_comp,test, by = c("species","BirdID"))
 
 # Include other important factors
 # Range of each component
-test     <- aggregate(list(mean_CGx_specific = dat_final$full_CGx_specific,
-                           mean_CGz_specific = dat_final$full_CGz_specific,
-                           mean_wing_CGx_specific = dat_final$wing_CGx_specific,
+test     <- aggregate(list(mean_CGx_orgBeak  = dat_final$full_CGx-dat_final$head_length-dat_final$neck_length,
+                           mean_CGz_orgDorsal= dat_final$full_CGz+dat_final$z_dist_to_veh_ref_point_cm,
+                           mean_wing_CGy     = dat_final$wing_CGy,
+                           mean_CGx_specific = dat_final$full_CGx_specific_orgBeak,
+                           mean_CGz_specific = dat_final$full_CGz_specific_orgDorsal,
                            mean_wing_CGy_specific = dat_final$wing_CGy_specific,
                            mean_Ixx_specific = dat_final$full_Ixx_specific,
                            mean_Iyy_specific = dat_final$full_Iyy_specific,
@@ -215,42 +278,41 @@ test     <- aggregate(list(mean_CGx_specific = dat_final$full_CGx_specific,
                       by=list(species = dat_final$species, BirdID = dat_final$BirdID), mean)
 dat_comp <- merge(dat_comp,test, by = c("species","BirdID"))
 # Maximum values
-test     <- aggregate(list(max_CGx = dat_final$full_CGx,
-                           max_CGx_specific = dat_final$full_CGx_specific,
-                           max_wing_CGy = dat_final$wing_CGy,
+test     <- aggregate(list(max_CGx_orgBeak       = dat_final$full_CGx-dat_final$head_length-dat_final$neck_length,
+                           max_CGz_orgDorsal     = dat_final$full_CGz+dat_final$z_dist_to_veh_ref_point_cm,
+                           max_CGx_specific      = dat_final$full_CGx_specific_orgBeak,
+                           max_wing_CGy          = dat_final$wing_CGy,
                            max_wing_CGy_specific = dat_final$wing_CGy_specific,
-                           max_CGz = dat_final$full_CGz,
-                           max_CGz_specific = dat_final$full_CGz_specific,
-                           max_Ixx = dat_final$full_Ixx,
-                           max_wing_Ixx = dat_final$wing_Ixx,
-                           sachs_pred_Ixx = dat_final$sachs_pred_Ixx,
-                           max_Ixx_specific = dat_final$full_Ixx_specific,
-                           max_Iyy = dat_final$full_Iyy,
-                           max_Iyy_specific = dat_final$full_Iyy_specific,
-                           max_Izz = dat_final$full_Izz,
-                           max_Izz_specific = dat_final$full_Izz_specific,
-                           max_Ixz_specific = dat_final$full_Ixz_specific,
-                           max_q = dat_final$prop_q_dot,
-                           max_q_nd = dat_final$prop_q_dot_nd,
-                           max_wingspan = dat_final$span,
-                           max_length = dat_final$full_length),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
+                           max_CGz_specific      = dat_final$full_CGz_specific_orgDorsal,
+                           max_Ixx               = dat_final$full_Ixx,
+                           max_wing_Ixx          = dat_final$wing_Ixx,
+                           sachs_pred_Ixx        = dat_final$sachs_pred_Ixx,
+                           max_Ixx_specific      = dat_final$full_Ixx_specific,
+                           max_Iyy               = dat_final$full_Iyy,
+                           max_Iyy_specific      = dat_final$full_Iyy_specific,
+                           max_Izz               = dat_final$full_Izz,
+                           max_Izz_specific      = dat_final$full_Izz_specific,
+                           max_Ixz_specific      = dat_final$full_Ixz_specific,
+                           max_q                 = dat_final$prop_q_dot,
+                           max_q_nd              = dat_final$prop_q_dot_nd,
+                           max_wingspan          = dat_final$span,
+                           max_length            = dat_final$full_length),
+                      by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
 dat_comp <- merge(dat_comp,test, by = c("species","BirdID"))
 # Minimum values
-test     <- aggregate(list(min_CGx = dat_final$full_CGx,
-                           min_CGx_specific = dat_final$full_CGx_specific,
-                           min_CGz = dat_final$full_CGz,
+test     <- aggregate(list(min_CGx_orgBeak       = dat_final$full_CGx-dat_final$head_length-dat_final$neck_length,
+                           min_CGz_orgDorsal     = dat_final$full_CGz+dat_final$z_dist_to_veh_ref_point_cm,
+                           min_CGx_specific      = dat_final$full_CGx_specific_orgBeak,
+                           min_wing_CGy          = dat_final$wing_CGy,
                            min_wing_CGy_specific = dat_final$wing_CGy_specific,
-                           min_CGz = dat_final$full_CGz,
-                           min_CGz_specific = dat_final$full_CGz_specific,
-                           min_wing_Ixx = dat_final$wing_Ixx,
-                           min_Ixx_specific = dat_final$full_Ixx_specific,
-                           min_Iyy = dat_final$full_Iyy,
-                           min_Iyy_specific = dat_final$full_Iyy_specific,
-                           min_Izz = dat_final$full_Izz,
-                           min_Izz_specific = dat_final$full_Izz_specific,
-                           min_Ixz_specific = dat_final$full_Ixz_specific,
-                           dist_CGhumx = dat_final$full_CGx_specific-dat_final$shoulderx_specific,
-                           dist_shoulderx = dat_final$shoulderx_specific),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), min)
+                           min_CGz_specific      = dat_final$full_CGz_specific_orgDorsal,
+                           min_wing_Ixx          = dat_final$wing_Ixx,
+                           min_Ixx_specific      = dat_final$full_Ixx_specific,
+                           min_Iyy               = dat_final$full_Iyy,
+                           min_Iyy_specific      = dat_final$full_Iyy_specific,
+                           min_Izz               = dat_final$full_Izz,
+                           min_Izz_specific      = dat_final$full_Izz_specific,
+                           min_Ixz_specific      = dat_final$full_Ixz_specific),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), min)
 dat_comp <- merge(dat_comp,test, by = c("species","BirdID"))
 
 # Stats
@@ -286,7 +348,7 @@ univ_prior <-
 ## Model
 pgls_model_mcmc <-
   MCMCglmm::MCMCglmm(
-    log(max_q) ~ log(full_m),
+    log(CGy_man_etap) ~ log(full_m),
     random = ~ phylo,
     scale = FALSE, ## whether you use this is up to you -- whatever is fair
     ginverse = list(phylo = inv.phylo$Ainv),

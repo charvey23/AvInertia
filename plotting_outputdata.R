@@ -2,6 +2,7 @@ library(cowplot)   # need for plot_grid()
 library(ggthemes)  # need for geom_rangeframe
 library(gridExtra) # for using grid arrange
 library(ggtree)    # for plotting phylogeny
+library(plyr)      # for computing convex hulls
 
 th <- ggplot2::theme_classic() +
   ggplot2::theme(
@@ -19,11 +20,17 @@ th <- ggplot2::theme_classic() +
     # Background behind actual data points
     plot.background  = ggplot2::element_rect(fill = "transparent", color = NA))
 
+#--- Blank plot to fill space ---
+blank_plot <- ggplot() + theme_void()
+
 ## ----------------- Plot of linear model outputs ------------------
 # order species to match the phylogeny
 
 man_fixed = c(80,100,120)*0.001
 elb_fixed = c(80,100,120)*0.001
+
+
+# ---------- Pre-define colours ----------
 col_x = "#09015f"
 col_y = "#55b3b1"
 col_z = "#f6c065"
@@ -33,12 +40,26 @@ col_elb = "#55b3b1"
 col_man = "#af0069"
 col_elbman = "#5F0995"
 
+# Species rainbow colours
+cc_rain1  <- scales::seq_gradient_pal("#DA9101", "#CA302F", "Lab")(seq(0,1,length.out=6))
+cc_rain2  <- scales::seq_gradient_pal("#FCC201", "#DA9101", "Lab")(seq(0,1,length.out=3))
+cc_rain3  <- scales::seq_gradient_pal("#138715", "#FCC201", "Lab")(seq(0,1,length.out=6))
+cc_rain4  <- scales::seq_gradient_pal("#1FC3CD", "#138715", "Lab")(seq(0,1,length.out=4))
+cc_rain5  <- scales::seq_gradient_pal("#304CC8", "#1FC3CD", "Lab")(seq(0,1,length.out=5))
+cc_rain6  <- scales::seq_gradient_pal("#5F2CC8", "#304CC8", "Lab")(seq(0,1,length.out=3))
+cc_rain   <- c(cc_rain6, cc_rain5[2:5], cc_rain4[2:4], cc_rain3[2:6],cc_rain2[2:3],cc_rain1[2:6])
+
+# -------------- Set up common labels -----------
+lab_eta = expression(paste(eta^2))
+
+
+# --------------- Set up Phylogeny info -----------
 phylo_label = c("Cooper's hawk","Sharp-shinned hawk", "Western grebe", "Mallard","Great blue heron","Canada goose","Common nighthawk",
                 "Lady Amherst's pheasant","Northern flicker","Pigeon","Common raven","Steller's jay","Black swift",
                 "Merlin","Peregrine falcon","Leach's storm petrel","Glaucous-winged gull","Himalayan monal","Silver pheasant",
                 "Belted kingfisher","American white pelican","Barn owl")
 dat_phylo_plot <- data.frame(label = pruned_mcc$tip.label, genus = phylo_label)
-phylo_plot <- ggtree(pruned_mcc) %<+% dat_phylo_plot +
+phylo_plot <- ggtree(pruned_mcc) %<+% dat_phylo_plot %>% rotate(23) +
   geom_tiplab(aes(label=genus)) + xlim(0,150) + theme(plot.margin = unit(c(14,8,14,8), "mm"))
 
 phylo_data <- ggtree::ggtree(pruned_mcc)[["data"]][,c("label","y")]
@@ -47,215 +68,148 @@ phylo_order <- arrange(phylo_order,y)
 
 dat_comp$species_order = factor(dat_comp$species, levels = phylo_order$species)
 dat_final$species_order = factor(dat_final$species, levels = phylo_order$species)
+shoulder_motion$species_order = factor(shoulder_motion$species, levels = phylo_order$species)
 
 dat_model_out$species <- factor(dat_model_out$species, levels = phylo_order$species)
 shading <- data.frame(col1 = levels(dat_model_out$species)[seq(from = 1, to = max(as.numeric(as.factor(dat_model_out$species)))-1, by = 2)],
                       col2 = levels(dat_model_out$species)[seq(from = 2, to = max(as.numeric(as.factor(dat_model_out$species))), by = 2)])
 
+## --------------------------------------------------------------------------------------------------------------------
+## ------------------------------------------- Figure 1 ---------------------------------------------------------------
+## --------------------------------------------------------------------------------------------------------------------
 
-min_lb     <- aggregate(list(min_CGx_sp_int_lb = dat_model_out$CGx_sp_int_lb,
-                           min_CGy_sp_int_lb = dat_model_out$CGy_sp_int_lb,
-                           min_CGz_sp_int_lb = dat_model_out$CGz_sp_int_lb,
-                           min_CGx_sp_elb_lb1 = dat_model_out$CGx_sp_elb_lb+dat_model_out$CGx_sp_elbman_lb*man_fixed[1],
-                           min_CGx_sp_elb_lb2 = dat_model_out$CGx_sp_elb_lb+dat_model_out$CGx_sp_elbman_lb*man_fixed[3],
-                           min_CGy_sp_elb_lb1 = dat_model_out$CGy_sp_elb_lb+dat_model_out$CGy_sp_elbman_lb*man_fixed[1],
-                           min_CGy_sp_elb_lb2 = dat_model_out$CGy_sp_elb_lb+dat_model_out$CGy_sp_elbman_lb*man_fixed[3],
-                           min_CGz_sp_elb_lb1 = dat_model_out$CGz_sp_elb_lb+dat_model_out$CGz_sp_elbman_lb*man_fixed[1],
-                           min_CGz_sp_elb_lb2 = dat_model_out$CGz_sp_elb_lb+dat_model_out$CGz_sp_elbman_lb*man_fixed[3],
-                           min_CGx_sp_man_lb1 = dat_model_out$CGx_sp_man_lb+dat_model_out$CGx_sp_elbman_lb*man_fixed[1],
-                           min_CGx_sp_man_lb2 = dat_model_out$CGx_sp_man_lb+dat_model_out$CGx_sp_elbman_lb*man_fixed[3],
-                           min_CGy_sp_man_lb1 = dat_model_out$CGy_sp_man_lb+dat_model_out$CGy_sp_elbman_lb*man_fixed[1],
-                           min_CGy_sp_man_lb2 = dat_model_out$CGy_sp_man_lb+dat_model_out$CGy_sp_elbman_lb*man_fixed[3],
-                           min_CGz_sp_man_lb1 = dat_model_out$CGz_sp_man_lb+dat_model_out$CGz_sp_elbman_lb*man_fixed[1],
-                           min_CGz_sp_man_lb2 = dat_model_out$CGz_sp_man_lb+dat_model_out$CGz_sp_elbman_lb*man_fixed[3]),
-                        by=list(species = dat_model_out$species), min)
-max_ub     <- aggregate(list(max_CGx_sp_int_ub = dat_model_out$CGx_sp_int_ub,
-                             max_CGy_sp_int_ub = dat_model_out$CGy_sp_int_ub,
-                             max_CGz_sp_int_ub = dat_model_out$CGz_sp_int_ub,
-                             max_CGx_sp_elb_ub1 = dat_model_out$CGx_sp_elb_ub+dat_model_out$CGx_sp_elbman_ub*man_fixed[1],
-                             max_CGx_sp_elb_ub2 = dat_model_out$CGx_sp_elb_ub+dat_model_out$CGx_sp_elbman_ub*man_fixed[3],
-                             max_CGy_sp_elb_ub1 = dat_model_out$CGy_sp_elb_ub+dat_model_out$CGy_sp_elbman_ub*man_fixed[1],
-                             max_CGy_sp_elb_ub2 = dat_model_out$CGy_sp_elb_ub+dat_model_out$CGy_sp_elbman_ub*man_fixed[3],
-                             max_CGz_sp_elb_ub1 = dat_model_out$CGz_sp_elb_ub+dat_model_out$CGz_sp_elbman_ub*man_fixed[1],
-                             max_CGz_sp_elb_ub2 = dat_model_out$CGz_sp_elb_ub+dat_model_out$CGz_sp_elbman_ub*man_fixed[3],
-                             max_CGx_sp_man_ub1 = dat_model_out$CGx_sp_man_ub+dat_model_out$CGx_sp_elbman_ub*man_fixed[1],
-                             max_CGx_sp_man_ub2 = dat_model_out$CGx_sp_man_ub+dat_model_out$CGx_sp_elbman_ub*man_fixed[3],
-                             max_CGy_sp_man_ub1 = dat_model_out$CGy_sp_man_ub+dat_model_out$CGy_sp_elbman_ub*man_fixed[1],
-                             max_CGy_sp_man_ub2 = dat_model_out$CGy_sp_man_ub+dat_model_out$CGy_sp_elbman_ub*man_fixed[3],
-                             max_CGz_sp_man_ub1 = dat_model_out$CGz_sp_man_ub+dat_model_out$CGz_sp_elbman_ub*man_fixed[1],
-                             max_CGz_sp_man_ub2 = dat_model_out$CGz_sp_man_ub+dat_model_out$CGz_sp_elbman_ub*man_fixed[3]),
-                        by=list(species = dat_model_out$species), max)
-ci_bounds <- merge(min_lb,max_ub, by = c("species"))
+validation_Ixx_plot <- ggplot()+
+  geom_errorbar(data = dat_comp, aes(x = full_m, ymax = max_wing_Ixx, ymin = sachs_pred_Ixx, col = species_order), alpha = 0.5) +
+  geom_line(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, y = 3.76*10^-3*full_m^2.05),col = "gray") + # Kirkpatrick, 1994
+  geom_line(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, y = 1.94*10^-3*full_m^1.953),col = "gray", linetype = 2) + # Berg and Rayner, 1995
+  geom_point(data = dat_comp, aes(x = full_m, y = sachs_pred_Ixx, fill = species_order, col = species_order), pch = 22, size = 1.5) + # Sachs, 2005
+  geom_point(data = dat_comp, aes(x = full_m, y = max_wing_Ixx, fill = species_order), pch = 21, col = "black", size = 2)+
+  th  +
+  theme(legend.position="none") +
+  # colour control
+  scale_fill_manual(values = rev(cc_rain), name = "species") +
+  scale_colour_manual(values = rev(cc_rain), name = "species") +
+  scale_x_continuous(trans='log10', name = "Mass (kg)",
+                     breaks = c(0.01,0.1,1,10), labels = c(expression(10^-2),expression(10^-1),expression(10^0),expression(10^1)))+
+  scale_y_continuous(trans='log10', name = expression(paste("Maximum wing I"["xx"]," (kg-m"^2,")", sep = "")),
+                     breaks = c(1E-6,1E-5,1E-4,1E-3,1E-2,1E-1), labels = c(expression(10^-6),expression(10^-5),expression(10^-4),expression(10^-3),expression(10^-2),expression(10^-1))) +
+  geom_rangeframe() +
+  annotate(geom = "segment", x = 0, xend = 0, y = 1E-6, yend = 1E-1) +
+  annotate(geom = "segment", x = 0.01, xend = 10, y = 0, yend = 0)
 
-dat_CG_plot     <- aggregate(list(mean_CGx_sp_int = dat_model_out$CGx_sp_int,
-                                 mean_CGy_sp_int = dat_model_out$CGy_sp_int,
-                                 mean_CGz_sp_int = dat_model_out$CGz_sp_int,
-                                 mean_CGx_sp_elb = dat_model_out$CGx_sp_elb,
-                                 mean_CGy_sp_elb = dat_model_out$CGy_sp_elb,
-                                 mean_CGz_sp_elb = dat_model_out$CGz_sp_elb,
-                                 mean_CGx_sp_man = dat_model_out$CGx_sp_man,
-                                 mean_CGy_sp_man = dat_model_out$CGy_sp_man,
-                                 mean_CGz_sp_man = dat_model_out$CGz_sp_man,
-                                 mean_CGx_sp_elbman = dat_model_out$CGx_sp_elbman,
-                                 mean_CGy_sp_elbman = dat_model_out$CGy_sp_elbman,
-                                 mean_CGz_sp_elbman = dat_model_out$CGz_sp_elbman),  by=list(species = dat_model_out$species), mean)
+chulls_elbman <- ddply(dat_final[,c("species_order","BirdID","elbow","manus")], .(species_order, BirdID),
+                   function(df) df[chull(df$elbow, df$manus), ])
 
-test <- merge(aggregate(list(min_CGx_specific = dat_comp$min_CGx_specific,
-                             min_CGy_specific = dat_comp$min_wing_CGy_specific,
-                             min_CGz_specific = dat_comp$min_CGz_specific),  by=list(species = dat_comp$species), min),
-              aggregate(list(max_CGx_specific = dat_comp$max_CGx_specific,
-                             max_CGy_specific = dat_comp$max_wing_CGy_specific,
-                             max_CGz_specific = dat_comp$max_CGz_specific),  by=list(species = dat_comp$species), max), by = "species")
+ROM_plot <- ggplot()+
+  geom_polygon(data = chulls_elbman, aes(x = elbow, y = manus, fill = species_order), col = NA) +
+  geom_point(data = subset(dat_final, species == "col_liv" & BirdID == "20_0300" & TestID == "20_0300_4" & FrameID == 317), aes(x = elbow, y = manus, fill = species_order),size = 0.5) +
+  geom_point(data = subset(dat_final, species == "col_liv" & BirdID == "20_0300" & TestID == "20_0300_2" & FrameID == 94), aes(x = elbow, y = manus, fill = species_order),size = 0.5) +
+  facet_wrap(~species_order, nrow = 3) +
+  # colour control
+  scale_fill_manual(values = rev(cc_rain), name = "species") +
+  #theme control
+  theme(strip.background = element_blank(),
+        panel.background = ggplot2::element_rect(fill = "transparent"),
+        # Background behind actual data points
+        plot.background  = ggplot2::element_rect(fill = "transparent", color = NA),
+        axis.line =  element_line(colour = "black", linetype=1))+
+  theme(legend.position="none") +
+  coord_fixed() +
+  scale_x_continuous(name='Elbow angle (°)', breaks = c(50,150)) +
+  scale_y_continuous(name='Wrist angle (°)', breaks = c(50,150))
 
-CGx_specific <- ggplot() +
-  # add background info
-  geom_rect(data = shading, aes(ymin = col1, ymax = col2, xmin = 0, xmax = 1), alpha = 0.1, position = position_nudge(y = -0.5)) +
+## --------------------------------------------------------------------------------------------------------------------
+## ------------------------------------------- Figure 2 ---------------------------------------------------------------
+## --------------------------------------------------------------------------------------------------------------------
+# Panel A adjust data
+chulls_CGxz <- ddply(dat_final[,c("species_order","BirdID","full_CGx_specific_orgShoulder","full_CGz_specific_orgShoulder")], .(species_order, BirdID),
+                   function(df) df[chull(df$full_CGx_specific_orgShoulder, df$full_CGz_specific_orgShoulder), ])
+
+extremes = aggregate(list(BeakTipx_orgShoulder = dat_final$BeakTipx_orgShoulder,
+                          Centrez_orgShoulder  = dat_final$Centrez_orgShoulder,
+                          TailTipx_orgShoulder = dat_final$TailTipx_orgShoulder,
+                          MaxWidthx_orgShoulder = dat_final$MaxWidthx_orgShoulder,
+                          Dorsalz_orgShoulder  = dat_final$Dorsalz_orgShoulder,
+                          Ventralz_orgShoulder = dat_final$Ventralz_orgShoulder),  by=list(species_order = dat_final$species_order), mean)
+x_shape1 = melt(extremes[,c("species_order","BeakTipx_orgShoulder","MaxWidthx_orgShoulder","TailTipx_orgShoulder")], id= "species_order")
+x_shape2 = melt(extremes[,c("species_order","MaxWidthx_orgShoulder","BeakTipx_orgShoulder")], id= "species_order")
+x_shape = rbind(x_shape1,x_shape2)
+z_shape1 = melt(extremes[,c("species_order","Centrez_orgShoulder","Dorsalz_orgShoulder")], id= "species_order")
+z_shape2 = melt(extremes[,c("species_order","Centrez_orgShoulder","Ventralz_orgShoulder")], id= "species_order")
+z_shape3 = melt(extremes[,c("species_order","Centrez_orgShoulder")], id= "species_order")
+z_shape = rbind(z_shape1,z_shape2,z_shape3)
+
+CG_extremes = aggregate(list(mean_CGz     = dat_final$full_CGz_specific_orgShoulder,
+                             mean_CGx     = dat_final$full_CGx_specific_orgShoulder),  by=list(species_order = dat_final$species_order), mean)
+tmp = aggregate(list(mean_CGxback  = shoulder_motion$backwards_CGx_specific,
+                     mean_CGzup = shoulder_motion$upwards_CGz_specific),  by=list(species_order = shoulder_motion$species_order), min)
+CG_extremes = merge(CG_extremes, tmp, by = "species_order")
+tmp = aggregate(list(mean_CGxfore  = shoulder_motion$forward_CGx_specific,
+                     mean_CGzdn = shoulder_motion$downwards_CGz_specific),  by=list(species_order = shoulder_motion$species_order), max)
+CG_extremes = merge(CG_extremes, tmp, by = "species_order")
+
+cg_x_shape1 = melt(CG_extremes[,c("species_order","mean_CGxfore","mean_CGx","mean_CGxback")], id= "species_order")
+cg_x_shape2 = melt(CG_extremes[,c("species_order","mean_CGx")], id= "species_order")
+cg_x_shape = rbind(cg_x_shape1,cg_x_shape2)
+cg_z_shape1 = melt(CG_extremes[,c("species_order","mean_CGz","mean_CGzup")], id= "species_order")
+cg_z_shape2 = melt(CG_extremes[,c("species_order","mean_CGz","mean_CGzdn")], id= "species_order")
+cg_z_shape = rbind(cg_z_shape1,cg_z_shape2)
+
+# need to adjust species order so that pigeon comes last
+
+# Panel A plot
+CGxz_plot <- ggplot()+
   # add data
-  geom_errorbarh(data = test, aes(xmin = -min_CGx_specific, xmax = -max_CGx_specific, y = species), height = 0, alpha = 0.5)+
-  geom_point(data = aggregate(list(max_CGx_specific = dat_comp$max_CGx_specific),  by=list(species = dat_comp$species), max),
-             aes(x = -max_CGx_specific, y = species), fill = col_x, col = "black",pch = 22, alpha = 0.85) +
-  geom_point(data = aggregate(list(min_CGx_specific = dat_comp$min_CGx_specific),  by=list(species = dat_comp$species), min),
-             aes(x = -min_CGx_specific, y = species), fill = col_x, col = "black",pch = 22, alpha = 0.85) +
-  geom_point(data = aggregate(list(mean_CGx_specific = dat_comp$mean_CGx_specific),  by=list(species = dat_comp$species), mean),
-             aes(x = -mean_CGx_specific, y = species), fill = "white", col = col_x, pch = 21, alpha = 1, size = 1.5) +
-  geom_point(data = aggregate(list(shoulderx_specific = dat_bird$shoulderx_specific),  by=list(species = dat_bird$species), mean),
-             aes(x = -shoulderx_specific, y = species), col = col_x, pch = 2, alpha = 1) +
+  geom_rect(data = chulls_CGxz, aes(xmin =0, ymin = -0.1, xmax = 0.2, ymax = 0, group = species_order), linetype="dashed", color = "gray", fill = NA, alpha = 0.25) +
+  # geom_path(data = x_shape, aes(x = -value, y = -z_shape$value), col = "black", alpha = 0.2) +
+  geom_polygon(data = cg_x_shape, aes(x = -value, y = -cg_z_shape$value, fill = species_order), col = NA, alpha = 0.5) +
+  geom_polygon(data = chulls_CGxz, aes(x = -full_CGx_specific_orgShoulder, y = -full_CGz_specific_orgShoulder, col = species_order, fill = species_order, group = BirdID)) +
+  facet_wrap(~species_order, nrow = 3) +
+  # colour control
+  scale_fill_manual(values = rev(cc_rain), name = "species") +
+  scale_colour_manual(values = rev(cc_rain), name = "species") +
+  th +
+  #theme control
+  theme(strip.background = element_blank(),
+        strip.text.x = element_blank())+
+  theme(legend.position="none") +
+  coord_fixed() +
+  scale_x_continuous(name='x (%)', limits = c(-0.04,0.2), breaks = c(0,0.1,0.2), labels = c(0,-10,-20)) +
+  scale_y_continuous(name='z (%)', limits = c(-0.12,0.08), breaks = c(-0.1,0), labels = c(10,0)) +
+  geom_rangeframe() +
+  annotate(geom = "segment", x = log(0), xend = log(0), y = -0.1, yend = 0) +
+  annotate(geom = "segment", x = 0, xend = 0.2, y = log(0), yend = log(0))
+
+## -------------------- Panel B ------------------------
+# adjust data
+max_wing$species_order = factor(max_wing$species, levels = phylo_order$species)
+tmpx = melt(max_wing[,c("species_order","pt12_X","pt6_X","pt7_X","pt8_X","pt9_X","pt10_X","pt11_X","edge_X")], id = "species_order")
+tmpy = melt(max_wing[,c("species_order","pt12_Y","pt6_Y","pt7_Y","pt8_Y","pt9_Y","pt10_Y","pt11_Y","edge_Y")], id = "species_order")
+wing_shape = cbind(tmpx,tmpy[,c(2,3)])
+colnames(wing_shape) <- c("species_order","variable_x","value_x","variable_y","value_y")
+chulls_CGxy <- ddply(dat_final[,c("species_order","BirdID","wing_CGx_specific_orgShoulder","wing_CGy_specific_orgShoulder")], .(species_order, BirdID),
+                     function(df) df[chull(df$wing_CGx_specific_orgShoulder, df$wing_CGy_specific_orgShoulder), ])
+# plot
+wingCGxy_plot <- ggplot() +
+  geom_rect(data = chulls_CGxy, aes(xmin =0, ymin = -0.14, xmax = 0.3, ymax = 0, group = species_order), linetype="dashed", color = "gray", fill = NA, alpha = 0.25) +
+  #geom_path(data = wing_shape, aes(x = value_y, y = value_x), col = "black", alpha = 0.2) +
+  geom_polygon(data = chulls_CGxy, aes(x = wing_CGy_specific_orgShoulder, y = wing_CGx_specific_orgShoulder, col = species_order, fill = species_order, group = BirdID)) +
+  facet_wrap(~species_order, nrow = 3) +
+  # colour control
+  scale_fill_manual(values = rev(cc_rain), name = "species") +
+  scale_colour_manual(values = rev(cc_rain), name = "species") +
   #theme control
   th +
-  theme(axis.ticks.y=element_blank(),axis.text.y=element_blank()) +
-  #axis control
-  scale_y_discrete(expand = c(0.1,0), limits = phylo_order$species, name = "") +
-  scale_x_continuous(name = "x (% of full body length)", limits= c(0,1),
-                     breaks = c(0,0.25,0.5,0.75,1), labels = c(0,25,50,75,100)) +
+  theme(strip.background = element_blank(),
+        strip.text.x = element_blank())+
+  theme(legend.position="none") +
+  coord_fixed() +
+  scale_x_continuous(name='y (%)', limits = c(-0.01,0.31), breaks = c(0,0.1,0.2,0.3), labels = c(0,10,20,30)) +
+  scale_y_continuous(name='x (%)', limits = c(-0.15,0.1), breaks = c(-0.1,0,0.1), labels = c(-10,0,10)) +
   geom_rangeframe() +
-  annotate(geom = "segment", x = 0, xend = 1, y = log(0), yend = log(0))
+  annotate(geom = "segment", x = log(0), xend = log(0), y = -0.1, yend = 0.1) +
+  annotate(geom = "segment", x = 0, xend = 0.3, y = log(0), yend = log(0))
 
-CGy_specific <- ggplot() +
-  # add background info
-  geom_rect(data = shading, aes(ymin = col1, ymax = col2, xmin = 0, xmax = 1), alpha = 0.1, position = position_nudge(y = -0.5)) +
-  # add data
-  geom_errorbarh(data = test, aes(xmin = min_CGy_specific, xmax = max_CGy_specific, y = species), height = 0, alpha = 0.5)+
-  geom_point(data = aggregate(list(max_CGy_specific = dat_comp$max_wing_CGy_specific),  by=list(species = dat_comp$species), max),
-             aes(x = max_CGy_specific, y = species), fill = col_x, col = "black",pch = 22, alpha = 0.85) +
-  geom_point(data = aggregate(list(min_CGy_specific = dat_comp$min_wing_CGy_specific),  by=list(species = dat_comp$species), min),
-             aes(x = min_CGy_specific, y = species), fill = col_x, col = "black",pch = 22, alpha = 0.85) +
-  geom_point(data = aggregate(list(mean_CGy_specific = dat_comp$mean_wing_CGy_specific),  by=list(species = dat_comp$species), mean),
-             aes(x = mean_CGy_specific, y = species), fill = "white", col = col_x,pch = 21, alpha = 1) +
-  geom_point(data = aggregate(list(shouldery = dat_final$shouldery_specific),  by=list(species = dat_final$species), mean),
-             aes(x = shouldery, y = species), fill = col_x, col = "black", pch = 2, alpha = 1) +
-  #theme control
-  th +
-  theme(axis.ticks.y=element_blank(),axis.text.y=element_blank()) +
-  #axis control
-  scale_y_discrete(expand = c(0.1,0), limits = phylo_order$species, name = "") +
-  scale_x_continuous(name = "y (% of half span)", limits= c(0,1),
-                     breaks = c(0,0.25,0.5,0.75,1), labels = c(0,25,50,75,100)) +
-  geom_rangeframe() +
-  annotate(geom = "segment", x = 0, xend = 1, y = log(0), yend = log(0))
-
-CGz_specific <- ggplot() +
-  # add background info
-  geom_rect(data = shading, aes(ymin = col1, ymax = col2, xmin = 0, xmax = 1), alpha = 0.1, position = position_nudge(y = -0.5)) +
-  # add data
-  geom_point(data = aggregate(list(shoulderz_specific = dat_bird$shoulderz_specific),  by=list(species = dat_bird$species), mean),
-             aes(x = shoulderz_specific, y = species), fill = col_x, col = "black", pch = 2, alpha = 1) +
-  geom_errorbarh(data = test, aes(xmin = min_CGz_specific, xmax = max_CGz_specific, y = species), height = 0, alpha = 0.5)+
-  geom_point(data = aggregate(list(max_CGz_specific = dat_comp$max_CGz_specific),  by=list(species = dat_comp$species), max),
-             aes(x = max_CGz_specific, y = species), fill = col_x, col = "black",pch = 22, alpha = 0.85) +
-  geom_point(data = aggregate(list(min_CGz_specific = dat_comp$min_CGz_specific),  by=list(species = dat_comp$species), min),
-             aes(x = min_CGz_specific, y = species), fill = col_x, col = "black",pch = 22, alpha = 0.85) +
-  geom_point(data = aggregate(list(mean_CGz_specific = dat_comp$mean_CGz_specific),  by=list(species = dat_comp$species), mean),
-             aes(x = mean_CGz_specific, y = species), fill = "white", col = col_x, pch = 21, alpha = 1) +
-  #theme control
-  th +
-  theme(axis.ticks.y=element_blank(),axis.text.y=element_blank()) +
-  #axis control
-  scale_y_discrete(expand = c(0.1,0), limits = phylo_order$species, name = "") +
-  scale_x_continuous(name = "z (% of max. body height)", limits= c(0,1),
-                     breaks = c(0,0.25,0.5,0.75,1), labels = c(0,25,50,75,100)) +
-  geom_rangeframe() +
-  annotate(geom = "segment", x = 0, xend = 1, y = log(0), yend = log(0))
-
-
-CGx_angleeffect <- ggplot()+
-  # add background info
-  geom_rect(data = shading, aes(ymin = col1, ymax = col2, xmin = -1, xmax = 2.5), alpha = 0.1, position = position_nudge(y = -0.5)) +
-  geom_segment(aes(y = 0, yend = 23, x = 0, xend = 0), alpha = 0.5, linetype = 2) +
-  # add error bars
-  geom_errorbarh(data = ci_bounds, aes(xmin = -pmin(min_CGx_sp_man_lb1,min_CGx_sp_man_lb2), xmax = -pmax(max_CGx_sp_man_ub1,max_CGx_sp_man_ub2), y = species),
-                 col = col_z, position = position_nudge(y = 0.2), alpha = 0.2, height = 0.3, size = 1) +
-  geom_errorbarh(data = ci_bounds, aes(xmin = -pmin(min_CGx_sp_elb_lb1,min_CGx_sp_elb_lb2), xmax = -pmax(max_CGx_sp_elb_ub1,max_CGx_sp_elb_ub2), y = species),
-                 col = col_y, position = position_nudge(y = -0.2), alpha = 0.2, height = 0.3, size = 1) +
-  #add data
-  geom_point(data = dat_CG_plot, aes(x = -(mean_CGx_sp_man+mean_CGx_sp_elbman*elb_fixed[1]), y = species), col = col_xz, alpha = 0.2, position = position_nudge(y = 0.2)) +
-  geom_point(data = dat_CG_plot, aes(x = -(mean_CGx_sp_man+mean_CGx_sp_elbman*elb_fixed[2]), y = species), col = col_xz, alpha = 0.5, position = position_nudge(y = 0.2)) +
-  geom_point(data = dat_CG_plot, aes(x = -(mean_CGx_sp_man+mean_CGx_sp_elbman*elb_fixed[3]), y = species), col = col_xz, alpha = 1, position = position_nudge(y = 0.2)) +
-  geom_point(data = dat_CG_plot, aes(x = -(mean_CGx_sp_elb+mean_CGx_sp_elbman*man_fixed[1]), y = species), col = col_y, alpha = 0.4, position = position_nudge(y = -0.2)) +
-  geom_point(data = dat_CG_plot, aes(x = -(mean_CGx_sp_elb+mean_CGx_sp_elbman*man_fixed[2]), y = species), col = col_y, alpha = 0.7, position = position_nudge(y = -0.2)) +
-  geom_point(data = dat_CG_plot, aes(x = -(mean_CGx_sp_elb+mean_CGx_sp_elbman*man_fixed[3]), y = species), col = col_y, alpha = 1, position = position_nudge(y = -0.2)) +
-    #theme control
-  th +
-  theme(axis.ticks.y=element_blank(),axis.text.y=element_blank()) +
-  #axis control
-  scale_y_discrete(expand = c(0.1,0), limits = phylo_order$species, name = "")+
-  # to get %/deg we need to divide the output slopes by 10 instead I will just adjust the labels accordingly
-  scale_x_continuous(name = "Coefficient of Regression (%/°)", limits= c(-1,2.5) ,breaks = c(-1,0,1,2), labels = c(-0.1,0,0.1,0.2))+
-  geom_rangeframe() +
-  annotate(geom = "segment", x = -1, xend = 2, y = log(0), yend = log(0))
-
-
-CGy_angleeffect <- ggplot()+
-  # add background info
-  geom_rect(data = shading, aes(ymin = col1, ymax = col2, xmin = -1, xmax = 2.5), alpha = 0.1, position = position_nudge(y = -0.5)) +
-  geom_segment(aes(y = 0, yend = 23, x = 0, xend = 0), alpha = 0.50, linetype = 2) +
-  # add error bars
-  geom_errorbarh(data = ci_bounds, aes(xmin = pmin(min_CGy_sp_man_lb1,min_CGy_sp_man_lb2), xmax = pmax(max_CGy_sp_man_ub1,max_CGy_sp_man_ub2), y = species),
-                 col = col_xz, position = position_nudge(y = 0.2), alpha = 0.2, height = 0.3, size = 1) +
-  geom_errorbarh(data = ci_bounds, aes(xmin = pmin(min_CGy_sp_elb_lb1,min_CGy_sp_elb_lb2), xmax = pmax(max_CGy_sp_elb_ub1,max_CGy_sp_elb_ub2), y = species),
-                 col = col_y, position = position_nudge(y = -0.2), alpha = 0.2, height = 0.3, size = 1) +
-  # add data
-  geom_point(data = dat_CG_plot, aes(x = mean_CGy_sp_man+mean_CGy_sp_elbman*elb_fixed[1], y = species), col = col_xz, alpha = 0.2, position = position_nudge(y = 0.2)) +
-  geom_point(data = dat_CG_plot, aes(x = mean_CGy_sp_man+mean_CGy_sp_elbman*elb_fixed[2], y = species), col = col_xz, alpha = 0.5, position = position_nudge(y = 0.2)) +
-  geom_point(data = dat_CG_plot, aes(x = mean_CGy_sp_man+mean_CGy_sp_elbman*elb_fixed[3], y = species), col = col_xz, alpha = 1, position = position_nudge(y = 0.2)) +
-  geom_point(data = dat_CG_plot, aes(x = mean_CGy_sp_elb+mean_CGy_sp_elbman*man_fixed[1], y = species), col = col_y, alpha = 0.4, position = position_nudge(y = -0.2)) +
-  geom_point(data = dat_CG_plot, aes(x = mean_CGy_sp_elb+mean_CGy_sp_elbman*man_fixed[2], y = species), col = col_y, alpha = 0.7, position = position_nudge(y = -0.2)) +
-  geom_point(data = dat_CG_plot, aes(x = mean_CGy_sp_elb+mean_CGy_sp_elbman*man_fixed[3], y = species), col = col_y, alpha = 1, position = position_nudge(y = -0.2)) +
-  # theme control
-  th +
-  theme(axis.ticks.y=element_blank(),axis.text.y=element_blank()) +
-  # axis control
-  scale_y_discrete(expand = c(0.1,0), limits = phylo_order$species, name = "") +
-  # to get %/deg we need to divide the output slopes by 10 instead I will just adjust the labels accordingly
-  scale_x_continuous(name = "Coefficient of Regression (%/°)", limits= c(-1,2.5) ,breaks = c(-1,0,1,2), labels = c(-0.1,0,0.1,0.2))+
-  geom_rangeframe() +
-  annotate(geom = "segment", x = -1, xend = 2, y = log(0), yend = log(0))
-
-
-CGz_angleeffect <- ggplot()+
-  # add background info
-  geom_rect(data = shading, aes(ymin = col1, ymax = col2, xmin = -1, xmax = 2.4), alpha = 0.1, position = position_nudge(y = -0.5)) +
-  geom_segment(aes(y = 0, yend = 23, x = 0, xend = 0), alpha = 0.50, linetype = 2) +
-  # add error bars
-  geom_errorbarh(data = ci_bounds, aes(xmin = pmin(min_CGz_sp_man_lb1,min_CGz_sp_man_lb2), xmax = pmax(max_CGz_sp_man_ub1,max_CGz_sp_man_ub2), y = species),
-                 col = col_xz, position = position_nudge(y = 0.2), alpha = 0.2, height = 0.3, size = 1) +
-  geom_errorbarh(data = ci_bounds, aes(xmin = pmin(min_CGz_sp_elb_lb1,min_CGz_sp_elb_lb2), xmax = pmax(max_CGz_sp_elb_ub1,max_CGz_sp_elb_ub2), y = species),
-                 col = col_y, position = position_nudge(y = -0.2), alpha = 0.2, height = 0.3, size = 1) +
-  # add data
-  geom_point(data = dat_CG_plot, aes(x = mean_CGz_sp_man+mean_CGz_sp_elbman*elb_fixed[1], y = species), col = col_xz, alpha = 0.2, position = position_nudge(y = 0.2)) +
-  geom_point(data = dat_CG_plot, aes(x = mean_CGz_sp_man+mean_CGz_sp_elbman*elb_fixed[2], y = species), col = col_xz, alpha = 0.5, position = position_nudge(y = 0.2)) +
-  geom_point(data = dat_CG_plot, aes(x = mean_CGz_sp_man+mean_CGz_sp_elbman*elb_fixed[3], y = species), col = col_xz, alpha = 1, position = position_nudge(y = 0.2)) +
-  geom_point(data = dat_CG_plot, aes(x = mean_CGz_sp_elb+mean_CGz_sp_elbman*man_fixed[1], y = species), col = col_y, alpha = 0.4, position = position_nudge(y = -0.2)) +
-  geom_point(data = dat_CG_plot, aes(x = mean_CGz_sp_elb+mean_CGz_sp_elbman*man_fixed[2], y = species), col = col_y, alpha = 0.7, position = position_nudge(y = -0.2)) +
-  geom_point(data = dat_CG_plot, aes(x = mean_CGz_sp_elb+mean_CGz_sp_elbman*man_fixed[3], y = species), col = col_y, alpha = 1, position = position_nudge(y = -0.2)) +
-  # theme control
-  th +
-  theme(axis.ticks.y=element_blank(),axis.text.y=element_blank()) +
-  # axis control
-  scale_y_discrete(expand = c(0.1,0), limits = phylo_order$species, name = "") +
-  # to get %/deg we need to divide the output slopes by 10 instead I will just adjust the labels accordingly
-  scale_x_continuous(name = "Coefficient of Regression (%/°)", limits= c(-1,2.4) ,breaks = c(-1,0,1,2), labels = c(-0.1,0,0.1,0.2))+
-  geom_rangeframe() +
-  annotate(geom = "segment", x = -1, xend = 2, y = log(0), yend = log(0))
 
 effect_CGx <- ggplot()+
   # add background info
@@ -270,24 +224,7 @@ effect_CGx <- ggplot()+
   theme(axis.ticks.y=element_blank(),axis.text.y=element_blank()) +
   # axis control
   scale_y_continuous(limits = c(0,12), name = "") +
-  scale_x_continuous(limits = c(0,1), name = "Cohen's effect size") +
-  geom_rangeframe() +
-  annotate(geom = "segment", x = 0, xend = 1, y = log(0), yend = log(0))
-
-effect_CGy <- ggplot()+
-  # add background info
-  geom_density(data = aggregate(list(CGy_elb_etap = dat_model_out$CGy_elb_etap),  by=list(species = dat_model_out$species), mean),
-               aes(x = CGy_elb_etap), fill = col_elb, alpha = 0.5)  +
-  geom_density(data = aggregate(list(CGy_man_etap = dat_model_out$CGy_man_etap),  by=list(species = dat_model_out$species), mean),
-               aes(x = CGy_man_etap), fill = col_man, alpha = 0.5)  +
-  geom_density(data = aggregate(list(CGy_elbman_etap = dat_model_out$CGy_elbman_etap),  by=list(species = dat_model_out$species), mean),
-               aes(x = CGy_elbman_etap), fill = col_elbman, alpha = 0.5)  +
-  # theme control
-  th +
-  theme(axis.ticks.y=element_blank(),axis.text.y=element_blank()) +
-  # axis control
-  scale_y_continuous(limits = c(0,12), name = "") +
-  scale_x_continuous(limits = c(0,1), name = "Cohen's effect size") +
+  scale_x_continuous(limits = c(0,1), name = lab_eta) +
   geom_rangeframe() +
   annotate(geom = "segment", x = 0, xend = 1, y = log(0), yend = log(0))
 
@@ -304,9 +241,288 @@ effect_CGz <- ggplot()+
   theme(axis.ticks.y=element_blank(),axis.text.y=element_blank()) +
   # axis control
   scale_y_continuous(limits = c(0,12), name = "") +
-  scale_x_continuous(limits = c(0,1), name = "Cohen's effect size") +
+  scale_x_continuous(limits = c(0,1), name = lab_eta) +
   geom_rangeframe() +
   annotate(geom = "segment", x = 0, xend = 1, y = log(0), yend = log(0))
+
+effect_CGy <- ggplot()+
+  # add background info
+  geom_density(data = aggregate(list(CGy_elb_etap = dat_model_out$CGy_elb_etap),  by=list(species = dat_model_out$species), mean),
+               aes(x = CGy_elb_etap), fill = col_elb, alpha = 0.5)  +
+  geom_density(data = aggregate(list(CGy_man_etap = dat_model_out$CGy_man_etap),  by=list(species = dat_model_out$species), mean),
+               aes(x = CGy_man_etap), fill = col_man, alpha = 0.5)  +
+  geom_density(data = aggregate(list(CGy_elbman_etap = dat_model_out$CGy_elbman_etap),  by=list(species = dat_model_out$species), mean),
+               aes(x = CGy_elbman_etap), fill = col_elbman, alpha = 0.5)  +
+  # theme control
+  th +
+  theme(axis.ticks.y=element_blank(),axis.text.y=element_blank()) +
+  # axis control
+  scale_y_continuous(limits = c(0,12)) +
+  scale_x_continuous(limits = c(0,1), name = lab_eta) +
+  geom_rangeframe() +
+  annotate(geom = "segment", x = 0, xend = 1, y = log(0), yend = log(0))
+
+
+
+
+### ------------ Fit PGLSS model to the positions -----------
+CGx_model_mcmc <-
+  MCMCglmm::MCMCglmm(
+    log(-mean_CGx_orgBeak) ~ log(full_m),
+    random = ~ phylo,
+    scale = FALSE, ## whether you use this is up to you -- whatever is fair
+    ginverse = list(phylo = inv.phylo$Ainv),
+    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
+    data = morpho_data_means,
+    prior = univ_prior,
+    nitt = 130000, thin = 100, burnin = 30000,
+    verbose = FALSE, ## switch this to TRUE if you feel like it
+    pr = TRUE, pl = TRUE ## this saves some model output stuff
+  )
+CGx_model_mcmc_output  = summary(CGx_model_mcmc)
+
+CGx_sp_model_mcmc <-
+  MCMCglmm::MCMCglmm(
+    log(-mean_CGx_specific) ~ log(full_m),
+    random = ~ phylo,
+    scale = FALSE, ## whether you use this is up to you -- whatever is fair
+    ginverse = list(phylo = inv.phylo$Ainv),
+    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
+    data = morpho_data_means,
+    prior = univ_prior,
+    nitt = 130000, thin = 100, burnin = 30000,
+    verbose = FALSE, ## switch this to TRUE if you feel like it
+    pr = TRUE, pl = TRUE ## this saves some model output stuff
+  )
+CGx_sp_model_mcmc_output  = summary(CGx_sp_model_mcmc)
+
+CGy_model_mcmc <-
+  MCMCglmm::MCMCglmm(
+    log(mean_wing_CGy) ~ log(full_m),
+    random = ~ phylo,
+    scale = FALSE, ## whether you use this is up to you -- whatever is fair
+    ginverse = list(phylo = inv.phylo$Ainv),
+    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
+    data = morpho_data_means,
+    prior = univ_prior,
+    nitt = 130000, thin = 100, burnin = 30000,
+    verbose = FALSE, ## switch this to TRUE if you feel like it
+    pr = TRUE, pl = TRUE ## this saves some model output stuff
+  )
+CGy_model_mcmc_output  = summary(CGy_model_mcmc)
+
+CGy_sp_model_mcmc <-
+  MCMCglmm::MCMCglmm(
+    log(mean_wing_CGy_specific) ~ log(full_m),
+    random = ~ phylo,
+    scale = FALSE, ## whether you use this is up to you -- whatever is fair
+    ginverse = list(phylo = inv.phylo$Ainv),
+    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
+    data = morpho_data_means,
+    prior = univ_prior,
+    nitt = 130000, thin = 100, burnin = 30000,
+    verbose = FALSE, ## switch this to TRUE if you feel like it
+    pr = TRUE, pl = TRUE ## this saves some model output stuff
+  )
+CGy_sp_model_mcmc_output  = summary(CGy_sp_model_mcmc)
+
+CGz_model_mcmc <-
+  MCMCglmm::MCMCglmm(
+    log(mean_CGz_orgDorsal) ~ log(full_m),
+    random = ~ phylo,
+    scale = FALSE, ## whether you use this is up to you -- whatever is fair
+    ginverse = list(phylo = inv.phylo$Ainv),
+    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
+    data = morpho_data_means,
+    prior = univ_prior,
+    nitt = 130000, thin = 100, burnin = 30000,
+    verbose = FALSE, ## switch this to TRUE if you feel like it
+    pr = TRUE, pl = TRUE ## this saves some model output stuff
+  )
+CGz_model_mcmc_output  = summary(CGz_model_mcmc)
+
+CGz_sp_model_mcmc <-
+  MCMCglmm::MCMCglmm(
+    log(mean_CGz_specific) ~ log(full_m),
+    random = ~ phylo,
+    scale = FALSE, ## whether you use this is up to you -- whatever is fair
+    ginverse = list(phylo = inv.phylo$Ainv),
+    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
+    data = morpho_data_means,
+    prior = univ_prior,
+    nitt = 130000, thin = 100, burnin = 30000,
+    verbose = FALSE, ## switch this to TRUE if you feel like it
+    pr = TRUE, pl = TRUE ## this saves some model output stuff
+  )
+CGz_sp_model_mcmc_output  = summary(CGz_sp_model_mcmc)
+
+
+CG_isometry_fullbird <- ggplot() +
+  # add specific line fits
+  geom_line(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, y = exp(CGx_sp_model_mcmc_output$solutions[1,1])*full_m^CGx_sp_model_mcmc_output$solutions[2,1]),
+            col = "gray") +
+  geom_ribbon(data = data.fit, aes(x = full_m, ymin = exp(CGx_sp_model_mcmc_output$solutions[1,1])*full_m^CGx_sp_model_mcmc_output$solutions[2,2], ymax = exp(CGx_sp_model_mcmc_output$solutions[1,1])*full_m^CGx_sp_model_mcmc_output$solutions[2,3]),
+              col = NA, fill = "gray", alpha = 0.3) +
+  geom_line(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, y = exp(CGz_sp_model_mcmc_output$solutions[1,1])*full_m^CGz_sp_model_mcmc_output$solutions[2,1]),
+            col = "gray") +
+  geom_ribbon(data = data.fit, aes(x = full_m, ymin = exp(CGz_sp_model_mcmc_output$solutions[1,1])*full_m^CGz_sp_model_mcmc_output$solutions[2,2], ymax = exp(CGz_sp_model_mcmc_output$solutions[1,1])*full_m^CGz_sp_model_mcmc_output$solutions[2,3]),
+              col = NA, fill = "gray", alpha = 0.3) +
+  # add line fits
+  geom_line(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, y = exp(CGx_model_mcmc_output$solutions[1,1])*full_m^CGx_model_mcmc_output$solutions[2,1]),
+            col = "black") +
+  geom_ribbon(data = data.fit, aes(x = full_m, ymin = exp(CGx_model_mcmc_output$solutions[1,1])*full_m^CGx_model_mcmc_output$solutions[2,2], ymax = exp(CGx_model_mcmc_output$solutions[1,1])*full_m^CGx_model_mcmc_output$solutions[2,3]),
+              col = NA, fill = "black", alpha = 0.3) +
+  geom_line(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, y = exp(CGz_model_mcmc_output$solutions[1,1])*full_m^CGz_model_mcmc_output$solutions[2,1]),
+            col = "black") +
+  geom_ribbon(data = data.fit, aes(x = full_m, ymin = exp(CGz_model_mcmc_output$solutions[1,1])*full_m^CGz_model_mcmc_output$solutions[2,2], ymax = exp(CGz_model_mcmc_output$solutions[1,1])*full_m^CGz_model_mcmc_output$solutions[2,3]),
+              col = NA, fill = "black", alpha = 0.3) +
+  # add specific data
+  #geom_errorbar(data = dat_comp, aes(x = full_m, ymin = -min_CGx_specific, ymax = -max_CGx_specific), width = 0.08, col = "gray", alpha = 0.4) +
+  geom_point(data = dat_comp, aes (x = full_m, y = -mean_CGx_specific), col = "gray", pch = 19) +
+  #geom_errorbar(data = dat_comp, aes(x = full_m, ymin = min_CGz_specific, ymax = max_CGz_specific), width = 0.08, col = "gray", alpha = 0.4) +
+  geom_point(data = dat_comp, aes (x = full_m, y = mean_CGz_specific), col = "gray", pch = 1) +
+  # add exact data
+  geom_point(data = dat_comp, aes (x = full_m, y = -mean_CGx_orgBeak), col = "black", pch = 19) +
+  geom_point(data = dat_comp, aes (x = full_m, y = mean_CGz_orgDorsal), col = "black", pch = 1) +
+  # add iso lines
+  geom_line(data = dat_comp, aes(x = full_m, y = exp(CGx_sp_model_mcmc_output$solutions[1,1])*full_m^(0)), col = "gray", linetype = 2) +
+  geom_line(data = dat_comp, aes(x = full_m, y = exp(CGz_sp_model_mcmc_output$solutions[1,1])*full_m^(0)), col = "gray", linetype = 2) +
+  geom_line(data = dat_comp, aes(x = full_m, y = exp(CGx_model_mcmc_output$solutions[1,1])*full_m^(1/3)), col = "black", linetype = 2) +
+  geom_line(data = dat_comp, aes(x = full_m, y = exp(CGz_model_mcmc_output$solutions[1,1])*full_m^(1/3)), col = "black", linetype = 2) +
+  th +
+  scale_x_continuous(trans='log10', name = "Mass (kg)",
+                     breaks = c(0.01,0.1,1,10), labels = c(expression(10^-2),expression(10^-1),expression(10^0),expression(10^1)))+
+  scale_y_continuous(trans='log10', name = expression(paste("Mean center of gravity (m)", sep = "")), limits = c(0.006,1),
+                     breaks = c(1E-2,1E-1,1E0), labels = c(expression(10^-2),expression(10^-1),expression(10^0)),
+                     sec.axis = sec_axis(~.*100, name= "Normalized mean center of gravity (%)", breaks = c(1,10,30,100)))+
+  geom_rangeframe() +
+  annotate(geom = "segment", x = 0, xend = 0, y = 1E-2, yend = 1E0) +
+  annotate(geom = "segment", x = Inf, xend = Inf, y = 1E-2, yend = 1E0, col = "gray") +
+  annotate(geom = "segment", x = 0.01, xend = 10, y = 0, yend = 0)
+
+CG_isometry_singlewing <- ggplot() +
+  # add specific line fits
+  geom_line(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, y = exp(CGy_sp_model_mcmc_output$solutions[1,1])*full_m^CGy_sp_model_mcmc_output$solutions[2,1]),
+            col = "gray") +
+  geom_ribbon(data = data.fit, aes(x = full_m, ymin = exp(CGy_sp_model_mcmc_output$solutions[1,1])*full_m^CGy_sp_model_mcmc_output$solutions[2,2], ymax = exp(CGy_sp_model_mcmc_output$solutions[1,1])*full_m^CGy_sp_model_mcmc_output$solutions[2,3]),
+              col = NA, fill = "gray", alpha = 0.3) +
+  # add line fits
+  geom_line(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, y = exp(CGy_model_mcmc_output$solutions[1,1])*full_m^CGy_model_mcmc_output$solutions[2,1]),
+            col = "black") +
+  geom_ribbon(data = data.fit, aes(x = full_m, ymin = exp(CGy_model_mcmc_output$solutions[1,1])*full_m^CGy_model_mcmc_output$solutions[2,2], ymax = exp(CGy_model_mcmc_output$solutions[1,1])*full_m^CGy_model_mcmc_output$solutions[2,3]),
+              col = NA, fill = "black", alpha = 0.3) +
+  # add data
+  geom_point(data = dat_comp, aes (x = full_m, y = mean_wing_CGy), col = "black") +
+  geom_point(data = dat_comp, aes (x = full_m, y = mean_wing_CGy_specific), col = "gray") +
+  # add iso lines
+  geom_line(data = dat_comp, aes(x = full_m, y = exp(CGy_sp_model_mcmc_output$solutions[1,1])*full_m^(0)), col = "gray", linetype = 2) +
+  geom_line(data = dat_comp, aes(x = full_m, y = exp(CGy_model_mcmc_output$solutions[1,1])*full_m^(1/3)), col = "black", linetype = 2) +
+  th +
+  scale_x_continuous(trans='log10', name = "Mass (kg)",
+                     breaks = c(0.01,0.1,1,10), labels = c(expression(10^-2),expression(10^-1),expression(10^0),expression(10^1)))+
+  scale_y_continuous(trans='log10', name = expression(paste("Mean center of gravity (m)", sep = "")), limits = c(0.006,1),
+                     breaks = c(1E-2,1E-1,1E0), labels = c(expression(10^-2),expression(10^-1),expression(10^0)),
+                     sec.axis = sec_axis(~.*100, name= "Normalized mean center of gravity (%)", breaks = c(1,10,30,100)))+
+  geom_rangeframe() +
+  annotate(geom = "segment", x = 0, xend = 0, y = 1E-2, yend = 1E0) +
+  annotate(geom = "segment", x = Inf, xend = Inf, y = 1E-2, yend = 1E0, col = "gray") +
+  annotate(geom = "segment", x = 0.01, xend = 10, y = 0, yend = 0)
+
+
+# -------- Combine into panel ------------
+
+effectsize_full <- plot_grid(effect_CGx,effect_CGz,
+                                 #arrangement data
+                                 nrow = 2,
+                                 rel_heights = c(1,1),
+                                 #labels
+                                 labels = c("",""),
+                                 label_size = 10,
+                                 label_fontfamily = "sans")
+toprow <- plot_grid(blank_plot, effectsize_full,
+                    #arrangement data
+                    ncol = 2,
+                    rel_widths = c(1,0.4),
+                    #labels
+                    labels = c("",""),
+                    label_size = 10,
+                    label_fontfamily = "sans")
+
+fullbird_panel <- plot_grid(CGxz_plot, CG_isometry_fullbird,
+                              #arrangement data
+                              ncol = 2,
+                              rel_widths = c(1,0.4),
+                              #labels
+                              labels = c("","",""),
+                              label_size = 10,
+                              label_fontfamily = "sans")
+
+effectsize_single <- plot_grid(blank_plot,effect_CGy,
+                             #arrangement data
+                             nrow = 2,
+                             rel_heights = c(1,1),
+                             #labels
+                             labels = c("",""),
+                             label_size = 10,
+                             label_fontfamily = "sans")
+
+midrow <- plot_grid(blank_plot, effectsize_single,
+                    #arrangement data
+                    ncol = 2,
+                    rel_widths = c(1,0.4),
+                    #labels
+                    labels = c("",""),
+                    label_size = 10,
+                    label_fontfamily = "sans")
+
+bottomrow <- plot_grid(wingCGxy_plot, CG_isometry_singlewing,
+                       #arrangement data
+                       ncol = 2,
+                       rel_widths = c(1,0.4),
+                       #labels
+                       labels = c("","",""),
+                       label_size = 10,
+                       label_fontfamily = "sans")
+#exported as 12x12
+Figure2_final <- plot_grid(toprow,fullbird_panel,midrow,bottomrow,
+                       #arrangement data
+                       nrow = 4,
+                       rel_heights = c(0.8,1,0.8,1),
+                       #labels
+                       labels = c("",""),
+                       label_size = 10,
+                       label_fontfamily = "sans")
+
+
+
+
+
+
+chulls_Ixxzz <- ddply(dat_final[,c("species_order","BirdID","full_Ixx_specific","full_Izz_specific")], .(species_order, BirdID),
+                     function(df) df[chull(df$full_Ixx_specific, df$full_Izz_specific), ])
+
+# Panel C plot
+wingIxxIzz_plot <- ggplot()+
+  geom_polygon(data = chulls_Ixxzz, aes(x = full_Ixx_specific, y = full_Izz_specific, col = species_order, fill = species_order, group = BirdID)) +
+  facet_wrap(~species_order, ncol = 5) +
+  # colour control
+  scale_fill_manual(values = rev(cc_rain), name = "species") +
+  scale_colour_manual(values = rev(cc_rain), name = "species") +
+  #theme control
+  theme(strip.background = element_blank(),
+        strip.text.x = element_blank(),
+        # Background of panel
+        panel.background = ggplot2::element_rect(fill = "transparent"),
+        # Background behind actual data points
+        plot.background  = ggplot2::element_rect(fill = "transparent", color = NA),
+        axis.line =  element_line(colour = "black", linetype=1))+
+  theme(legend.position="none") +
+  coord_fixed() +
+  scale_x_continuous(name='y (%)', limits = c(-0.01,1.3)) +
+  scale_y_continuous(name='x (%)', limits = c(-0.8,0.2))
+
+
+
 
 effect_Ixx <- ggplot()+
   # add background info
@@ -711,17 +927,15 @@ CGx_iso_model <- lm(log(-min_CGx) ~ 1 + offset((1/3)*log(full_m)), data = dat_co
 CGy_iso_model <- lm(log(max_wing_CGy) ~ 1 + offset((1/3)*log(full_m)), data = dat_comp)
 CGz_iso_model <- lm(log(max_CGz) ~ 1 + offset((1/3)*log(full_m)), data = dat_comp)
 
-
-
 CG_isometry <- ggplot() +
   geom_point(data = dat_comp, aes (x = full_m, y = -min_CGx), col = col_x)+
   geom_point(data = dat_comp, aes (x = full_m, y = max_wing_CGy), col = "#479030")+
   geom_point(data = dat_comp, aes (x = full_m, y = max_CGz), col = col_z)+
   # verify the fits match PGLSS model
-  geom_line(data = test, aes(x = full_m, y = exp(fit)), col = col_x) +
-  geom_ribbon(data = test,
-              aes(x = full_m, ymin = exp(lwr), ymax = exp(upr)),
-              col = col_x, fill = col_x, alpha = 0.4) +
+  #geom_line(data = test, aes(x = full_m, y = exp(fit)), col = col_x) +
+  #geom_ribbon(data = test,
+  #            aes(x = full_m, ymin = exp(lwr), ymax = exp(upr)),
+  #            col = col_x, fill = col_x, alpha = 0.4) +
   geom_line(data = dat_comp, aes(x = full_m, y = exp(coef(CGx_iso_model)[1])*full_m^(1/3)), col = col_x, linetype = 2) +
   geom_line(data = dat_comp, aes(x = full_m, y = exp(coef(CGy_iso_model)[1])*full_m^(1/3)), col = "#479030", linetype = 2) +
   geom_line(data = dat_comp, aes(x = full_m, y = exp(coef(CGz_iso_model)[1])*full_m^(1/3)), col = col_z, linetype = 2) +
@@ -761,51 +975,7 @@ gull_Ixz <- ggplot()+
   geom_point(data = subset(dat_final,species == "lar_gla"), aes(x = elbow, y = manus, col = full_Ixz)) + th
 
 ## ----------------- Plots for sharing with others -----------------
-# Species rainbow colours
-cc_rain1  <- scales::seq_gradient_pal("#DA9101", "#CA302F", "Lab")(seq(0,1,length.out=6))
-cc_rain2  <- scales::seq_gradient_pal("#FCC201", "#DA9101", "Lab")(seq(0,1,length.out=3))
-cc_rain3  <- scales::seq_gradient_pal("#138715", "#FCC201", "Lab")(seq(0,1,length.out=6))
-cc_rain4  <- scales::seq_gradient_pal("#1FC3CD", "#138715", "Lab")(seq(0,1,length.out=4))
-cc_rain5  <- scales::seq_gradient_pal("#304CC8", "#1FC3CD", "Lab")(seq(0,1,length.out=5))
-cc_rain6  <- scales::seq_gradient_pal("#5F2CC8", "#304CC8", "Lab")(seq(0,1,length.out=3))
-cc_rain   <- c(cc_rain6, cc_rain5[2:5], cc_rain4[2:4], cc_rain3[2:6],cc_rain2[2:3],cc_rain1[2:6])
 
-validation_Ixx_plot <- ggplot()+
-  geom_errorbar(data = dat_comp, aes(x = full_m, ymax = max_wing_Ixx, ymin = sachs_pred_Ixx, col = species_order), alpha = 0.5) +
-  geom_line(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, y = 3.76*10^-3*full_m^2.05),col = "gray") + # Kirkpatrick, 1994
-  geom_line(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, y = 1.94*10^-3*full_m^1.953),col = "gray", linetype = 2) + # Berg and Rayner, 1995
-  geom_point(data = dat_comp, aes(x = full_m, y = sachs_pred_Ixx, fill = species_order, col = species_order), pch = 22, size = 1.5) + # Sachs, 2005
-  geom_point(data = dat_comp, aes(x = full_m, y = max_wing_Ixx, fill = species_order), pch = 21, col = "black", size = 2)+
-  th  +
-  # colour control
-  scale_fill_manual(values = rev(cc_rain), name = "species") +
-  scale_colour_manual(values = rev(cc_rain), name = "species") +
-  scale_x_continuous(trans='log10', name = "Mass (kg)",
-                     breaks = c(0.01,0.1,1,10), labels = c(expression(10^-2),expression(10^-1),expression(10^0),expression(10^1)))+
-  scale_y_continuous(trans='log10', name = expression(paste("Maximum wing I"["xx"]," (kg-m"^2,")", sep = "")),
-                     breaks = c(1E-6,1E-5,1E-4,1E-3,1E-2,1E-1), labels = c(expression(10^-6),expression(10^-5),expression(10^-4),expression(10^-3),expression(10^-2),expression(10^-1))) +
-  geom_rangeframe() +
-  annotate(geom = "segment", x = 0, xend = 0, y = 1E-6, yend = 1E-1) +
-  annotate(geom = "segment", x = 0.01, xend = 10, y = 0, yend = 0)
-
-chulls_xz <- ddply(dat_final[,c("species_order","BirdID","elbow","manus")], .(species_order, BirdID),
-                   function(df) df[chull(df$elbow, df$manus), ])
-
-ROM_plot <- ggplot()+
-  geom_polygon(data = chulls_xz, aes(x = elbow, y = manus, fill = species_order), col = NA) +
-  #stat_contour_filled(data = data.fit, aes(x = elbow, y = manus, z = prop_q, colour = ..level..),
-  #             breaks = quantile(data.fit$prop_q, seq(0, 1, 0.05)), size = 0.8) +
-  facet_wrap(~species_order, nrow = 2) +
-  # colour control
-  scale_fill_manual(values = rev(cc_rain), name = "species") +
-  theme(strip.background = element_blank(),
-        panel.background = ggplot2::element_rect(fill = "transparent"),
-        # Background behind actual data points
-        plot.background  = ggplot2::element_rect(fill = "transparent", color = NA),
-        axis.line =  element_line(colour = "black", linetype=1))+
-  coord_fixed() +
-  scale_x_continuous(name='Elbow angle (°)') +
-  scale_y_continuous(name='Wrist angle (°)') + theme(legend.position="none")
 
 validation_Izz_plot <- ggplot()+
   geom_point(data = dat_final, aes(x = full_m, y = wing_Izz, col = clade)) +
