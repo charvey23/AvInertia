@@ -10,6 +10,7 @@ library(effectsize) # needed for eta_squared calculation
 library(pracma)
 library(ggplot2)
 library(dplyr)
+library(reshape2)
 
 
 # --------------------- Read in data -----------------------
@@ -163,12 +164,14 @@ dat_bird <- merge(dat_bird,test, by = c("species","BirdID"))
 # uses scaling from:
 # Alerstam, T., Rosén, M., Bäckman, J., Ericson, P. G., & Hellgren, O. (2007).
 # Flight speeds among bird species: allometric and phylogenetic effects. PLoS Biol, 5(8), e197.
-dat_final$prop_q_dot     <- (-((dat_final$full_CGx+dat_final$head_length+dat_final$neck_length)-dat_final$pt1_X)*dat_final$S_proj_max*dat_final$full_m^0.24)/(dat_final$full_Iyy)
-dat_final$prop_q_dot_nd  <- (-((dat_final$full_CGx+dat_final$head_length+dat_final$neck_length)-dat_final$pt1_X)*dat_final$S_proj_max*dat_final$full_length^2)/(dat_final$full_Iyy)
+dat_final$prop_q_dot     <- (abs(dat_final$full_CGx-dat_final$pt1_X)*dat_final$S_proj_max*dat_final$full_m^0.24)/dat_final$full_Iyy
+dat_final$prop_q_dot_nd  <- (abs(dat_final$full_CGx-dat_final$pt1_X)*dat_final$S_proj_max*dat_final$full_length^2)/dat_final$full_Iyy
 dat_final$del_M_specific <- dat_final$prop_q_dot*dat_final$full_Iyy/(dat_final$full_m*dat_final$full_length)
 
 dat_final$sachs_pred_Ixx <- dat_final$full_m*(sqrt((0.14*dat_final$wing_m/dat_final$full_m))*dat_final$span*0.5)^2
 
+dat_final$pitch_div <- (dat_final$full_Izz - dat_final$full_Ixx)/dat_final$full_Iyy
+dat_final$yaw_div   <- (dat_final$full_Iyy - dat_final$full_Ixx)/dat_final$full_Izz
 ## ---- Compute the regression coefficients for each species for each variable -------
 
 no_specimens <- nrow(dat_bird)
@@ -264,16 +267,25 @@ dat_comp <- merge(dat_comp,test, by = c("species","BirdID"))
 
 # Include other important factors
 # Range of each component
-test     <- aggregate(list(mean_CGx_orgBeak  = dat_final$full_CGx-dat_final$head_length-dat_final$neck_length,
+test     <- aggregate(list(mean_CGx_orgBeak      = dat_final$full_CGx-dat_final$head_length-dat_final$neck_length,
+                           mean_CGz_orgDorsal    = dat_final$full_CGz+dat_final$z_dist_to_veh_ref_point_cm,
+                           mean_CGx_orgShoulder  = dat_final$full_CGx - dat_final$pt1_X,
+                           mean_CGz_orgShoulder  = dat_final$full_CGz - dat_final$pt1_Z,
                            mean_CGz_orgDorsal= dat_final$full_CGz+dat_final$z_dist_to_veh_ref_point_cm,
                            mean_wing_CGy     = dat_final$wing_CGy,
-                           mean_CGx_specific = dat_final$full_CGx_specific_orgBeak,
-                           mean_CGz_specific = dat_final$full_CGz_specific_orgDorsal,
+                           mean_CGx_specific_orgBeak = dat_final$full_CGx_specific_orgBeak,
+                           mean_CGz_specific_orgDorsal = dat_final$full_CGz_specific_orgDorsal,
+                           mean_CGx_specific_orgShoulder = dat_final$full_CGx_specific_orgShoulder,
+                           mean_CGz_specific_orgShoulder = dat_final$full_CGz_specific_orgShoulder,
                            mean_wing_CGy_specific = dat_final$wing_CGy_specific,
                            mean_Ixx_specific = dat_final$full_Ixx_specific,
                            mean_Iyy_specific = dat_final$full_Iyy_specific,
                            mean_Izz_specific = dat_final$full_Izz_specific,
                            mean_Ixz_specific = dat_final$full_Ixz_specific,
+                           mean_Ixx          = dat_final$full_Ixx,
+                           mean_Iyy          = dat_final$full_Iyy,
+                           mean_Izz          = dat_final$full_Izz,
+                           mean_Ixz          = dat_final$full_Ixz,
                            full_length = dat_final$full_length),
                       by=list(species = dat_final$species, BirdID = dat_final$BirdID), mean)
 dat_comp <- merge(dat_comp,test, by = c("species","BirdID"))
@@ -327,13 +339,11 @@ max((dat_final$full_CGx)/dat_final$full_length)
 full_tree <-
   read.nexus("vikROM_passerines_403sp.tre")
 
-## Species means
-morpho_data_means <-
-  mutate(dat_comp, phylo = binomial)
+dat_comp <- mutate(dat_comp, phylo = binomial)
 ## Prune down the tree to the relevant species
 sp_mean_matched <- keep.tip(phy = full_tree, tip = dat_comp$binomial)
 ## ladderization rotates nodes to make it easier to see basal vs derived
-pruned_mcc <- ape::ladderize(sp_mean_matched)
+pruned_mcc      <- ape::ladderize(sp_mean_matched)
 # plot
 plot(pruned_mcc)
 
@@ -348,7 +358,7 @@ univ_prior <-
 ## Model
 pgls_model_mcmc <-
   MCMCglmm::MCMCglmm(
-    log(CGy_man_etap) ~ log(full_m),
+    log(max_wing_Ixx) ~ log(full_m),
     random = ~ phylo,
     scale = FALSE, ## whether you use this is up to you -- whatever is fair
     ginverse = list(phylo = inv.phylo$Ainv),
@@ -365,3 +375,27 @@ summary(pgls_model_mcmc)
 
 filename = paste(format(Sys.Date(), "%Y_%m_%d"),"_alldata.csv",sep="")
 write.csv(dat_final,filename)
+
+
+
+### -------- PAPER STATS ----------
+
+# allometric relationship for Iwing max
+pgls_model_mcmc <-
+  MCMCglmm::MCMCglmm(
+    log(max_wing_Ixx) ~ log(full_m),
+    random = ~ phylo,
+    scale = FALSE, ## whether you use this is up to you -- whatever is fair
+    ginverse = list(phylo = inv.phylo$Ainv),
+    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
+    data = morpho_data_means,
+    prior = univ_prior,
+    nitt = 130000, thin = 100, burnin = 30000,
+    verbose = FALSE, ## switch this to TRUE if you feel like it
+    pr = TRUE, pl = TRUE ## this saves some model output stuff
+  )
+summary(pgls_model_mcmc)
+
+#maximum CGy for a pigeon
+max(subset(dat_final, species == "col_liv")$wing_CGy_specific_orgShoulder)
+
