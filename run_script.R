@@ -261,7 +261,7 @@ for (m in 1:length(no_species)){
       dat_feat_curr$m_f[i] = dat_bird_curr[1,name_mass]
 
       # --- Scale the feather size as appropriate for this individual
-      if(dat_feat_ID != specimens_curr$BirdID[k]){
+      if(dat_feat_ID != birdid_curr){
         scaling_feat            = (dat_bird_curr[1,name_mass]/subset(dat_bird, species == species_curr & BirdID == dat_feat_ID)[1,name_mass])^(1/3)
         dat_feat_curr$l_vane[i] = scaling_feat*dat_feat_curr$l_vane[i]
         dat_feat_curr$l_cal[i]  = scaling_feat*dat_feat_curr$l_cal[i]
@@ -272,6 +272,7 @@ for (m in 1:length(no_species)){
     }
 
     dat_feat_curr$species = species_curr
+    dat_feat_curr$BirdID = birdid_curr
 
     # - Compute the I and CG of each feather - I origin is about feather CG and CG origin is start of feather, both in the feather FOR
     feather_inertia <- compute_feat_inertia(dat_mat, dat_feat_curr, dat_bird_curr)
@@ -286,7 +287,7 @@ for (m in 1:length(no_species)){
                                   dat_bird_curr$ulnare_mass_g,dat_bird_curr$radiale_mass_g)
     dat_bone_curr$bone_len     = c(dat_bird_curr$humerus_length_mm,dat_bird_curr$ulna_length_mm,dat_bird_curr$radius_length_mm,dat_bird_curr$cmc_length_mm,
                                    NA,NA)
-    dat_bone_curr$bone_out_rad = c(dat_bird_curr$humerus_diameter_mm, ## ASK ABOUT THIS
+    dat_bone_curr$bone_out_rad = c(dat_bird_curr$humerus_diameter_mm,
                                     dat_bird_curr$ulna_diameter_mm,
                                     dat_bird_curr$radius_diameter_mm,
                                     dat_bird_curr$cmc_diameter_mm,NA,NA)

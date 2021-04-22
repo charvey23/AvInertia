@@ -49,6 +49,7 @@ combine_inertialprop <- function(curr_torsotail_data,left_wing_data,right_wing_d
                          subset(curr_torsotail_data, object == "CGx" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
                          subset(left_wing_data, object == "CGx" & component == "wing")$value*subset(left_wing_data, object == "m" & component == "wing")$value +
                          subset(right_wing_data, object == "CGx" & component == "wing")$value*subset(right_wing_data, object == "m" & component == "wing")$value)/fullbird$m
+
     fullbird$CG[3]  = (subset(curr_torsotail_data, object == "CGz" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
                          subset(curr_torsotail_data, object == "CGz" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
                          subset(curr_torsotail_data, object == "CGz" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
