@@ -90,90 +90,78 @@ CGx_model_mcmc <-
   MCMCglmm::MCMCglmm(
     log(-mean_CGx_orgBeak) ~ log(full_m),
     random = ~ phylo,
-    scale = FALSE, ## whether you use this is up to you -- whatever is fair
+    scale = FALSE,
     ginverse = list(phylo = inv.phylo$Ainv),
-    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
-    data = morpho_data_means,
+    family = c("gaussian"),
+    data = dat_comp,
     prior = univ_prior,
     nitt = 130000, thin = 100, burnin = 30000,
-    verbose = FALSE, ## switch this to TRUE if you feel like it
-    pr = TRUE, pl = TRUE ## this saves some model output stuff
-  )
+    verbose = FALSE, pr = TRUE, pl = TRUE)
 CGx_model_mcmc_output  = summary(CGx_model_mcmc)
 
 CGx_sp_model_mcmc <-
   MCMCglmm::MCMCglmm(
-    log(-mean_CGx_specific) ~ log(full_m),
+    log(-mean_CGx_specific_orgBeak) ~ log(full_m),
     random = ~ phylo,
-    scale = FALSE, ## whether you use this is up to you -- whatever is fair
+    scale = FALSE,
     ginverse = list(phylo = inv.phylo$Ainv),
-    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
-    data = morpho_data_means,
+    family = c("gaussian"),
+    data = dat_comp,
     prior = univ_prior,
     nitt = 130000, thin = 100, burnin = 30000,
-    verbose = FALSE, ## switch this to TRUE if you feel like it
-    pr = TRUE, pl = TRUE ## this saves some model output stuff
-  )
+    verbose = FALSE,pr = TRUE, pl = TRUE)
 CGx_sp_model_mcmc_output  = summary(CGx_sp_model_mcmc)
 
 CGy_model_mcmc <-
   MCMCglmm::MCMCglmm(
     log(mean_wing_CGy) ~ log(full_m),
     random = ~ phylo,
-    scale = FALSE, ## whether you use this is up to you -- whatever is fair
+    scale = FALSE,
     ginverse = list(phylo = inv.phylo$Ainv),
-    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
-    data = morpho_data_means,
+    family = c("gaussian"),
+    data = dat_comp,
     prior = univ_prior,
     nitt = 130000, thin = 100, burnin = 30000,
-    verbose = FALSE, ## switch this to TRUE if you feel like it
-    pr = TRUE, pl = TRUE ## this saves some model output stuff
-  )
+    verbose = FALSE,pr = TRUE, pl = TRUE)
 CGy_model_mcmc_output  = summary(CGy_model_mcmc)
 
 CGy_sp_model_mcmc <-
   MCMCglmm::MCMCglmm(
     log(mean_wing_CGy_specific) ~ log(full_m),
     random = ~ phylo,
-    scale = FALSE, ## whether you use this is up to you -- whatever is fair
+    scale = FALSE,
     ginverse = list(phylo = inv.phylo$Ainv),
-    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
-    data = morpho_data_means,
+    family = c("gaussian"),
+    data = dat_comp,
     prior = univ_prior,
     nitt = 130000, thin = 100, burnin = 30000,
-    verbose = FALSE, ## switch this to TRUE if you feel like it
-    pr = TRUE, pl = TRUE ## this saves some model output stuff
-  )
+    verbose = FALSE,pr = TRUE, pl = TRUE)
 CGy_sp_model_mcmc_output  = summary(CGy_sp_model_mcmc)
 
 CGz_model_mcmc <-
   MCMCglmm::MCMCglmm(
     log(mean_CGz_orgDorsal) ~ log(full_m),
     random = ~ phylo,
-    scale = FALSE, ## whether you use this is up to you -- whatever is fair
+    scale = FALSE,
     ginverse = list(phylo = inv.phylo$Ainv),
-    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
-    data = morpho_data_means,
+    family = c("gaussian"),
+    data = dat_comp,
     prior = univ_prior,
     nitt = 130000, thin = 100, burnin = 30000,
-    verbose = FALSE, ## switch this to TRUE if you feel like it
-    pr = TRUE, pl = TRUE ## this saves some model output stuff
-  )
+    verbose = FALSE, pr = TRUE, pl = TRUE)
 CGz_model_mcmc_output  = summary(CGz_model_mcmc)
 
 CGz_sp_model_mcmc <-
   MCMCglmm::MCMCglmm(
-    log(mean_CGz_specific) ~ log(full_m),
+    log(mean_CGz_specific_orgDorsal) ~ log(full_m),
     random = ~ phylo,
-    scale = FALSE, ## whether you use this is up to you -- whatever is fair
+    scale = FALSE,
     ginverse = list(phylo = inv.phylo$Ainv),
-    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
-    data = morpho_data_means,
+    family = c("gaussian"),
+    data = dat_comp,
     prior = univ_prior,
     nitt = 130000, thin = 100, burnin = 30000,
-    verbose = FALSE, ## switch this to TRUE if you feel like it
-    pr = TRUE, pl = TRUE ## this saves some model output stuff
-  )
+    verbose = FALSE,pr = TRUE, pl = TRUE)
 CGz_sp_model_mcmc_output  = summary(CGz_sp_model_mcmc)
 
 ## ------------------------------------------------------------------------------------
@@ -197,7 +185,7 @@ Ixx_model_mcmc <-
     scale = FALSE, ## whether you use this is up to you -- whatever is fair
     ginverse = list(phylo = inv.phylo$Ainv),
     family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
-    data = morpho_data_means,
+    data = dat_comp,
     prior = univ_prior,
     nitt = 130000, thin = 100, burnin = 30000,
     verbose = FALSE, ## switch this to TRUE if you feel like it
@@ -212,7 +200,7 @@ Iyy_model_mcmc <-
     scale = FALSE, ## whether you use this is up to you -- whatever is fair
     ginverse = list(phylo = inv.phylo$Ainv),
     family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
-    data = morpho_data_means,
+    data = dat_comp,
     prior = univ_prior,
     nitt = 130000, thin = 100, burnin = 30000,
     verbose = FALSE, ## switch this to TRUE if you feel like it
@@ -227,7 +215,7 @@ Izz_model_mcmc <-
     scale = FALSE, ## whether you use this is up to you -- whatever is fair
     ginverse = list(phylo = inv.phylo$Ainv),
     family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
-    data = morpho_data_means,
+    data = dat_comp,
     prior = univ_prior,
     nitt = 130000, thin = 100, burnin = 30000,
     verbose = FALSE, ## switch this to TRUE if you feel like it
@@ -239,14 +227,22 @@ Izz_model_mcmc_output  = summary(Izz_model_mcmc)
 ## ------------------------------------------------------------------------------------
 ## --------------------------------- Figure 4 -----------------------------------------
 ## ------------------------------------------------------------------------------------
-
-tmp <- melt(dat_feat, id = c("species","feather","BirdID"))
+tmp        <- subset(dat_feat, feather != "alula")
+tmp$length <- tmp$l_vane + tmp$l_cal
+tmp$width  <- tmp$w_cal + tmp$w_vd + tmp$w_vp
 tmp$comb <- paste(tmp$species,tmp$BirdID,sep = "_")
 tmp <- subset(tmp, species %in% c("acc_str","acc_coo","chr_amh","lop_nyc","lop_imp","cyp_nig","bra_can","fal_per","lar_gla","pel_ery","cor_cor") |
                 comb == "tyt_alb_19_265" | comb == "meg_alc_20_3495" | comb == "fal_col_20_1016" | comb == "ana_pla_20_0291" | comb == "cho_min_20_1027" | comb == "aec_occ_20_0922" |
                 comb == "cya_ste_20_0925" | comb == "oce_leu_20_1015" | comb == "ard_her_20_0284" | comb == "col_liv_20_0303" | comb == "col_aur_20_0907")
-dat_feat_means <- dcast(tmp[,c("species", "feather","variable","value")], species ~ feather + variable, value.var = "value", fun.aggregate = mean)
-dat_feat_means <- dat_feat_means[ , apply(dat_feat_means, 2, function(x) !any(is.na(x)))]
+tmp$grouping = NA
+tmp$grouping[which(grepl("P", tmp$feather, fixed = TRUE))] = "P"
+tmp$grouping[which(grepl("S", tmp$feather, fixed = TRUE))] = "S"
+
+dat_feat_means <- aggregate(list(feat_length = tmp$length,
+                                 feat_width = tmp$width,
+                                 feat_mass = tmp$m_f), by = list(species = tmp$species, grouping = tmp$grouping), mean)
+
+dat_feat_means <- reshape(dat_feat_means,idvar = "species",timevar = "grouping",direction = "wide")
 
 output_data_means <- aggregate(select_if(dat_comp, is.numeric), by = list(species = dat_comp$species), mean)
 morpho_data_means <- aggregate(select_if(dat_bird, is.numeric), by = list(species = dat_bird$species), mean)
@@ -258,210 +254,100 @@ all_data_means$torso_length <- all_data_means$torsotail_length - all_data_means$
 all_data_means$torso_mass   <- all_data_means$torsotail_mass - all_data_means$tail_mass_g
 all_data_means$leg_mass     <- 0.5*(all_data_means$left_leg_mass_g+all_data_means$right_leg_mass)
 
+test  <- aggregate(list(mean_chord = sqrt((dat_wing$pt12_X - dat_wing$pt11_X)^2+(dat_wing$pt12_Y - dat_wing$pt11_Y)^2+(dat_wing$pt12_Z - dat_wing$pt11_Z)^2)), by = list(species = dat_wing$species), max)
+test2 <- merge(test,all_data_means, id = "species")
+test2$c_l      = test2$mean_chord/test2$full_length
+test2$c_l_true = abs(test2$min_CGx_specific_orgShoulder*test2$full_length)/abs(0.25*test2$mean_chord)
+test2[,c("species","mean_CGx_specific_orgShoulder","c_l","c_l_true")]
+test2$species_order = factor(test2$species, levels = phylo_order$species)
+
 # create a matrix from the final data as it is required for fitContinuous()
 all_data_means_mat           <- as.matrix(select_if(all_data_means, is.numeric))
 rownames(all_data_means_mat) <- all_data_means$binomial
 colnames(all_data_means_mat) <- colnames(select_if(all_data_means, is.numeric))
+# log transform all data - absolute is just for CGx which is negative
+all_data_means_mat <- apply(all_data_means_mat,2,function(x) log(abs(x)))
 
-# list all colnames that we want to fit model to
-model_names <- c("head_height","head_length","head_mass",
-                 "body_height_max","body_width_max","torso_length","torso_mass",
-                 "tail_width","tail_length","tail_mass_g",
-                 "leg_mass",
-                 # Wing bones
-                 "humerus_diameter_mm","humerus_length_mm","humerus_mass_g",
-                 "radius_diameter_mm","radius_length_mm","radius_mass_g",
-                 "ulna_diameter_mm","ulna_length_mm","ulna_mass_g",
-                 "cmc_diameter_mm","cmc_length_mm","cmc_mass_g",
-                 # Wing muscle groups
-                 "brachial_muscle_mass","antebrachial_muscle_mass","manus_muscle_mass",
-                 #skin/coverts/terts
-                 "all_skin_coverts_mass","tertiary_mass",
-                 #full CG data
-                 "mean_CGx_orgBeak","mean_CGz_orgDorsal","mean_CGx_specific_orgBeak","mean_CGz_specific_orgDorsal",
-                 #full I data
-                 "mean_Ixx","mean_Iyy","mean_Izz",
-                 "mean_Ixx_specific","mean_Iyy_specific","mean_Izz_specific")
+source("influ_continuous_BMmult.R")
+# sets all birds to be within the same group
+gp.end        = rep(1,22)
+names(gp.end) = pruned_mcc$tip.label
+#compare.evol.rates(A=all_data_means_mat[,c("head_height","head_length","head_mass")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+# both computes the final rate and the influence per species
+dat_rate_head  <- influ_continuous_BMmult(data=all_data_means_mat[,c("head_height","head_length","head_mass")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+dat_rate_torso <- influ_continuous_BMmult(data=all_data_means_mat[,c("body_height_max","body_width_max","torso_length","torso_mass")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+dat_rate_tail  <- influ_continuous_BMmult(data=all_data_means_mat[,c("tail_width","tail_length","tail_mass_g")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+dat_rate_hum   <- influ_continuous_BMmult(data=all_data_means_mat[,c("humerus_diameter_mm","humerus_length_mm","humerus_mass_g")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+dat_rate_rad   <- influ_continuous_BMmult(data=all_data_means_mat[,c("radius_diameter_mm","radius_length_mm","radius_mass_g")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+dat_rate_uln   <- influ_continuous_BMmult(data=all_data_means_mat[,c("ulna_diameter_mm","ulna_length_mm","ulna_mass_g")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+dat_rate_cmc   <- influ_continuous_BMmult(data=all_data_means_mat[,c("cmc_diameter_mm","cmc_length_mm","cmc_mass_g")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+dat_rate_P     <- influ_continuous_BMmult(data=all_data_means_mat[,c("feat_length.P","feat_width.P","feat_mass.P")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+dat_rate_S     <- influ_continuous_BMmult(data=all_data_means_mat[,c("feat_length.S","feat_width.S","feat_mass.S")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+dat_rate_CG    <- influ_continuous_BMmult(data=all_data_means_mat[,c("mean_CGx_orgShoulder","mean_CGz_orgDorsal")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+dat_rate_I     <- influ_continuous_BMmult(data=all_data_means_mat[,c("mean_Ixx","mean_Iyy","mean_Izz")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+dat_rate_CG_sp <- influ_continuous_BMmult(data=all_data_means_mat[,c("mean_CGx_specific_orgShoulder","mean_CGz_specific_orgDorsal")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+dat_rate_I_sp  <- influ_continuous_BMmult(data=all_data_means_mat[,c("mean_Ixx_specific","mean_Iyy_specific","mean_Izz_specific")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+dat_rate_CG_wing    <- influ_continuous_BMmult(data=all_data_means_mat[,c("max_wing_CGx","max_wing_CGy")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+dat_rate_CG_wing_sp <- influ_continuous_BMmult(data=all_data_means_mat[,c("max_wing_CGx_specific","max_wing_CGy_specific")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
 
-dat_var <- fitContinuous(phy = pruned_mcc, dat = log(abs(all_data_means_mat[,model_names])), model ="BM")
-dat_var_feat <- fitContinuous(phy = pruned_mcc, dat = log(abs(all_data_means_mat[,4:123])), model ="BM")
+dat_var_tot           <- data.frame(matrix(nrow = 0, ncol = 2))
+colnames(dat_var_tot) <- c("component","mean_sig_sq")
 
-dat_var_tot  <- data.frame(matrix(nrow = 0, ncol = 3))
-colnames(dat_var_tot) <- c("component","mean_sig_sq","min_val")
+dat_var_tot = rbind(dat_var_tot,list(component = "head", mean_sig_sq = dat_rate_head$full.model.estimates$sigsq))
+dat_var_tot = rbind(dat_var_tot,list(component = "torso",mean_sig_sq = dat_rate_torso$full.model.estimates$sigsq))
+dat_var_tot = rbind(dat_var_tot,list(component = "tail",mean_sig_sq = dat_rate_tail$full.model.estimates$sigsq))
+dat_var_tot = rbind(dat_var_tot,list(component = "humerus",mean_sig_sq = dat_rate_hum$full.model.estimates$sigsq))
+dat_var_tot = rbind(dat_var_tot,list(component = "radius",mean_sig_sq = dat_rate_rad$full.model.estimates$sigsq))
+dat_var_tot = rbind(dat_var_tot,list(component = "ulna",mean_sig_sq = dat_rate_uln$full.model.estimates$sigsq))
+dat_var_tot = rbind(dat_var_tot,list(component = "cmc",mean_sig_sq = dat_rate_cmc$full.model.estimates$sigsq))
+dat_var_tot = rbind(dat_var_tot,list(component = "full_CG",mean_sig_sq = dat_rate_CG$full.model.estimates$sigsq))
+dat_var_tot = rbind(dat_var_tot,list(component = "full_I",mean_sig_sq = dat_rate_I$full.model.estimates$sigsq))
+dat_var_tot = rbind(dat_var_tot,list(component = "full_CG_sp",mean_sig_sq = dat_rate_CG_sp$full.model.estimates$sigsq))
+dat_var_tot = rbind(dat_var_tot,list(component = "full_I_sp",mean_sig_sq = dat_rate_I_sp$full.model.estimates$sigsq))
+dat_var_tot = rbind(dat_var_tot,list(component = "wing_CG",mean_sig_sq = dat_rate_CG_wing$full.model.estimates$sigsq))
+dat_var_tot = rbind(dat_var_tot,list(component = "wing_CG_sp",mean_sig_sq = dat_rate_CG_wing_sp$full.model.estimates$sigsq))
+dat_var_tot = rbind(dat_var_tot,list(component = "P",mean_sig_sq = dat_rate_P$full.model.estimates$sigsq))
+dat_var_tot = rbind(dat_var_tot,list(component = "S",mean_sig_sq = dat_rate_S$full.model.estimates$sigsq))
 
-dat_var_tot = rbind(dat_var_tot,list(component = "fakeforcolour",
-                                     mean_sig_sq = 0,
-                                     min_val = 0.01))
+dat_var_range  <- data.frame(matrix(nrow = 0, ncol = 3))
+colnames(dat_var_range) <- c("component","species","mean_sig_sq")
 
-dat_var_tot = rbind(dat_var_tot,list(component = "head",
-                                     mean_sig_sq = mean(dat_var$head_height$opt$sigsq,
-                                                        dat_var$head_length$opt$sigsq,
-                                                        dat_var$head_mass$opt$sigsq),
-                                     min_val = min(c(all_data_means$head_height,all_data_means$head_length,all_data_means$head_mass))))
+dat_var_range = rbind(dat_var_range,list(component = rep("head",22), species = dat_rate_head$sensi.estimates$species, mean_sig_sq = dat_rate_head$sensi.estimates$sigsq))
+dat_var_range = rbind(dat_var_range,list(component = rep("torso",22), species = dat_rate_torso$sensi.estimates$species, mean_sig_sq = dat_rate_torso$sensi.estimates$sigsq))
+dat_var_range = rbind(dat_var_range,list(component = rep("tail",22), species = dat_rate_tail$sensi.estimates$species, mean_sig_sq = dat_rate_tail$sensi.estimates$sigsq))
+dat_var_range = rbind(dat_var_range,list(component = rep("humerus",22), species = dat_rate_hum$sensi.estimates$species, mean_sig_sq = dat_rate_hum$sensi.estimates$sigsq))
+dat_var_range = rbind(dat_var_range,list(component = rep("radius",22), species = dat_rate_rad$sensi.estimates$species, mean_sig_sq = dat_rate_rad$sensi.estimates$sigsq))
+dat_var_range = rbind(dat_var_range,list(component = rep("ulna",22), species = dat_rate_uln$sensi.estimates$species, mean_sig_sq = dat_rate_uln$sensi.estimates$sigsq))
+dat_var_range = rbind(dat_var_range,list(component = rep("cmc",22), species = dat_rate_cmc$sensi.estimates$species, mean_sig_sq = dat_rate_cmc$sensi.estimates$sigsq))
+dat_var_range = rbind(dat_var_range,list(component = rep("full_CG",22), species = dat_rate_CG$sensi.estimates$species, mean_sig_sq = dat_rate_CG$sensi.estimates$sigsq))
+dat_var_range = rbind(dat_var_range,list(component = rep("full_I",22), species = dat_rate_I$sensi.estimates$species, mean_sig_sq = dat_rate_I$sensi.estimates$sigsq))
+dat_var_range = rbind(dat_var_range,list(component = rep("full_CG_sp",22), species = dat_rate_CG_sp$sensi.estimates$species, mean_sig_sq = dat_rate_CG_sp$sensi.estimates$sigsq))
+dat_var_range = rbind(dat_var_range,list(component = rep("full_I_sp",22), species = dat_rate_I_sp$sensi.estimates$species, mean_sig_sq = dat_rate_I_sp$sensi.estimates$sigsq))
+dat_var_range = rbind(dat_var_range,list(component = rep("P",22), species = dat_rate_P$sensi.estimates$species, mean_sig_sq = dat_rate_P$sensi.estimates$sigsq))
+dat_var_range = rbind(dat_var_range,list(component = rep("S",22), species = dat_rate_S$sensi.estimates$species, mean_sig_sq = dat_rate_S$sensi.estimates$sigsq))
+dat_var_range = rbind(dat_var_range,list(component = rep("wing_CG",22), species = dat_rate_CG_wing$sensi.estimates$species, mean_sig_sq = dat_rate_CG_wing$sensi.estimates$sigsq))
+dat_var_range = rbind(dat_var_range,list(component = rep("wing_CG_sp",22), species = dat_rate_CG_wing_sp$sensi.estimates$species, mean_sig_sq = dat_rate_CG_wing_sp$sensi.estimates$sigsq))
 
-tmp = mean(dat_var$body_width_max$opt$sigsq,dat_var$body_height_max$opt$sigsq)
-dat_var_tot = rbind(dat_var_tot,list(component = "torso",
-                                     mean_sig_sq = mean(tmp,
-                                                        dat_var$torso_length$opt$sigsq,
-                                                        dat_var$torso_mass$opt$sigsq),
-                                     min_val = min(c(all_data_means$body_width_max,all_data_means$torso_length,all_data_means$torso_mass))))
-dat_var_tot = rbind(dat_var_tot,list(component = "tail",
-                                     mean_sig_sq = mean(dat_var$tail_width$opt$sigsq,
-                                                        dat_var$tail_length$opt$sigsq,
-                                                        dat_var$tail_mass_g$opt$sigsq),
-                                     min_val = min(c(all_data_means$tail_width,all_data_means$tail_length,all_data_means$tail_mass_g)))
-)
-dat_var_tot = rbind(dat_var_tot,list(component = "humerus",
-                                     mean_sig_sq = mean(dat_var$humerus_diameter_mm$opt$sigsq,
-                                                        dat_var$humerus_length_mm$opt$sigsq,
-                                                        dat_var$humerus_mass_g$opt$sigsq),
-                                     min_val = min(c(all_data_means$humerus_diameter_mm,all_data_means$humerus_length_mm,all_data_means$humerus_mass_g))))
-dat_var_tot = rbind(dat_var_tot,list(component = "radius",
-                                     mean_sig_sq = mean(dat_var$radius_diameter_mm$opt$sigsq,
-                                                        dat_var$radius_length_mm$opt$sigsq,
-                                                        dat_var$radius_mass_g$opt$sigsq),
-                                     min_val = min(c(all_data_means$radius_diameter_mm,all_data_means$radius_length_mm,all_data_means$radius_mass_g))))
-dat_var_tot = rbind(dat_var_tot,list(component = "ulna",
-                                     mean_sig_sq = mean(dat_var$ulna_diameter_mm$opt$sigsq,
-                                                        dat_var$ulna_length_mm$opt$sigsq,
-                                                        dat_var$ulna_mass_g$opt$sigsq),
-                                     min_val = min(c(all_data_means$ulna_diameter_mm,all_data_means$ulna_length_mm,all_data_means$ulna_mass_g))))
-dat_var_tot = rbind(dat_var_tot,list(component = "cmc",
-                                     mean_sig_sq = mean(dat_var$cmc_diameter_mm$opt$sigsq,
-                                                        dat_var$cmc_length_mm$opt$sigsq,
-                                                        dat_var$cmc_mass_g$opt$sigsq),
-                                     min_val = min(c(all_data_means$cmc_diameter_mm,all_data_means$cmc_length_mm,all_data_means$cmc_mass_g))))
-dat_var_tot = rbind(dat_var_tot,list(component = "muscles_brach",
-                                     mean_sig_sq = dat_var$brachial_muscle_mass$opt$sigsq,
-                                     min_val = min(c(all_data_means$brachial_muscle_mass))))
-dat_var_tot = rbind(dat_var_tot,list(component = "muscles_abrach",
-                                     mean_sig_sq = dat_var$antebrachial_muscle_mass$opt$sigsq,
-                                     min_val = min(c(all_data_means$antebrachial_muscle_mass))))
-dat_var_tot = rbind(dat_var_tot,list(component = "muscles_manus",
-                                     mean_sig_sq = dat_var$manus_muscle_mass$opt$sigsq,
-                                     min_val = min(c(all_data_means$manus_muscle_mass))))
-dat_var_tot = rbind(dat_var_tot,list(component = "tertiaries",
-                                     mean_sig_sq = dat_var$tertiary_mass$opt$sigsq,
-                                     min_val = min(c(all_data_means$tertiary_mass))))
-dat_var_tot = rbind(dat_var_tot,list(component = "skin/coverts",
-                                     mean_sig_sq = dat_var$all_skin_coverts_mass$opt$sigsq,
-                                     min_val = min(c(all_data_means$all_skin_coverts_mass))))
-dat_var_tot = rbind(dat_var_tot,list(component = "full_CG",
-                                     mean_sig_sq = mean(dat_var$mean_CGx_orgBeak$opt$sigsq,
-                                                        dat_var$mean_CGz_orgDorsal$opt$sigsq),
-                                     min_val = min(abs(c(all_data_means$mean_CGx_orgBeak,all_data_means$mean_CGz_orgDorsal)))))
-dat_var_tot = rbind(dat_var_tot,list(component = "full_CG_specific",
-                                     mean_sig_sq = mean(dat_var$mean_CGx_specific_orgBeak$opt$sigsq,
-                                                        dat_var$mean_CGz_specific_orgDorsal$opt$sigsq),
-                                     min_val = min(abs(c(all_data_means$mean_CGx_specific_orgBeak,all_data_means$mean_CGz_specific_orgDorsal)))))
-dat_var_tot = rbind(dat_var_tot,list(component = "full_I",
-                                     mean_sig_sq = mean(dat_var$mean_Ixx$opt$sigsq,
-                                                        dat_var$mean_Iyy$opt$sigsq,
-                                                        dat_var$mean_Izz$opt$sigsq),
-                                     min_val = min(c(all_data_means$mean_Ixx,all_data_means$mean_Iyy,all_data_means$mean_Izz))))
-dat_var_tot = rbind(dat_var_tot,list(component = "full_I_specific",
-                                     mean_sig_sq = mean(dat_var$mean_Ixx_specific$opt$sigsq,
-                                                        dat_var$mean_Iyy_specific$opt$sigsq,
-                                                        dat_var$mean_Izz_specific$opt$sigsq),
-                                     min_val = min(c(all_data_means$mean_Ixx_specific,all_data_means$mean_Iyy_specific,all_data_means$mean_Izz_specific))))
+dat_var_range$component = factor(dat_var_range$component, levels = c("head","torso","tail","humerus","ulna","radius","cmc","P","S","full_CG","full_CG_sp","wing_CG","wing_CG_sp","full_I","full_I_sp"))
 
-dat_var_tot = rbind(dat_var_tot,list(component = "P10",
-                                     mean_sig_sq = mean(dat_var_feat$P10_m_f$opt$sigsq,
-                                                        mean(dat_var_feat$P10_l_vane$opt$sigsq,dat_var_feat$P10_l_cal$opt$sigsq),
-                                                        mean(dat_var_feat$P10_w_cal$opt$sigsq,dat_var_feat$P10_w_vd$opt$sigsq,dat_var_feat$P10_w_vp$opt$sigsq)),
-                                     min_val = min(c(all_data_means$mean_Ixx_specific,all_data_means$mean_Iyy_specific,all_data_means$mean_Izz_specific))))
+fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("max_wing_CGy_specific")], model = "OU")
 
-dat_var_tot = rbind(dat_var_tot,list(component = "P9",
-                                     mean_sig_sq = mean(dat_var_feat$P9_m_f$opt$sigsq,
-                                                        mean(dat_var_feat$P9_l_vane$opt$sigsq,dat_var_feat$P9_l_cal$opt$sigsq),
-                                                        mean(dat_var_feat$P9_w_cal$opt$sigsq,dat_var_feat$P9_w_vd$opt$sigsq,dat_var_feat$P9_w_vp$opt$sigsq)),
-                                     min_val = min(c(all_data_means$mean_Ixx_specific,all_data_means$mean_Iyy_specific,all_data_means$mean_Izz_specific))))
+#fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("mean_CGx_specific_orgShoulder")], model = "OU")
+mvOU(tree = pruned_mcc, data = all_data_means_mat[,c("mean_CGx_specific_orgShoulder")])
+mvOU(tree = pruned_mcc, data = all_data_means_mat[,c("max_wing_CGy_specific")])
+library(pmc)
 
-dat_var_tot = rbind(dat_var_tot,list(component = "P8",
-                                     mean_sig_sq = mean(dat_var_feat$P8_m_f$opt$sigsq,
-                                                        mean(dat_var_feat$P8_l_vane$opt$sigsq,dat_var_feat$P8_l_cal$opt$sigsq),
-                                                        mean(dat_var_feat$P8_w_cal$opt$sigsq,dat_var_feat$P8_w_vd$opt$sigsq,dat_var_feat$P8_w_vp$opt$sigsq)),
-                                     min_val = min(c(all_data_means$mean_Ixx_specific,all_data_means$mean_Iyy_specific,all_data_means$mean_Izz_specific))))
+# to verify that the OU model is an appropriate fit given the size of our data
+out <- pmc(tree = pruned_mcc, data = all_data_means_mat[,c("mean_CGx_specific_orgShoulder")], "BM", "OU", nboot = 1000, mc.cores = 1)
+filename = paste(format(Sys.Date(), "%Y_%m_%d"),"_pmc_output.RData",sep="")
+save(out,file = filename)
 
-dat_var_tot = rbind(dat_var_tot,list(component = "P7",
-                                     mean_sig_sq = mean(dat_var_feat$P7_m_f$opt$sigsq,
-                                                        mean(dat_var_feat$P7_l_vane$opt$sigsq,dat_var_feat$P7_l_cal$opt$sigsq),
-                                                        mean(dat_var_feat$P7_w_cal$opt$sigsq,dat_var_feat$P7_w_vd$opt$sigsq,dat_var_feat$P7_w_vp$opt$sigsq)),
-                                     min_val = min(c(all_data_means$mean_Ixx_specific,all_data_means$mean_Iyy_specific,all_data_means$mean_Izz_specific))))
-
-dat_var_tot = rbind(dat_var_tot,list(component = "P6",
-                                     mean_sig_sq = mean(dat_var_feat$P6_m_f$opt$sigsq,
-                                                        mean(dat_var_feat$P6_l_vane$opt$sigsq,dat_var_feat$P6_l_cal$opt$sigsq),
-                                                        mean(dat_var_feat$P6_w_cal$opt$sigsq,dat_var_feat$P6_w_vd$opt$sigsq,dat_var_feat$P6_w_vp$opt$sigsq)),
-                                     min_val = min(c(all_data_means$mean_Ixx_specific,all_data_means$mean_Iyy_specific,all_data_means$mean_Izz_specific))))
-
-dat_var_tot = rbind(dat_var_tot,list(component = "P5",
-                                     mean_sig_sq = mean(dat_var_feat$P5_m_f$opt$sigsq,
-                                                        mean(dat_var_feat$P5_l_vane$opt$sigsq,dat_var_feat$P5_l_cal$opt$sigsq),
-                                                        mean(dat_var_feat$P5_w_cal$opt$sigsq,dat_var_feat$P5_w_vd$opt$sigsq,dat_var_feat$P5_w_vp$opt$sigsq)),
-                                     min_val = min(c(all_data_means$mean_Ixx_specific,all_data_means$mean_Iyy_specific,all_data_means$mean_Izz_specific))))
-dat_var_tot = rbind(dat_var_tot,list(component = "P4",
-                                     mean_sig_sq = mean(dat_var_feat$P4_m_f$opt$sigsq,
-                                                        mean(dat_var_feat$P4_l_vane$opt$sigsq,dat_var_feat$P4_l_cal$opt$sigsq),
-                                                        mean(dat_var_feat$P4_w_cal$opt$sigsq,dat_var_feat$P4_w_vd$opt$sigsq,dat_var_feat$P4_w_vp$opt$sigsq)),
-                                     min_val = min(c(all_data_means$mean_Ixx_specific,all_data_means$mean_Iyy_specific,all_data_means$mean_Izz_specific))))
-
-dat_var_tot = rbind(dat_var_tot,list(component = "P3",
-                                     mean_sig_sq = mean(dat_var_feat$P3_m_f$opt$sigsq,
-                                                        mean(dat_var_feat$P3_l_vane$opt$sigsq,dat_var_feat$P3_l_cal$opt$sigsq),
-                                                        mean(dat_var_feat$P3_w_cal$opt$sigsq,dat_var_feat$P3_w_vd$opt$sigsq,dat_var_feat$P3_w_vp$opt$sigsq)),
-                                     min_val = min(c(all_data_means$mean_Ixx_specific,all_data_means$mean_Iyy_specific,all_data_means$mean_Izz_specific))))
-
-dat_var_tot = rbind(dat_var_tot,list(component = "P2",
-                                     mean_sig_sq = mean(dat_var_feat$P2_m_f$opt$sigsq,
-                                                        mean(dat_var_feat$P2_l_vane$opt$sigsq,dat_var_feat$P2_l_cal$opt$sigsq),
-                                                        mean(dat_var_feat$P2_w_cal$opt$sigsq,dat_var_feat$P2_w_vd$opt$sigsq,dat_var_feat$P2_w_vp$opt$sigsq)),
-                                     min_val = min(c(all_data_means$mean_Ixx_specific,all_data_means$mean_Iyy_specific,all_data_means$mean_Izz_specific))))
-
-dat_var_tot = rbind(dat_var_tot,list(component = "P1",
-                                     mean_sig_sq = mean(dat_var_feat$P1_m_f$opt$sigsq,
-                                                        mean(dat_var_feat$P1_l_vane$opt$sigsq,dat_var_feat$P1_l_cal$opt$sigsq),
-                                                        mean(dat_var_feat$P1_w_cal$opt$sigsq,dat_var_feat$P1_w_vd$opt$sigsq,dat_var_feat$P1_w_vp$opt$sigsq)),
-                                     min_val = min(c(all_data_means$mean_Ixx_specific,all_data_means$mean_Iyy_specific,all_data_means$mean_Izz_specific))))
-
-dat_var_tot = rbind(dat_var_tot,list(component = "S1",
-                                     mean_sig_sq = mean(dat_var_feat$S1_m_f$opt$sigsq,
-                                                        mean(dat_var_feat$S1_l_vane$opt$sigsq,dat_var_feat$S1_l_cal$opt$sigsq),
-                                                        mean(dat_var_feat$S1_w_cal$opt$sigsq,dat_var_feat$S1_w_vd$opt$sigsq,dat_var_feat$S1_w_vp$opt$sigsq)),
-                                     min_val = min(c(all_data_means$mean_Ixx_specific,all_data_means$mean_Iyy_specific,all_data_means$mean_Izz_specific))))
-
-dat_var_tot = rbind(dat_var_tot,list(component = "S2",
-                                     mean_sig_sq = mean(dat_var_feat$S2_m_f$opt$sigsq,
-                                                        mean(dat_var_feat$S2_l_vane$opt$sigsq,dat_var_feat$S2_l_cal$opt$sigsq),
-                                                        mean(dat_var_feat$S2_w_cal$opt$sigsq,dat_var_feat$S2_w_vd$opt$sigsq,dat_var_feat$S2_w_vp$opt$sigsq)),
-                                     min_val = min(c(all_data_means$mean_Ixx_specific,all_data_means$mean_Iyy_specific,all_data_means$mean_Izz_specific))))
-
-dat_var_tot = rbind(dat_var_tot,list(component = "S3",
-                                     mean_sig_sq = mean(dat_var_feat$S3_m_f$opt$sigsq,
-                                                        mean(dat_var_feat$S3_l_vane$opt$sigsq,dat_var_feat$S3_l_cal$opt$sigsq),
-                                                        mean(dat_var_feat$S3_w_cal$opt$sigsq,dat_var_feat$S3_w_vd$opt$sigsq,dat_var_feat$S3_w_vp$opt$sigsq)),
-                                     min_val = min(c(all_data_means$mean_Ixx_specific,all_data_means$mean_Iyy_specific,all_data_means$mean_Izz_specific))))
-dat_var_tot = rbind(dat_var_tot,list(component = "S4",
-                                     mean_sig_sq = mean(dat_var_feat$S4_m_f$opt$sigsq,
-                                                        mean(dat_var_feat$S4_l_vane$opt$sigsq,dat_var_feat$S4_l_cal$opt$sigsq),
-                                                        mean(dat_var_feat$S4_w_cal$opt$sigsq,dat_var_feat$S4_w_vd$opt$sigsq,dat_var_feat$S4_w_vp$opt$sigsq)),
-                                     min_val = min(c(all_data_means$mean_Ixx_specific,all_data_means$mean_Iyy_specific,all_data_means$mean_Izz_specific))))
-
-dat_var_tot = rbind(dat_var_tot,list(component = "S5",
-                                     mean_sig_sq = mean(dat_var_feat$S5_m_f$opt$sigsq,
-                                                        mean(dat_var_feat$S5_l_vane$opt$sigsq,dat_var_feat$S5_l_cal$opt$sigsq),
-                                                        mean(dat_var_feat$S5_w_cal$opt$sigsq,dat_var_feat$S5_w_vd$opt$sigsq,dat_var_feat$S5_w_vp$opt$sigsq)),
-                                     min_val = min(c(all_data_means$mean_Ixx_specific,all_data_means$mean_Iyy_specific,all_data_means$mean_Izz_specific))))
-
-dat_var_tot = rbind(dat_var_tot,list(component = "S6",
-                                     mean_sig_sq = mean(dat_var_feat$S6_m_f$opt$sigsq,
-                                                        mean(dat_var_feat$S6_l_vane$opt$sigsq,dat_var_feat$S6_l_cal$opt$sigsq),
-                                                        mean(dat_var_feat$S6_w_cal$opt$sigsq,dat_var_feat$S6_w_vd$opt$sigsq,dat_var_feat$S6_w_vp$opt$sigsq)),
-                                     min_val = min(c(all_data_means$mean_Ixx_specific,all_data_means$mean_Iyy_specific,all_data_means$mean_Izz_specific))))
-
-dat_var_tot = rbind(dat_var_tot,list(component = "S7",
-                                     mean_sig_sq = mean(dat_var_feat$S7_m_f$opt$sigsq,
-                                                        mean(dat_var_feat$S7_l_vane$opt$sigsq,dat_var_feat$S7_l_cal$opt$sigsq),
-                                                        mean(dat_var_feat$S7_w_cal$opt$sigsq,dat_var_feat$S7_w_vd$opt$sigsq,dat_var_feat$S7_w_vp$opt$sigsq)),
-                                     min_val = min(c(all_data_means$mean_Ixx_specific,all_data_means$mean_Iyy_specific,all_data_means$mean_Izz_specific))))
-
+library("ggplot2")
+library("tidyr")
+library("dplyr")
+dists <- data.frame(null = out$null, test = out$test)
+dists %>%
+  gather(dist, value) %>%
+  ggplot(aes(value, fill = dist)) +
+  geom_density(alpha = 0.5) +
+  geom_vline(xintercept = out$lr)

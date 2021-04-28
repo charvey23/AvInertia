@@ -5,25 +5,29 @@ library(ggtree)    # for plotting phylogeny
 library(alphahull) # for computing convex hulls
 library(plyr)      # for computing convex hulls
 library(reshape)   # for melt
-
+library(sensiPhy)
+library(geomorph)
 source("plotting_info.R")
 source("plotting_dataprep.R")
 
 ## --------------------------------------------------------------------------------------------------------------------
 ## ------------------------------------------- Figure 1 ---------------------------------------------------------------
 ## --------------------------------------------------------------------------------------------------------------------
-
+#exported as 5x5
 validation_Ixx_plot <- ggplot()+
   geom_errorbar(data = dat_comp, aes(x = full_m, ymax = max_wing_Ixx, ymin = sachs_pred_Ixx, col = species_order), alpha = 0.5) +
   geom_line(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, y = 3.76*10^-3*full_m^2.05),col = "gray") + # Kirkpatrick, 1994
   geom_line(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, y = 1.94*10^-3*full_m^1.953),col = "gray", linetype = 2) + # Berg and Rayner, 1995
   geom_point(data = dat_comp, aes(x = full_m, y = sachs_pred_Ixx, fill = species_order, col = species_order), pch = 22, size = 1.5) + # Sachs, 2005
-  geom_point(data = dat_comp, aes(x = full_m, y = max_wing_Ixx, fill = species_order), pch = 21, col = "black", size = 2)+
+  geom_point(data = dat_comp, aes(x = full_m, y = max_wing_Ixx, col = species_order), pch = 19, size = 2, alpha = 0.6)+
+  geom_point(data = dat_comp, aes(x = full_m, y = max_wing_Ixx, col = species_order), pch = 1, size = 2)+
+  # theme control
   th  +
   theme(legend.position="none") +
   # colour control
   scale_fill_manual(values = rev(cc_rain), name = "species") +
   scale_colour_manual(values = rev(cc_rain), name = "species") +
+  #axis control
   scale_x_continuous(trans='log10', name = "Mass (kg)",
                      breaks = c(0.01,0.1,1,10), labels = c(expression(10^-2),expression(10^-1),expression(10^0),expression(10^1)))+
   scale_y_continuous(trans='log10', name = expression(paste("Maximum wing I"["xx"]," (kg-m"^2,")", sep = "")),
@@ -32,6 +36,7 @@ validation_Ixx_plot <- ggplot()+
   annotate(geom = "segment", x = 0, xend = 0, y = 1E-6, yend = 1E-1) +
   annotate(geom = "segment", x = 0.01, xend = 10, y = 0, yend = 0)
 
+#exported as 3.5x10
 ROM_plot <- ggplot()+
   geom_polygon(data = chulls_elbman, aes(x = elbow, y = manus, fill = species_order), col = NA) +
   geom_point(data = subset(dat_final, species == "col_liv" & BirdID == "20_0300" & TestID == "20_0300_4" & FrameID == 317), aes(x = elbow, y = manus, fill = species_order),size = 0.5) +
@@ -40,15 +45,22 @@ ROM_plot <- ggplot()+
   # colour control
   scale_fill_manual(values = rev(cc_rain), name = "species") +
   #theme control
+  th +
   theme(strip.background = element_blank(),
         panel.background = ggplot2::element_rect(fill = "transparent"),
         # Background behind actual data points
-        plot.background  = ggplot2::element_rect(fill = "transparent", color = NA),
-        axis.line =  element_line(colour = "black", linetype=1))+
+        plot.background  = ggplot2::element_rect(fill = "transparent", color = NA))+
   theme(legend.position="none") +
   coord_fixed() +
   scale_x_continuous(name='Elbow angle (°)', breaks = c(50,150)) +
-  scale_y_continuous(name='Wrist angle (°)', breaks = c(50,150))
+  scale_y_continuous(name='Wrist angle (°)', breaks = c(50,150)) +
+  geom_rangeframe() +
+  annotate(geom = "segment", x = -Inf, xend = -Inf, y = 50, yend = 150) +
+  annotate(geom = "segment", x = 50, xend = 150, y = -Inf, yend = -Inf) +
+  annotate(geom = "segment", x = 50, xend = 50, y = -Inf, yend = 50) +
+  annotate(geom = "segment", x = 150, xend = 150, y = -Inf, yend = 50) +
+  annotate(geom = "segment", x = -Inf, xend = 30, y = 50, yend = 50) +
+  annotate(geom = "segment", x = -Inf, xend = 30, y = 150, yend = 150)
 
 ## --------------------------------------------------------------------------------------------------------------------
 ## ------------------------------------------- Figure 2 ---------------------------------------------------------------
@@ -173,12 +185,12 @@ CG_isometry_fullbird <- ggplot() +
               col = NA, fill = "black", alpha = 0.3) +
   # add specific data
   #geom_errorbar(data = dat_comp, aes(x = full_m, ymin = -min_CGx_specific, ymax = -max_CGx_specific), width = 0.08, col = "gray", alpha = 0.4) +
-  geom_point(data = dat_comp, aes (x = full_m, y = -mean_CGx_specific), col = "gray", pch = 19) +
+  geom_point(data = dat_comp, aes (x = full_m, y = -mean_CGx_specific_orgBeak), col = "gray", pch = 0) +
   #geom_errorbar(data = dat_comp, aes(x = full_m, ymin = min_CGz_specific, ymax = max_CGz_specific), width = 0.08, col = "gray", alpha = 0.4) +
-  geom_point(data = dat_comp, aes (x = full_m, y = mean_CGz_specific), col = "gray", pch = 1) +
+  geom_point(data = dat_comp, aes (x = full_m, y = mean_CGz_specific_orgDorsal), col = "gray", pch = 2) +
   # add exact data
-  geom_point(data = dat_comp, aes (x = full_m, y = -mean_CGx_orgBeak), col = "black", pch = 19) +
-  geom_point(data = dat_comp, aes (x = full_m, y = mean_CGz_orgDorsal), col = "black", pch = 1) +
+  geom_point(data = dat_comp, aes (x = full_m, y = -mean_CGx_orgBeak), col = "black", pch = 15) +
+  geom_point(data = dat_comp, aes (x = full_m, y = mean_CGz_orgDorsal), col = "black", pch = 17) +
   # add iso lines
   geom_line(data = dat_comp, aes(x = full_m, y = exp(CGx_sp_model_mcmc_output$solutions[1,1])*full_m^(0)), col = "gray", linetype = 2) +
   geom_line(data = dat_comp, aes(x = full_m, y = exp(CGz_sp_model_mcmc_output$solutions[1,1])*full_m^(0)), col = "gray", linetype = 2) +
@@ -207,8 +219,8 @@ CG_isometry_singlewing <- ggplot() +
   geom_ribbon(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, ymin = exp(CGy_model_mcmc_output$solutions[1,1])*full_m^CGy_model_mcmc_output$solutions[2,2], ymax = exp(CGy_model_mcmc_output$solutions[1,1])*full_m^CGy_model_mcmc_output$solutions[2,3]),
               col = NA, fill = "black", alpha = 0.3) +
   # add data
-  geom_point(data = dat_comp, aes (x = full_m, y = mean_wing_CGy), col = "black") +
-  geom_point(data = dat_comp, aes (x = full_m, y = mean_wing_CGy_specific), col = "gray") +
+  geom_point(data = dat_comp, aes (x = full_m, y = mean_wing_CGy), col = "black", pch = 1) +
+  geom_point(data = dat_comp, aes (x = full_m, y = mean_wing_CGy_specific), col = "gray", pch = 16) +
   # add iso lines
   geom_line(data = dat_comp, aes(x = full_m, y = exp(CGy_sp_model_mcmc_output$solutions[1,1])*full_m^(0)), col = "gray", linetype = 2) +
   geom_line(data = dat_comp, aes(x = full_m, y = exp(CGy_model_mcmc_output$solutions[1,1])*full_m^(1/3)), col = "black", linetype = 2) +
@@ -238,7 +250,7 @@ leftcol <- plot_grid(phylo_plot_complete,CGxz_plot, wingCGxy_plot,
 rightcol <- plot_grid(blank_plot,effect_CGx,effect_CGz,CG_isometry_fullbird,effect_CGy,CG_isometry_singlewing,blank_plot,
                     #arrangement data
                     ncol = 1,
-                    rel_heights = c(0.5,0.6,0.6,1,0.6,1,0.5),
+                    rel_heights = c(0.3,0.6,0.6,1,0.6,1,0.3),
                     #labels
                     labels = c("",""),
                     label_size = 10,
@@ -488,8 +500,32 @@ figure_final <- plot_grid(toprow,bottomrow,
 ## ------------------------------------------------------------------------------------
 
 var_test_plot <- ggplot()+
-  geom_point(data = dat_var_tot, aes(x = log(min_val), y = log(mean_sig_sq), col = mean_sig_sq)) +
-  scale_colour_gradientn(colors = cc_var, name = "rate of variance evolution") +
+  geom_point(data = subset(dat_var_tot, component != "full_I" & component != "full_CG" &
+                             component != "full_I_sp" & component != "full_CG_sp" &
+                             component != "wing_CG" & component != "wing_CG_sp"),
+             aes(x = mean_sig_sq, y = 1,fill = mean_sig_sq), pch = 21, col = "black") +
+  scale_fill_gradientn(colors = cc_var, name = "rate of variance evolution") +
   th
+# exported as 5x5
+var_sens_plot <- ggplot()+
+  geom_dotplot(data = dat_var_range, aes(x = component, y = mean_sig_sq), col = NA, fill = "black", binaxis='y', stackdir='center', dotsize = 4, binwidth = 1/5000) +
+  th+
+  scale_y_continuous(limits = c(0,0.12), breaks = c(0,0.04,0.08,0.12), name = expression(paste(sigma^2,""[multi]))) +
+  geom_rangeframe() +
+  annotate(geom = "segment", x = 1, xend = 13, y = log(0), yend = log(0)) +
+  annotate(geom = "segment", y = 0, yend = 0.12, x = log(0), xend = log(0))
 # Extract the correct colours
-ggplot_build(var_test_plot)$data
+merge(ggplot_build(var_test_plot)$data,subset(dat_var_tot, component != "full_I"), by.x = "x", by.y = "mean_sig_sq")
+
+chord_length_plot <- ggplot()+
+  geom_hline(yintercept = 1, linetype = "dashed") +
+  geom_point(data = test2, aes(x = species_order, y = c_l_true, fill = species_order), col = "black", pch = 21) +
+  geom_point(data = test2, aes(x = species_order, y = c_l_true, col = species_order), pch = 1) +
+  th+
+  theme(legend.position="none") +
+  scale_fill_manual(values = rev(cc_rain), name = "species") +
+  scale_colour_manual(values = rev(cc_rain), name = "species") +
+  #scale_y_continuous(limits = c(0,0.12), breaks = c(0,0.04,0.08,0.12), name = expression(paste(sigma^2,""[multi]))) +
+  geom_rangeframe() +
+  annotate(geom = "segment", x = 1, xend = 22, y = log(0), yend = log(0)) +
+  annotate(geom = "segment", y = 0.5, yend = 1.5, x = log(0), xend = log(0))

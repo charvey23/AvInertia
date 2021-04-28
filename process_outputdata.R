@@ -50,6 +50,27 @@ for (i in 2:length(filename_results)){
 # clean up environments
 remove(filename_wing,filename_feat,filename_bird,filename_body,filename_results)
 
+### --------------------- Phylogeny info ---------------------
+## Read in tree
+full_tree <-
+  read.nexus("vikROM_passerines_403sp.tre")
+
+dat_comp <- mutate(dat_comp, phylo = binomial)
+## Prune down the tree to the relevant species
+sp_mean_matched <- keep.tip(phy = full_tree, tip = dat_comp$binomial)
+## ladderization rotates nodes to make it easier to see basal vs derived
+pruned_mcc      <- ape::ladderize(sp_mean_matched)
+# plot plot(pruned_mcc)
+
+## The phylogeny will need to be re-formatted for use within MCMCglmm
+inv.phylo <- inverseA(pruned_mcc, nodes = "TIPS", scale = TRUE)
+## This is the heirarcy of the univariate prior.
+univ_prior <-
+  list(G = list(G1 = list(V = 1,
+                          nu = 0.02)),
+       R = list(V = 1, nu = 0.02))
+
+
 # -------------  Merge with all info -----------------
 dat_final = merge(dat_results,dat_wing[,c("species","BirdID","TestID","FrameID","BirdID_FrameSpec","elbow","manus","pt1_X","pt1_Y","pt1_Z",
                                          "pt6_X","pt6_Y","pt7_X","pt7_Y","pt8_X","pt8_Y","pt8_Z","pt9_X","pt9_Y","pt10_X","pt10_Y",
@@ -327,6 +348,9 @@ test     <- aggregate(list(min_CGx_orgBeak       = dat_final$full_CGx-dat_final$
                            min_Ixz_specific      = dat_final$full_Ixz_specific),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), min)
 dat_comp <- merge(dat_comp,test, by = c("species","BirdID"))
 
+dat_comp$max_wing_CGx <- dat_final$wing_CGx[which(dat_final$wing_CGy %in% dat_comp$max_wing_CGy)]
+dat_comp$max_wing_CGx_specific <- dat_final$wing_CGx_specific_orgShoulder[which(dat_final$wing_CGy %in% dat_comp$max_wing_CGy)]
+
 # Stats
 general_CGx <- lm(full_CGx_specific ~ elbow_scaled*manus_scaled+species, data = dat_final)
 general_CGy <- lm(wing_CGy_specific ~ elbow_scaled*manus_scaled+species, data = dat_final)
@@ -334,26 +358,7 @@ general_CGz <- lm(full_CGz_specific ~ elbow_scaled*manus_scaled+species, data = 
 min((dat_final$full_CGx)/dat_final$full_length)
 max((dat_final$full_CGx)/dat_final$full_length)
 
-### --------------------- Phylogeny info ---------------------
-## Read in tree
-full_tree <-
-  read.nexus("vikROM_passerines_403sp.tre")
 
-dat_comp <- mutate(dat_comp, phylo = binomial)
-## Prune down the tree to the relevant species
-sp_mean_matched <- keep.tip(phy = full_tree, tip = dat_comp$binomial)
-## ladderization rotates nodes to make it easier to see basal vs derived
-pruned_mcc      <- ape::ladderize(sp_mean_matched)
-# plot
-plot(pruned_mcc)
-
-## The phylogeny will need to be re-formatted for use within MCMCglmm
-inv.phylo <- inverseA(pruned_mcc, nodes = "TIPS", scale = TRUE)
-## This is the heirarcy of the univariate prior.
-univ_prior <-
-  list(G = list(G1 = list(V = 1,
-                          nu = 0.02)),
-       R = list(V = 1, nu = 0.02))
 
 ## Model
 pgls_model_mcmc <-
