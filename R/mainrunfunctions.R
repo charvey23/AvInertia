@@ -338,7 +338,7 @@ massprop_restbody <- function(dat_wingID_curr, dat_bird_curr){
 #'
 #' @export
 #'
-massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat_curr, clean_pts, feather_inertia){
+massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat_curr, clean_pts, feather_inertia, plot_var){
 
   # --------------------- Initialize variables -----------------------
   mass_properties = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
@@ -394,9 +394,9 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
   mass_muscles[2] = dat_bird_curr$antebrachial_muscle_mass
   mass_muscles[3] = dat_bird_curr$manus_muscle_mass
 
-  brach  = massprop_muscles(mass_muscles[1],rho_muscle,Pt1,Pt2)
-  abrach = massprop_muscles(mass_muscles[2],rho_muscle,Pt2,Pt3)
-  manus  = massprop_muscles(mass_muscles[3],rho_muscle,Pt3,Pt4)
+  brach  = massprop_muscles(mass_muscles[1],rho_muscle,dat_bone_hum$bone_len,Pt1,Pt2)
+  abrach = massprop_muscles(mass_muscles[2],rho_muscle,dat_bone_uln$bone_len,Pt2,Pt3)
+  manus  = massprop_muscles(mass_muscles[3],rho_muscle,dat_bone_car$bone_len,Pt3,Pt4)
   # --- All Muscles ---
   prop_muscles = list()
   # simply addition as long as about the same origin in the same frame of reference (Frame of reference: VRP | Origin: VRP)
@@ -538,8 +538,10 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
   mass_properties  = store_data(dat_wingID_curr,prop_wing,mass_properties,"wing")
 
   # Plot to verify correct outputs
-  #CGplot = plot_CGloc(clean_pts,mass_properties,mass_properties_skin,mass_properties_bone,mass_properties_feathers,mass_properties_muscle)
-  #plot(CGplot)
+  if (plot_var != 0){
+    CGplot = plot_CGloc(clean_pts,mass_properties,mass_properties_skin,mass_properties_bone,mass_properties_feathers,mass_properties_muscle, plot_var)
+  }
+
   return(mass_properties)
 }
 

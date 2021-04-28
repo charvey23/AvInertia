@@ -84,7 +84,7 @@ massprop_bones <- function(m,l,r_out,r_in,rho,start,end){
   mass_prop = list() # pre-define
   # Adjust frame to VRP axes
   mass_prop$I  = t(VRP2object) %*% I_boneaxis %*% VRP2object  # Frame of reference: VRP | Origin: VRP
-  mass_prop$CG = 0.5*(start + end)                            # Frame of reference: VRP | Origin: VRP
+  mass_prop$CG = t(VRP2object) %*% I_cyl_off                  # Frame of reference: VRP | Origin: VRP
   mass_prop$m  = m
 
   return(mass_prop)
@@ -119,9 +119,8 @@ massprop_bones <- function(m,l,r_out,r_in,rho,start,end){
 #'
 #' @export
 
-massprop_muscles <- function(m,rho,start,end){
+massprop_muscles <- function(m,rho,l,start,end){
 
-  l = norm((end - start), type = "2")
   r = sqrt(m/(rho*pi*l)) # determine the pseudo radius of the muscles
 
   # ------------------------------- Adjust axis -------------------------------------
@@ -148,7 +147,7 @@ massprop_muscles <- function(m,rho,start,end){
   mass_prop = list() # pre-define
   # Adjust frame to VRP axes
   mass_prop$I  = t(VRP2object) %*% I_m_vrp %*% VRP2object  # Frame of reference: VRP | Origin: VRP
-  mass_prop$CG = 0.5*(start + end)                         # Frame of reference: VRP | Origin: VRP
+  mass_prop$CG = t(VRP2object) %*% I_m_off                 # Frame of reference: VRP | Origin: VRP
   mass_prop$m  = m
   return(mass_prop)
 }
