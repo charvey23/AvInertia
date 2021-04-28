@@ -384,7 +384,7 @@ for (m in 1:length(no_species)){
       Pt12 = c(dat_pt_curr$pt12_X, dat_pt_curr$pt12_Y, dat_pt_curr$pt12_Z) # Wing root leading edge
       clean_pts = rbind(Pt1,Pt2,Pt3,Pt4,Pt6,Pt8,Pt9,Pt10,Pt11,Pt12)
 
-      # Compute the CG and I for the wing configuration
+      # Compute the CG and I for the wing configuration - plot var can be "yx" or "yz"
       curr_wing_data      = massprop_birdwing(dat_id_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts, feather_inertia, plot_var = 0)
       # Combine the torso and wing outputs
       curr_full_bird      = combine_inertialprop(curr_torsotail_data,curr_wing_data,curr_wing_data, symmetric=TRUE)

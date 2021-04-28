@@ -46,7 +46,7 @@ plot_CGloc <- function(clean_pts,mass_properties,mass_properties_skin,mass_prope
     ggplot2::annotate(geom = "segment", x = 0, xend = 0.6, y = -log(0), yend = -log(0))
 
   if(plot_var == "yx"){
-    plot(CGplot_z)
+    plot(CGplot_x)
   }
 
   CGplot_z <- ggplot2::ggplot() +
