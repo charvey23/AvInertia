@@ -79,7 +79,6 @@ for (i in 1:no_species){
   files_to_read = which(dat_ID$species == curr_species)
   # identify how many body measurements we have for the current species
   dat_body_curr = subset(dat_bird, use_body == "Y" & species == curr_species)
-  dat_allbody_curr = subset(dat_bird, species == curr_species)
 
     # Read in all optitrack data from the given species
   dat_raw         = read.csv(paste(working_path,filename.3d[files_to_read[1]],sep = ""), stringsAsFactors = FALSE,strip.white = TRUE, na.strings = c("NA"))
@@ -186,22 +185,23 @@ for (i in 1:no_species){
     col_all  = c(col_char, colnames(dat_raw[,3:35]))
 
     #### ------- Resize the applicable wings --------
-    for (j in 1:nrow(dat_allbody_curr)){
-      # catch each case where resizing is necessary
-      if (dat_allbody_curr$BirdID[j] != curr_BirdID | curr_species == "lar_gla"){
+    for (j in 1:nrow(dat_body_curr)){
 
-        if (curr_species == "lar_gla" & dat_allbody_curr$BirdID[j]== "20_0341"){
+      # there are gull specific adjustments since wing doesn't match any body
+      if (dat_body_curr$BirdID[j] != curr_BirdID | curr_species == "lar_gla"){
+
+        if (curr_species == "lar_gla" & dat_body_curr$BirdID[j]== "20_0341"){
           adjust = subset(dat_raw, species == curr_species & BirdID == "21_0310")
 
           target_bone_len    = subset(dat_wingspec, species == curr_species & BirdID == "20_0341")$ulna_length_mm*0.001
           adjust_bone_length = mean(calc_dist(adjust[,c(9:11,30:32)]))
         } else{
           target = subset(dat_raw, species == curr_species & BirdID == curr_BirdID)
-          adjust = subset(dat_raw, species == curr_species & BirdID == dat_allbody_curr$BirdID[j])
+          adjust = subset(dat_raw, species == curr_species & BirdID == dat_body_curr$BirdID[j])
           # if there is no data for the wing ROM move onto the next wing
           if(nrow(adjust) == 0){next}
           target_bone_len    = subset(dat_wingspec, species == curr_species & BirdID == curr_BirdID)$humerus_length_mm*0.001
-          adjust_bone_length = subset(dat_wingspec, species == curr_species & BirdID == dat_allbody_curr$BirdID[j])$humerus_length_mm*0.001
+          adjust_bone_length = subset(dat_wingspec, species == curr_species & BirdID == dat_body_curr$BirdID[j])$humerus_length_mm*0.001
         }
 
         tmp = resize_to(specimen_to_adjust = adjust, char_colnames = col_char,
@@ -234,6 +234,32 @@ for (i in 1:no_species){
     #### ------- Reorient the wings --------
     dat_complete = reorient_wings(dat_subsample)
 
+    dat_complete$S_proj = NA
+    dat_complete$S = NA
+    for (i in 1:nrow(dat_complete)){
+      ## ----- Calculate the projected wing area ------
+      # this is the correct order because X is negative and Y is positive
+      x_vertices = c(dat_complete$pt6_X[i],dat_complete$pt7_X[i],dat_complete$pt8_X[i],dat_complete$pt9_X[i],dat_complete$pt10_X[i],dat_complete$pt11_X[i],dat_complete$pt12_X[i])
+      y_vertices = c(dat_complete$pt6_Y[i],dat_complete$pt7_Y[i],dat_complete$pt8_Y[i],dat_complete$pt9_Y[i],dat_complete$pt10_Y[i],dat_complete$pt11_Y[i],dat_complete$pt12_Y[i])
+      dat_complete$S_proj[i] <- polyarea(x_vertices, y_vertices)
+      ## ----- Calculate the total wing area ------
+      A1 = 0.5*Norm(cross(as.vector(t(dat_complete[i,c("pt11_X","pt11_Y","pt11_Z")]-dat_complete[i,c("pt2_X","pt2_Y","pt2_Z")])),
+                          as.vector(t(dat_complete[i,c("pt11_X","pt11_Y","pt11_Z")]-dat_complete[i,c("pt12_X","pt12_Y","pt12_Z")]))), p = 2)
+      A2 = 0.5*Norm(cross(as.vector(t(dat_complete[i,c("pt2_X","pt2_Y","pt2_Z")]-dat_complete[i,c("pt6_X","pt6_Y","pt6_Z")])),
+                          as.vector(t(dat_complete[i,c("pt2_X","pt2_Y","pt2_Z")]-dat_complete[i,c("pt12_X","pt12_Y","pt12_Z")]))), p = 2)
+      A3 = 0.5*Norm(cross(as.vector(t(dat_complete[i,c("pt11_X","pt11_Y","pt11_Z")]-dat_complete[i,c("pt10_X","pt10_Y","pt10_Z")])),
+                          as.vector(t(dat_complete[i,c("pt11_X","pt11_Y","pt11_Z")]-dat_complete[i,c("pt2_X","pt2_Y","pt2_Z")]))), p = 2)
+      A4 = 0.5*Norm(cross(as.vector(t(dat_complete[i,c("pt10_X","pt10_Y","pt10_Z")]-dat_complete[i,c("pt6_X","pt6_Y","pt6_Z")])),
+                          as.vector(t(dat_complete[i,c("pt10_X","pt10_Y","pt10_Z")]-dat_complete[i,c("pt2_X","pt2_Y","pt2_Z")]))), p = 2)
+      A5 = 0.5*Norm(cross(as.vector(t(dat_complete[i,c("pt10_X","pt10_Y","pt10_Z")]-dat_complete[i,c("pt9_X","pt9_Y","pt9_Z")])),
+                          as.vector(t(dat_complete[i,c("pt10_X","pt10_Y","pt10_Z")]-dat_complete[i,c("pt6_X","pt6_Y","pt6_Z")]))), p = 2)
+      A6 = 0.5*Norm(cross(as.vector(t(dat_complete[i,c("pt9_X","pt9_Y","pt9_Z")]-dat_complete[i,c("pt7_X","pt7_Y","pt7_Z")])),
+                          as.vector(t(dat_complete[i,c("pt9_X","pt9_Y","pt9_Z")]-dat_complete[i,c("pt6_X","pt6_Y","pt6_Z")]))), p = 2)
+      A7 = 0.5*Norm(cross(as.vector(t(dat_complete[i,c("pt9_X","pt9_Y","pt9_Z")]-dat_complete[i,c("pt8_X","pt8_Y","pt8_Z")])),
+                          as.vector(t(dat_complete[i,c("pt9_X","pt9_Y","pt9_Z")]-dat_complete[i,c("pt7_X","pt7_Y","pt7_Z")]))), p = 2)
+
+      dat_complete$S[i] = sum(A1,A2,A3,A4,A5,A6,A7)
+    }
     # ------------------------------ Save data
     filename_new <- paste(output_path,format(Sys.Date(), "%Y_%m_%d"),"_",curr_species,"_",curr_BirdID,"_transformed.csv",sep = "")
     write.csv(dat_complete,filename_new)

@@ -78,7 +78,7 @@ resize_to <- function(specimen_to_adjust,char_colnames,adjust_length,target_leng
     select(-char_colnames) %>%
     drop_na() %>%
     arrayspecs(p = 11, k = 3) %>%
-    procSym(scale = FALSE, CSinit=FALSE)
+    procSym(scale = FALSE, CSinit=FALSE, reflect = FALSE)
   ## get into 2d array
   x1_two_d <- two.d.array(x1$rotated)
 
@@ -171,9 +171,10 @@ subsample_frames <- function(dat_keep,dat_dup,curr_BirdID,max_sample_no){
 #          3. Pt3 (Wrist) will be inline with Pt10 (S1) along the x axis
 
 # Created: Christina Harvey
-# Last updated: 16-Dec-2020
+# Last updated: 07-May-2021
 
 reorient_wings<- function(dat_subsample){
+
   # ----------------- Define set variables ------------
   point_list <- c("pt1","pt2","pt3","pt4","pt6","pt7","pt8","pt9","pt10","pt11","pt12")
   dim_list   <- c("X","Y","Z")
@@ -183,6 +184,7 @@ reorient_wings<- function(dat_subsample){
 
   ## ------- Reorient Wings ---------
   dat_clean <- dat_subsample
+
   #------------------------------- Step 1 -------------------------------
   ##### error doesn't adjust all points ######
   #Make pt 1 on humerus the beginning location
@@ -194,7 +196,6 @@ reorient_wings<- function(dat_subsample){
     }
   }
   dat_clean[,c("pt1_X","pt1_Y","pt1_Z")] <- 0
-
   #-------------------------------  Step 2 -------------------------------
   # Set pt 3 in line with Pt 1 along the wingspan
   #Calculate angle between axis that runs along wing length and pt 3 (rotate about z)
@@ -252,13 +253,12 @@ reorient_wings<- function(dat_subsample){
       }
     }
   }
-
   # CAUTION: Verify that Pt3Z=z_adj2=0 after this step - View(subset(pts,Pt.No == 3))
 
   #------------------------------- Step 4 -------------------------------
   # Set pt 10 in line with Pt 3 looking from back of wing
   # Calculate angle between x axis and pt 10 (rotate about y)
-  # Project onto yaxis & make negative if k2 > 0
+  # Project onto yaxis & make negative if k3 > 0
   i3 = dat_clean$pt10_X
   k3 = dat_clean$pt10_Z
 
@@ -268,7 +268,6 @@ reorient_wings<- function(dat_subsample){
 
   thetay = -acos(interior)
   thetay[which(k3 > 0)] = acos(interior[which(k3 > 0)])
-  #thetay[which(dat_clean$pt2_X < 0)] = thetay[which(dat_clean$pt2_X < 0)] + pi
 
   # Rotate about the y axis
   tmp <- dat_clean
@@ -293,14 +292,6 @@ reorient_wings<- function(dat_subsample){
 
     col_name = paste(point_list[j], dim_list[3], sep = "_")
     dat_clean[which(dat_clean$wing == "R"), col_name] <- -dat_clean[which(dat_clean$wing == "R"), col_name]
-  }
-
-  dat_clean$S_proj <- NA
-  for (i in 1:nrow(dat_clean)){
-    # Calculate the projected area for each wing - this is the correct order because X is negative and Y is positive
-    x_vertices = c(dat_clean$pt6_X[i],dat_clean$pt7_X[i],dat_clean$pt8_X[i],dat_clean$pt9_X[i],dat_clean$pt10_X[i],dat_clean$pt11_X[i],dat_clean$pt12_X[i])
-    y_vertices = c(dat_clean$pt6_Y[i],dat_clean$pt7_Y[i],dat_clean$pt8_Y[i],dat_clean$pt9_Y[i],dat_clean$pt10_Y[i],dat_clean$pt11_Y[i],dat_clean$pt12_Y[i])
-    dat_clean$S_proj[i] <- polyarea(x_vertices, y_vertices)
   }
 
   return(dat_clean)
