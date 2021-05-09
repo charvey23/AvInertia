@@ -18,9 +18,11 @@ library(reshape2)
 # UPDATE REQUIRED: Should probably move final run files into the bird moment folder
 path_data_folder = "/Users/christinaharvey/Dropbox (University of Michigan)/Bird Mass Distribution/outputdata/"
 
-filename_wing = list.files(path = path_data_folder, pattern = paste("allspecimen_winginfo"))
-dat_wing      = read.csv(file = paste(path_data_folder,filename_wing,sep= ""))
-dat_wing     = dat_wing[,-c(1)]
+# filename_wing = list.files(path = path_data_folder, pattern = paste("allspecimen_winginfo"))
+# dat_wing      = read.csv(file = paste(path_data_folder,filename_wing,sep= ""))
+# dat_wing     = dat_wing[,-c(1)]
+
+load("2021_04_30_wingdata.RData")
 
 filename_feat = list.files(path = path_data_folder, pattern = paste("allspecimen_featherinfo"))
 dat_feat      = read.csv(file = paste(path_data_folder,filename_feat,sep= ""))
@@ -50,31 +52,18 @@ for (i in 2:length(filename_results)){
 # clean up environments
 remove(filename_wing,filename_feat,filename_bird,filename_body,filename_results)
 
+
+# save(dat_wing,file ="2021_04_30.RData")
+
 ### --------------------- Phylogeny info ---------------------
 ## Read in tree
 full_tree <-
   read.nexus("vikROM_passerines_403sp.tre")
 
-dat_comp <- mutate(dat_comp, phylo = binomial)
-## Prune down the tree to the relevant species
-sp_mean_matched <- keep.tip(phy = full_tree, tip = dat_comp$binomial)
-## ladderization rotates nodes to make it easier to see basal vs derived
-pruned_mcc      <- ape::ladderize(sp_mean_matched)
-# plot plot(pruned_mcc)
-
-## The phylogeny will need to be re-formatted for use within MCMCglmm
-inv.phylo <- inverseA(pruned_mcc, nodes = "TIPS", scale = TRUE)
-## This is the heirarcy of the univariate prior.
-univ_prior <-
-  list(G = list(G1 = list(V = 1,
-                          nu = 0.02)),
-       R = list(V = 1, nu = 0.02))
-
-
 # -------------  Merge with all info -----------------
 dat_final = merge(dat_results,dat_wing[,c("species","BirdID","TestID","FrameID","BirdID_FrameSpec","elbow","manus","pt1_X","pt1_Y","pt1_Z",
                                          "pt6_X","pt6_Y","pt7_X","pt7_Y","pt8_X","pt8_Y","pt8_Z","pt9_X","pt9_Y","pt10_X","pt10_Y",
-                                         "pt11_X","pt11_Y","pt11_Z","pt12_X","pt12_Y","pt12_Z")], by = c("species","BirdID","TestID","FrameID"))
+                                         "pt11_X","pt11_Y","pt11_Z","pt12_X","pt12_Y","pt12_Z","S")], by = c("species","BirdID","TestID","FrameID"))
 dat_final = merge(dat_final,dat_bird, by = c("species","BirdID"))
 
 dat_final = merge(dat_final,dat_body[,-c(3,4)], by = c("species","BirdID"))
@@ -106,7 +95,7 @@ dat_final$manus_scaled = dat_final$manus*0.001
 ### ------------- Compute extremes of the CG position due to shoulder motion --------------
 ### ---------------------------------------------------------------------------------------
 
-angle_shoulder = 80
+angle_shoulder = 90
 
 dat_final$shoulderCG_dist <- ((dat_final$wing_CGx-dat_final$pt1_X)^2+(dat_final$wing_CGy-dat_final$pt1_Y)^2+(dat_final$wing_CGz-dat_final$pt1_Z)^2)
 tmp <- aggregate(list(max_wingCG = dat_final$shoulderCG_dist),
@@ -153,6 +142,7 @@ shoulder_motion$range_CGz_specific = shoulder_motion$range_CGz/(shoulder_motion$
 ### ---------------------------------------------------------------------------------------
 # Maximum projected wing area and maximum wing span
 test       <- aggregate(list(S_proj_max = dat_final$wing_S_proj,
+                             S_max = dat_final$S,
                              b_max = dat_final$span),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
 dat_bird   <- merge(dat_bird,test, by = c("species","BirdID"))
 dat_final  <- merge(dat_final,test, by = c("species","BirdID"))
@@ -185,8 +175,8 @@ dat_bird <- merge(dat_bird,test, by = c("species","BirdID"))
 # uses scaling from:
 # Alerstam, T., Rosén, M., Bäckman, J., Ericson, P. G., & Hellgren, O. (2007).
 # Flight speeds among bird species: allometric and phylogenetic effects. PLoS Biol, 5(8), e197.
-dat_final$prop_q_dot     <- (abs(dat_final$full_CGx-dat_final$pt1_X)*dat_final$S_proj_max*dat_final$full_m^0.24)/dat_final$full_Iyy
-dat_final$prop_q_dot_nd  <- (abs(dat_final$full_CGx-dat_final$pt1_X)*dat_final$S_proj_max*dat_final$full_length^2)/dat_final$full_Iyy
+dat_final$prop_q_dot     <- (abs(dat_final$full_CGx-dat_final$pt1_X)*dat_final$S_max*dat_final$full_m^0.24)/dat_final$full_Iyy
+dat_final$prop_q_dot_nd  <- (abs(dat_final$full_CGx-dat_final$pt1_X)*dat_final$S_max*dat_final$full_length^2)/dat_final$full_Iyy
 dat_final$del_M_specific <- dat_final$prop_q_dot*dat_final$full_Iyy/(dat_final$full_m*dat_final$full_length)
 
 dat_final$sachs_pred_Ixx <- dat_final$full_m*(sqrt((0.14*dat_final$wing_m/dat_final$full_m))*dat_final$span*0.5)^2
@@ -200,7 +190,7 @@ dat_model_out        <- data.frame(matrix(nrow = no_specimens*8*2, ncol = 5))
 names(dat_model_out) <- c("species","model_variable","elb","man","elbman")
 varlist_sp       <- c("full_Ixx_specific","full_Iyy_specific","full_Izz_specific","full_Ixz_specific",
                    "full_CGx_specific_orgBeak","wing_CGy_specific","full_CGz_specific_orgDorsal","wing_CGx_specific_orgBeak")
-short_varlist_sp <- c("Ixx_sp","Iyy_sp","Izz_sp","Ixz_sp","CGx_sp","CGy_sp","CGz_sp")
+short_varlist_sp <- c("Ixx_sp","Iyy_sp","Izz_sp","Ixz_sp","CGx_sp","CGy_sp","CGz_sp","CGx_wing_sp")
 varlist_abs      <- c("full_Ixx","full_Iyy","full_Izz","full_Ixz",
                       "full_CGx","wing_CGy","full_CGz","wing_CGx")
 short_varlist_abs<- c("Ixx","Iyy","Izz","Ixz","CGx","CGy","CGz", "CGx_wing")
@@ -241,6 +231,9 @@ for (i in 1:no_specimens){
       dat_model_out$elb[count]            <- coef_values[[j]]["elbow_scaled"]
       dat_model_out$man[count]            <- coef_values[[j]]["manus_scaled"]
       dat_model_out$r2[count]             <- summary(models[[j]])$r.squared
+      dat_model_out$elb_p[count]          <- summary(models[[j]])$coefficients["elbow_scaled",4]
+      dat_model_out$man_p[count]          <- summary(models[[j]])$coefficients["manus_scaled",4]
+      dat_model_out$elbman_p[count]       <- summary(models[[j]])$coefficients["elbow_scaled:manus_scaled",4]
       dat_model_out$elbman[count]         <- coef_values[[j]]["elbow_scaled:manus_scaled"]
       dat_model_out$int_lb[count]         <- CI_values[[j]]["(Intercept)",1]
       dat_model_out$elb_lb[count]         <- CI_values[[j]]["elbow_scaled",1]
@@ -345,62 +338,31 @@ test     <- aggregate(list(min_CGx_orgBeak       = dat_final$full_CGx-dat_final$
                            min_Iyy_specific      = dat_final$full_Iyy_specific,
                            min_Izz               = dat_final$full_Izz,
                            min_Izz_specific      = dat_final$full_Izz_specific,
-                           min_Ixz_specific      = dat_final$full_Ixz_specific),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), min)
+                           min_Ixz_specific      = dat_final$full_Ixz_specific,
+                           hum_maxspan           = (dat_final$humerus_length_mm+dat_final$ulna_length_mm+dat_final$radius_length_mm+dat_final$cmc_length_mm)/dat_final$span),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), min)
 dat_comp <- merge(dat_comp,test, by = c("species","BirdID"))
 
 dat_comp$max_wing_CGx <- dat_final$wing_CGx[which(dat_final$wing_CGy %in% dat_comp$max_wing_CGy)]
 dat_comp$max_wing_CGx_specific <- dat_final$wing_CGx_specific_orgShoulder[which(dat_final$wing_CGy %in% dat_comp$max_wing_CGy)]
 
-# Stats
-general_CGx <- lm(full_CGx_specific ~ elbow_scaled*manus_scaled+species, data = dat_final)
-general_CGy <- lm(wing_CGy_specific ~ elbow_scaled*manus_scaled+species, data = dat_final)
-general_CGz <- lm(full_CGz_specific ~ elbow_scaled*manus_scaled+species, data = dat_final)
-min((dat_final$full_CGx)/dat_final$full_length)
-max((dat_final$full_CGx)/dat_final$full_length)
+# --------- Trim the trees -----------
+# critical for PGLS models
+dat_comp <- mutate(dat_comp, phylo = binomial)
+## Prune down the tree to the relevant species
+sp_mean_matched <- keep.tip(phy = full_tree, tip = dat_comp$binomial)
+## ladderization rotates nodes to make it easier to see basal vs derived
+pruned_mcc      <- ape::ladderize(sp_mean_matched)
+# plot plot(pruned_mcc)
+## The phylogeny will need to be re-formatted for use within MCMCglmm
+inv.phylo <- inverseA(pruned_mcc, nodes = "TIPS", scale = TRUE)
+## This is the heirarcy of the univariate prior.
+univ_prior <-
+  list(G = list(G1 = list(V = 1, nu = 0.02)),
+       R = list(V = 1, nu = 0.02))
 
-
-
-## Model
-pgls_model_mcmc <-
-  MCMCglmm::MCMCglmm(
-    log(max_wing_Ixx) ~ log(full_m),
-    random = ~ phylo,
-    scale = FALSE, ## whether you use this is up to you -- whatever is fair
-    ginverse = list(phylo = inv.phylo$Ainv),
-    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
-    data = morpho_data_means,
-    prior = univ_prior,
-    nitt = 130000, thin = 100, burnin = 30000,
-    verbose = FALSE, ## switch this to TRUE if you feel like it
-    pr = TRUE, pl = TRUE ## this saves some model output stuff
-  )
-summary(pgls_model_mcmc)
-  (pgls_model_mcmc$VCV[, 1] / (pgls_model_mcmc$VCV[, 1] + pgls_model_mcmc$VCV[, 2])) %>%
-  mean
+# to compute Pagels lambda - (pgls_model_mcmc$VCV[, 1] / (pgls_model_mcmc$VCV[, 1] + pgls_model_mcmc$VCV[, 2])) %>% mean
 
 filename = paste(format(Sys.Date(), "%Y_%m_%d"),"_alldata.csv",sep="")
 write.csv(dat_final,filename)
 
-
-
-### -------- PAPER STATS ----------
-
-# allometric relationship for Iwing max
-pgls_model_mcmc <-
-  MCMCglmm::MCMCglmm(
-    log(max_wing_Ixx) ~ log(full_m),
-    random = ~ phylo,
-    scale = FALSE, ## whether you use this is up to you -- whatever is fair
-    ginverse = list(phylo = inv.phylo$Ainv),
-    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
-    data = morpho_data_means,
-    prior = univ_prior,
-    nitt = 130000, thin = 100, burnin = 30000,
-    verbose = FALSE, ## switch this to TRUE if you feel like it
-    pr = TRUE, pl = TRUE ## this saves some model output stuff
-  )
-summary(pgls_model_mcmc)
-
-#maximum CGy for a pigeon
-max(subset(dat_final, species == "col_liv")$wing_CGy_specific_orgShoulder)
 

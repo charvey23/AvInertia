@@ -15,9 +15,16 @@ source("plotting_dataprep.R")
 ## --------------------------------------------------------------------------------------------------------------------
 #exported as 5x5
 validation_Ixx_plot <- ggplot()+
+  geom_ribbon(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, ymin = 3.76*10^-3*full_m^1.89, ymax = 3.76*10^-3*full_m^2.22),
+              col = NA, fill = "gray70", alpha = 0.15) + # Kirkpatrick, 1994, 99% fiducity limits
+  geom_ribbon(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, ymin = 1.94*10^-3*full_m^1.787, ymax = 1.94*10^-3*full_m^2.134),
+              col = NA, fill = "gray50", alpha = 0.2) + # Berg and Rayner, 1995, 95% fiducity limits
+  geom_ribbon(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, ymin = exp(-6.256)*full_m^1.359, ymax = exp(-6.256)*full_m^1.844),
+              col = NA, fill = "black", alpha = 0.2) + # AvInertia
   geom_errorbar(data = dat_comp, aes(x = full_m, ymax = max_wing_Ixx, ymin = sachs_pred_Ixx, col = species_order), alpha = 0.5) +
-  geom_line(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, y = 3.76*10^-3*full_m^2.05),col = "gray") + # Kirkpatrick, 1994
-  geom_line(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, y = 1.94*10^-3*full_m^1.953),col = "gray", linetype = 2) + # Berg and Rayner, 1995
+  geom_line(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, y = 3.76*10^-3*full_m^2.05),col = "gray70", linetype = 3) + # Kirkpatrick, 1994
+  geom_line(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, y = 1.94*10^-3*full_m^1.953),col = "gray50", linetype = 2) + # Berg and Rayner, 1995
+  geom_line(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, y = exp(-6.256)*full_m^1.612),col = "black") + # AvInertia
   geom_point(data = dat_comp, aes(x = full_m, y = sachs_pred_Ixx, fill = species_order, col = species_order), pch = 22, size = 1.5) + # Sachs, 2005
   geom_point(data = dat_comp, aes(x = full_m, y = max_wing_Ixx, col = species_order), pch = 19, size = 2, alpha = 0.6)+
   geom_point(data = dat_comp, aes(x = full_m, y = max_wing_Ixx, col = species_order), pch = 1, size = 2)+
@@ -69,10 +76,10 @@ ROM_plot <- ggplot()+
 # Panel A plot
 CGxz_plot <- ggplot()+
   # add data
-  geom_rect(data = vertices_cgxz, aes(xmin =0, ymin = -0.1, xmax = 0.2, ymax = 0, group = species_order), linetype="dashed", color = "gray", fill = NA, alpha = 0.25) +
+  geom_rect(data = vertices_cgxz, aes(xmin =0, ymin = -0.1, xmax = -0.2, ymax = 0, group = species_order), linetype="dashed", color = "gray", fill = NA, alpha = 0.25) +
   # geom_path(data = x_shape, aes(x = -value, y = -z_shape$value), col = "black", alpha = 0.2) +
-  geom_polygon(data = cg_x_shape, aes(x = -value, y = -cg_z_shape$value, fill = species_order), col = NA, alpha = 0.5) +
-  geom_polygon(data = vertices_cgxz, aes(x = -full_CGx_specific_orgShoulder, y = -full_CGz_specific_orgShoulder, col = species_order, fill = species_order, group = BirdID)) +
+  geom_polygon(data = cg_x_shape, aes(x = value, y = -cg_z_shape$value, fill = species_order), col = NA, alpha = 0.5) +
+  geom_polygon(data = vertices_cgxz, aes(x = full_CGx_specific_orgShoulder, y = -full_CGz_specific_orgShoulder, col = species_order, fill = species_order, group = BirdID)) +
   facet_wrap(~species_order, ncol = 1) +
   # colour control
   scale_fill_manual(values = rev(cc_rain), name = "species") +
@@ -83,11 +90,11 @@ CGxz_plot <- ggplot()+
         strip.text.x = element_blank())+
   theme(legend.position="none") +
   coord_fixed() +
-  scale_x_continuous(name='x (%)', limits = c(-0.04,0.2), breaks = c(0,0.1,0.2), labels = c(0,-10,-20)) +
+  scale_x_continuous(name='x (%)', limits = c(-0.2,0.04), breaks = c(-0.2,-0.1,0), labels = c(-20,-10,0)) +
   scale_y_continuous(name='z (%)', limits = c(-0.12,0.08), breaks = c(-0.1,0), labels = c(10,0)) +
   geom_rangeframe() +
   annotate(geom = "segment", x = log(0), xend = log(0), y = -0.1, yend = 0) +
-  annotate(geom = "segment", x = 0, xend = 0.2, y = log(0), yend = log(0))
+  annotate(geom = "segment", x = 0, xend = -0.2, y = log(0), yend = log(0))
 
 ## -------------------- Panel B ------------------------
 
@@ -107,9 +114,9 @@ wingCGxy_plot <- ggplot() +
   theme(legend.position="none") +
   coord_fixed() +
   scale_x_continuous(name='y (%)', limits = c(-0.01,0.31), breaks = c(0,0.1,0.2,0.3), labels = c(0,10,20,30)) +
-  scale_y_continuous(name='x (%)', limits = c(-0.15,0.1), breaks = c(-0.1,0,0.1), labels = c(-10,0,10)) +
+  scale_y_continuous(name='x (%)', limits = c(-0.15,0.1), breaks = c(-0.1,0), labels = c(-10,0)) +
   geom_rangeframe() +
-  annotate(geom = "segment", x = log(0), xend = log(0), y = -0.1, yend = 0.1) +
+  annotate(geom = "segment", x = log(0), xend = log(0), y = -0.1, yend = 0) +
   annotate(geom = "segment", x = 0, xend = 0.3, y = log(0), yend = log(0))
 
 
@@ -125,7 +132,7 @@ effect_CGx <- ggplot()+
   th +
   theme(axis.ticks.y=element_blank(),axis.text.y=element_blank()) +
   # axis control
-  scale_y_continuous(limits = c(0,12), name = "") +
+  scale_y_continuous(limits = c(0,14), name = "") +
   scale_x_continuous(limits = c(0,1), name = lab_eta) +
   geom_rangeframe() +
   annotate(geom = "segment", x = 0, xend = 1, y = log(0), yend = log(0))
@@ -142,7 +149,7 @@ effect_CGz <- ggplot()+
   th +
   theme(axis.ticks.y=element_blank(),axis.text.y=element_blank()) +
   # axis control
-  scale_y_continuous(limits = c(0,12), name = "") +
+  scale_y_continuous(limits = c(0,14), name = "") +
   scale_x_continuous(limits = c(0,1), name = lab_eta) +
   geom_rangeframe() +
   annotate(geom = "segment", x = 0, xend = 1, y = log(0), yend = log(0))
@@ -159,7 +166,7 @@ effect_CGy <- ggplot()+
   th +
   theme(axis.ticks.y=element_blank(),axis.text.y=element_blank()) +
   # axis control
-  scale_y_continuous(limits = c(0,12)) +
+  scale_y_continuous(limits = c(0,14)) +
   scale_x_continuous(limits = c(0,1), name = lab_eta) +
   geom_rangeframe() +
   annotate(geom = "segment", x = 0, xend = 1, y = log(0), yend = log(0))
@@ -199,7 +206,7 @@ CG_isometry_fullbird <- ggplot() +
   th +
   scale_x_continuous(trans='log10', name = "Mass (kg)",
                      breaks = c(0.01,0.1,1,10), labels = c(expression(10^-2),expression(10^-1),expression(10^0),expression(10^1)))+
-  scale_y_continuous(trans='log10', name = expression(paste("Mean center of gravity (m)", sep = "")), limits = c(0.006,1),
+  scale_y_continuous(trans='log10', name = expression(paste("Mean center of gravity (m)", sep = "")), limits = c(0.005,1),
                      breaks = c(1E-2,1E-1,1E0), labels = c(expression(10^-2),expression(10^-1),expression(10^0)),
                      sec.axis = sec_axis(~.*100, name= "Normalized mean center of gravity (%)", breaks = c(1,10,30,100)))+
   geom_rangeframe() +
@@ -219,15 +226,15 @@ CG_isometry_singlewing <- ggplot() +
   geom_ribbon(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, ymin = exp(CGy_model_mcmc_output$solutions[1,1])*full_m^CGy_model_mcmc_output$solutions[2,2], ymax = exp(CGy_model_mcmc_output$solutions[1,1])*full_m^CGy_model_mcmc_output$solutions[2,3]),
               col = NA, fill = "black", alpha = 0.3) +
   # add data
-  geom_point(data = dat_comp, aes (x = full_m, y = mean_wing_CGy), col = "black", pch = 1) +
-  geom_point(data = dat_comp, aes (x = full_m, y = mean_wing_CGy_specific), col = "gray", pch = 16) +
+  geom_point(data = dat_comp, aes (x = full_m, y = mean_wing_CGy), col = "black", pch = 16) +
+  geom_point(data = dat_comp, aes (x = full_m, y = mean_wing_CGy_specific), col = "gray", pch = 1) +
   # add iso lines
   geom_line(data = dat_comp, aes(x = full_m, y = exp(CGy_sp_model_mcmc_output$solutions[1,1])*full_m^(0)), col = "gray", linetype = 2) +
   geom_line(data = dat_comp, aes(x = full_m, y = exp(CGy_model_mcmc_output$solutions[1,1])*full_m^(1/3)), col = "black", linetype = 2) +
   th +
   scale_x_continuous(trans='log10', name = "Mass (kg)",
                      breaks = c(0.01,0.1,1,10), labels = c(expression(10^-2),expression(10^-1),expression(10^0),expression(10^1)))+
-  scale_y_continuous(trans='log10', name = expression(paste("Mean center of gravity (m)", sep = "")), limits = c(0.006,1),
+  scale_y_continuous(trans='log10', name = expression(paste("Mean center of gravity (m)", sep = "")), limits = c(0.005,1),
                      breaks = c(1E-2,1E-1,1E0), labels = c(expression(10^-2),expression(10^-1),expression(10^0)),
                      sec.axis = sec_axis(~.*100, name= "Normalized mean center of gravity (%)", breaks = c(1,10,30,100)))+
   geom_rangeframe() +
@@ -255,6 +262,15 @@ rightcol <- plot_grid(blank_plot,effect_CGx,effect_CGz,CG_isometry_fullbird,effe
                     labels = c("",""),
                     label_size = 10,
                     label_fontfamily = "sans")
+#export as 9x3.5 if inputting independently
+rightcol_ind <- plot_grid(effect_CGx,effect_CGz,CG_isometry_fullbird,effect_CGy,CG_isometry_singlewing,
+                      #arrangement data
+                      ncol = 1,
+                      rel_heights = c(0.5,0.5,1,0.5,1),
+                      #labels
+                      labels = c("",""),
+                      label_size = 10,
+                      label_fontfamily = "sans")
 
 #exported as 12x12
 Figure2_final <- plot_grid(leftcol, rightcol,
@@ -362,7 +378,7 @@ effect_Ixx <- ggplot()+
   th +
   theme(axis.ticks.y=element_blank(),axis.text.y=element_blank()) +
   # axis control
-  scale_y_continuous(limits = c(0,12), name = "") +
+  scale_y_continuous(limits = c(0,14), name = "") +
   scale_x_continuous(limits = c(0,1), name = lab_eta) +
   geom_rangeframe() +
   annotate(geom = "segment", x = 0, xend = 1, y = log(0), yend = log(0))
@@ -379,7 +395,7 @@ effect_Iyy <- ggplot()+
   th +
   theme(axis.ticks.y=element_blank(),axis.text.y=element_blank()) +
   # axis control
-  scale_y_continuous(limits = c(0,12), name = "") +
+  scale_y_continuous(limits = c(0,14), name = "") +
   scale_x_continuous(limits = c(0,1), name = lab_eta) +
   geom_rangeframe() +
   annotate(geom = "segment", x = 0, xend = 1, y = log(0), yend = log(0))
@@ -396,7 +412,7 @@ effect_Izz <- ggplot()+
   th +
   theme(axis.ticks.y=element_blank(),axis.text.y=element_blank()) +
   # axis control
-  scale_y_continuous(limits = c(0,12), name = "") +
+  scale_y_continuous(limits = c(0,14), name = "") +
   scale_x_continuous(limits = c(0,1), name = lab_eta) +
   geom_rangeframe() +
   annotate(geom = "segment", x = 0, xend = 1, y = log(0), yend = log(0))
@@ -413,7 +429,7 @@ effect_Ixz <- ggplot()+
   th +
   theme(axis.ticks.y=element_blank(),axis.text.y=element_blank()) +
   # axis control
-  scale_y_continuous(limits = c(0,12), name = "") +
+  scale_y_continuous(limits = c(0,14), name = "") +
   scale_x_continuous(limits = c(0,1), name = lab_eta) +
   geom_rangeframe() +
   annotate(geom = "segment", x = 0, xend = 1, y = log(0), yend = log(0))
@@ -457,15 +473,16 @@ q_plot <- ggplot() +
   th +
   theme(legend.position="none") +
   # axis control
-  scale_x_continuous(trans='log10', limits = c(0.01,10), breaks = c(0.01,0.1,1,10), name = "Mass (kg",
-                     breaks = c(0.01,0.1,1,10), labels = c(expression(10^-2),expression(10^-1),expression(10^0),expression(10^1)))+
-  scale_y_continuous(trans='log10', limits = c(0.1,10), breaks = c(0.1,1,10), labels = c(expression(10^-1),expression(10^0),expression(10^1)), name = expression(paste("Longitudinal agility metric (s"^{-2},")")))+
+  scale_x_continuous(trans='log10', limits = c(0.01,10), breaks = c(0.01,0.1,1,10), name = "Mass (kg)",
+                     labels = c(expression(10^-2),expression(10^-1),expression(10^0),expression(10^1)))+
+  scale_y_continuous(trans='log10', limits = c(0.1,10), breaks = c(0.1,1,10),
+                     labels = c(expression(10^-1),expression(10^0),expression(10^1)), name = expression(paste("Longitudinal agility metric (s"^{-2},")")))+
   geom_rangeframe() +
   annotate(geom = "segment", x = 0, xend = 0, y = 1E-1, yend = 1E1) +
   annotate(geom = "segment", x = 0.01, xend = 10, y = 0, yend = 0)
 
 # -------- Combine panels into figure ------------
-#exported as 6x14
+#exported as 12x6
 midrow <- plot_grid(effect_Ixx,effect_Iyy, effect_Izz,effect_Ixz,
                        #arrangement data
                        nrow = 4,
@@ -485,7 +502,7 @@ toprow <- plot_grid(phylo_plot_complete,Ixx_specific,Iyy_specific, Izz_specific,
 bottomrow <- plot_grid(midrow,I_isometry,q_plot,
                        #arrangement data
                        ncol = 3,
-                       rel_widths = c(1,1,1),
+                       rel_widths = c(0.7,1,1),
                        #labels
                        labels = c("","","",""),
                        label_size = 10,
@@ -508,24 +525,27 @@ var_test_plot <- ggplot()+
   th
 # exported as 5x5
 var_sens_plot <- ggplot()+
-  geom_dotplot(data = dat_var_range, aes(x = component, y = mean_sig_sq), col = NA, fill = "black", binaxis='y', stackdir='center', dotsize = 4, binwidth = 1/5000) +
+  geom_dotplot(data = dat_var_range, aes(x = component, y = mean_sig_sq), col = NA, fill = "black", binaxis='y', stackdir='center', dotsize = 4, binwidth = 1/5000, alpha = 0.6) +
+  geom_point(data = dat_var_tot, aes(x = component, y = mean_sig_sq), col = "gray", size = 2, pch = 15) +
   th+
-  scale_y_continuous(limits = c(0,0.12), breaks = c(0,0.04,0.08,0.12), name = expression(paste(sigma^2,""[multi]))) +
+  scale_y_continuous(limits = c(0,0.12), breaks = c(0,0.04,0.08,0.12), name = expression(paste(sigma^2,""[mult]))) +
   geom_rangeframe() +
-  annotate(geom = "segment", x = 1, xend = 13, y = log(0), yend = log(0)) +
+  annotate(geom = "segment", x = 1, xend = 15, y = log(0), yend = log(0)) +
   annotate(geom = "segment", y = 0, yend = 0.12, x = log(0), xend = log(0))
 # Extract the correct colours
 merge(ggplot_build(var_test_plot)$data,subset(dat_var_tot, component != "full_I"), by.x = "x", by.y = "mean_sig_sq")
 
 chord_length_plot <- ggplot()+
-  geom_hline(yintercept = 1, linetype = "dashed") +
-  geom_point(data = test2, aes(x = species_order, y = c_l_true, fill = species_order), col = "black", pch = 21) +
-  geom_point(data = test2, aes(x = species_order, y = c_l_true, col = species_order), pch = 1) +
+  geom_vline(xintercept = 1, linetype = "dashed") +
+  geom_path(data = test2, aes(x = c_l_true, y = max_q, col = species_order, group= species_order)) +
+  geom_point(data = test2, aes(x = c_l_true, y = max_q, fill = species_order), col = "black", pch = 21) +
+  geom_point(data = test2, aes(x = c_l_true, y = max_q, col = species_order), pch = 1) +
   th+
   theme(legend.position="none") +
   scale_fill_manual(values = rev(cc_rain), name = "species") +
   scale_colour_manual(values = rev(cc_rain), name = "species") +
-  #scale_y_continuous(limits = c(0,0.12), breaks = c(0,0.04,0.08,0.12), name = expression(paste(sigma^2,""[multi]))) +
+  scale_y_continuous(trans='log10', limits = c(0.1,10), breaks = c(0.1,1,10), name = expression(paste("Longitudinal agility metric (s"^{-2},")"))) +
+  scale_x_continuous(trans='log10', limits = c(0.5,2), name = "estimated static margin ratio") +
   geom_rangeframe() +
-  annotate(geom = "segment", x = 1, xend = 22, y = log(0), yend = log(0)) +
-  annotate(geom = "segment", y = 0.5, yend = 1.5, x = log(0), xend = log(0))
+  annotate(geom = "segment", x = 0.5, xend = 2, y = 0, yend = 0) +
+  annotate(geom = "segment", y = 0.1, yend = 10, x = 0, xend = 0)

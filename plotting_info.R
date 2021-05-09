@@ -43,7 +43,7 @@ cc_rain6  <- scales::seq_gradient_pal("#5F2CC8", "#304CC8", "Lab")(seq(0,1,lengt
 cc_rain   <- c(cc_rain6, cc_rain5[2:5], cc_rain4[2:4], cc_rain3[2:6],cc_rain2[2:3],cc_rain1[2:6])
 
 # Variation colours
-cc_var8  <- scales::seq_gradient_pal("#004237", "black", "Lab")(seq(0,1,length.out=8))
+#cc_var8  <- scales::seq_gradient_pal("#004237", "black", "Lab")(seq(0,1,length.out=8))
 cc_var0  <- scales::seq_gradient_pal("#207567", "#004237", "Lab")(seq(0,1,length.out=10))
 cc_var1  <- scales::seq_gradient_pal("#358873", "#207567", "Lab")(seq(0,1,length.out=5))
 cc_var2  <- scales::seq_gradient_pal("#4E9C81", "#358873", "Lab")(seq(0,1,length.out=3))
@@ -52,7 +52,7 @@ cc_var4  <- scales::seq_gradient_pal("#8DC3A7", "#6BAF92", "Lab")(seq(0,1,length
 cc_var5  <- scales::seq_gradient_pal("#B4D6C1", "#8DC3A7", "Lab")(seq(0,1,length.out=6))
 cc_var6  <- scales::seq_gradient_pal("#DFEAE2", "#B4D6C1", "Lab")(seq(0,1,length.out=10))
 cc_var7  <- scales::seq_gradient_pal("white", "#DFEAE2", "Lab")(seq(0,1,length.out=10))
-cc_var   <- c(cc_var7[5:10], cc_var6[2:10], cc_var5[2:6], cc_var4[2:4], cc_var3[2:3],cc_var2[2:3],cc_var1[2:5],cc_var0[2:10],cc_var8[2:8])
+cc_var   <- c(cc_var7[5:10], cc_var6[2:10], cc_var5[2:6], cc_var4[2:4], cc_var3[2:3],cc_var2[2:3],cc_var1[2:5],cc_var0[2:10])
 
 # -------------- Set up common labels -----------
 lab_eta = expression(paste(eta^2))
@@ -66,7 +66,7 @@ dat_phylo_plot <- data.frame(label = pruned_mcc$tip.label, genus = phylo_label)
 phylo_plot <- ggtree(pruned_mcc) %<+% dat_phylo_plot %>% rotate(23) +
   geom_tiplab(aes(label=genus)) +
   theme(plot.margin = unit(c(14,8,14,8), "mm")) +
-  theme_tree2()
+  theme_tree2() + geom_rootedge(3)
 phylo_plot_complete <- revts(phylo_plot) +
   scale_x_continuous(breaks=c(-80,-60,-40,-20,0), labels=c(80,60,40,20,0))
 

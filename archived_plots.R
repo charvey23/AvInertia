@@ -237,12 +237,20 @@ plot3d(x, y, z, col = c("black","gray20","gray50","gray70","red", "orange", "yel
 
 plot(dat_clean$elbow,dat_clean$manus)
 
-plot(dat_complete$pt2_Y[m],dat_complete$pt2_X[m], xlim =c(-max,max), ylim = c(-max,max))
-points(dat_complete$pt3_Y[m],dat_complete$pt3_X[m],xlim =c(-max,max), ylim = c(-max,max),col = "blue")
-points(dat_complete$pt4_Y[m], dat_complete$pt4_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "green")
-points(dat_complete$pt1_Y[m],dat_complete$pt1_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "red")
-points(dat_complete$pt8_Y[m],dat_complete$pt8_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "purple")
-points(dat_complete$pt9_Y[m],dat_complete$pt9_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "yellow")
+plot(test$pt2_Y[m],test$pt2_X[m], xlim =c(-max,max), ylim = c(-max,max))
+points(test$pt3_Y[m],test$pt3_X[m],xlim =c(-max,max), ylim = c(-max,max),col = "blue")
+points(test$pt4_Y[m], test$pt4_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "green")
+points(test$pt1_Y[m],test$pt1_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "red")
+points(test$pt8_Y[m],test$pt8_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "purple")
+points(test$pt9_Y[m],test$pt9_X[m], xlim =c(-max,max), ylim = c(-max,max), col = "yellow")
+
+plot(test$pt2_Y[m],test$pt2_Z[m], xlim =c(-max,max), ylim = c(-max,max))
+points(test$pt3_Y[m],test$pt3_Z[m],xlim =c(-max,max), ylim = c(-max,max),col = "blue")
+points(test$pt4_Y[m], test$pt4_Z[m], xlim =c(-max,max), ylim = c(-max,max), col = "green")
+points(test$pt1_Y[m],test$pt1_Z[m], xlim =c(-max,max), ylim = c(-max,max), col = "red")
+points(test$pt8_Y[m],test$pt8_Z[m], xlim =c(-max,max), ylim = c(-max,max), col = "purple")
+points(test$pt9_Y[m],test$pt9_Z[m], xlim =c(-max,max), ylim = c(-max,max), col = "yellow")
+
 
 points(tmp$pt2_Y[m],tmp$pt2_X[m],xlim =c(-max,max), ylim = c(-max,max),col = "blue")
 points(tmp$pt3_Y[m],tmp$pt3_X[m],xlim =c(-max,max), ylim = c(-max,max),col = "blue")

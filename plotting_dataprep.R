@@ -254,10 +254,10 @@ all_data_means$torso_length <- all_data_means$torsotail_length - all_data_means$
 all_data_means$torso_mass   <- all_data_means$torsotail_mass - all_data_means$tail_mass_g
 all_data_means$leg_mass     <- 0.5*(all_data_means$left_leg_mass_g+all_data_means$right_leg_mass)
 
-test  <- aggregate(list(mean_chord = sqrt((dat_wing$pt12_X - dat_wing$pt11_X)^2+(dat_wing$pt12_Y - dat_wing$pt11_Y)^2+(dat_wing$pt12_Z - dat_wing$pt11_Z)^2)), by = list(species = dat_wing$species), max)
-test2 <- merge(test,all_data_means, id = "species")
+test  <- aggregate(list(mean_chord = sqrt((dat_wing$pt12_X - dat_wing$pt11_X)^2+(dat_wing$pt12_Y - dat_wing$pt11_Y)^2+(dat_wing$pt12_Z - dat_wing$pt11_Z)^2)), by = list(species = dat_wing$species, BirdID = dat_wing$BirdID), max)
+test2 <- merge(test,dat_comp, id = c("species","BirdID"))
 test2$c_l      = test2$mean_chord/test2$full_length
-test2$c_l_true = abs(test2$min_CGx_specific_orgShoulder*test2$full_length)/abs(0.25*test2$mean_chord)
+test2$c_l_true = abs(0.25*test2$mean_chord)/abs(test2$mean_CGx_specific_orgShoulder*test2$full_length)
 test2[,c("species","mean_CGx_specific_orgShoulder","c_l","c_l_true")]
 test2$species_order = factor(test2$species, levels = phylo_order$species)
 
@@ -331,14 +331,16 @@ dat_var_range = rbind(dat_var_range,list(component = rep("wing_CG_sp",22), speci
 dat_var_range$component = factor(dat_var_range$component, levels = c("head","torso","tail","humerus","ulna","radius","cmc","P","S","full_CG","full_CG_sp","wing_CG","wing_CG_sp","full_I","full_I_sp"))
 
 fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("max_wing_CGy_specific")], model = "OU")
-
-#fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("mean_CGx_specific_orgShoulder")], model = "OU")
+library(mvMORPH)
+fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("mean_CGx_specific_orgShoulder")], model = "OU")
 mvOU(tree = pruned_mcc, data = all_data_means_mat[,c("mean_CGx_specific_orgShoulder")])
 mvOU(tree = pruned_mcc, data = all_data_means_mat[,c("max_wing_CGy_specific")])
+
+
 library(pmc)
 
 # to verify that the OU model is an appropriate fit given the size of our data
-out <- pmc(tree = pruned_mcc, data = all_data_means_mat[,c("mean_CGx_specific_orgShoulder")], "BM", "OU", nboot = 1000, mc.cores = 1)
+#out <- pmc(tree = pruned_mcc, data = all_data_means_mat[,c("mean_CGx_specific_orgShoulder")], "BM", "OU", nboot = 1000, mc.cores = 1)
 filename = paste(format(Sys.Date(), "%Y_%m_%d"),"_pmc_output.RData",sep="")
 save(out,file = filename)
 
