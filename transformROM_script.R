@@ -185,23 +185,23 @@ for (i in 1:no_species){
     col_all  = c(col_char, colnames(dat_raw[,3:35]))
 
     #### ------- Resize the applicable wings --------
-    for (j in 1:nrow(dat_body_curr)){
-
+    for (j in 1:length(unique(dat_raw$BirdID_FrameSpec))){
+        curr_wingID = unique(dat_raw$BirdID_FrameSpec)[j]
       # there are gull specific adjustments since wing doesn't match any body
-      if (dat_body_curr$BirdID[j] != curr_BirdID | curr_species == "lar_gla"){
+      if (curr_wingID != curr_BirdID | curr_species == "lar_gla"){
 
-        if (curr_species == "lar_gla" & dat_body_curr$BirdID[j]== "20_0341"){
+        if (curr_species == "lar_gla" & curr_BirdID == "20_0341"){
           adjust = subset(dat_raw, species == curr_species & BirdID == "21_0310")
 
           target_bone_len    = subset(dat_wingspec, species == curr_species & BirdID == "20_0341")$ulna_length_mm*0.001
           adjust_bone_length = mean(calc_dist(adjust[,c(9:11,30:32)]))
         } else{
           target = subset(dat_raw, species == curr_species & BirdID == curr_BirdID)
-          adjust = subset(dat_raw, species == curr_species & BirdID == dat_body_curr$BirdID[j])
+          adjust = subset(dat_raw, species == curr_species & BirdID == curr_wingID)
           # if there is no data for the wing ROM move onto the next wing
           if(nrow(adjust) == 0){next}
           target_bone_len    = subset(dat_wingspec, species == curr_species & BirdID == curr_BirdID)$humerus_length_mm*0.001
-          adjust_bone_length = subset(dat_wingspec, species == curr_species & BirdID == dat_body_curr$BirdID[j])$humerus_length_mm*0.001
+          adjust_bone_length = subset(dat_wingspec, species == curr_species & BirdID == curr_wingID)$humerus_length_mm*0.001
         }
 
         tmp = resize_to(specimen_to_adjust = adjust, char_colnames = col_char,
