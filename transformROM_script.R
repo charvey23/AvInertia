@@ -154,6 +154,14 @@ for (i in 1:no_species){
   dat_raw       = as.data.frame(dat_raw[complete.cases(dat_raw[,3:ncol(dat_raw)]),])  #Remove NaN rows
   dat_raw       = dat_raw[,c(col_dat_raw)] # re-order accordingly will work as long as the first species tracks all points
 
+  # ---- need to remove bad pigeon rows -----
+  if(i == 1){
+    hum_length   = sqrt((dat_raw$pt2_X-dat_raw$pt1_X)^2+(dat_raw$pt2_Y-dat_raw$pt1_Y)^2+(dat_raw$pt2_Z-dat_raw$pt1_Z)^2)
+    remove_row <- dat_raw[c(which(dat_raw$species == "col_liv" & dat_raw$BirdID == "20_0281" & hum_length < 0.029),
+                            which(dat_raw$species == "col_liv" & dat_raw$BirdID == "20_0281" & hum_length > 0.031)),c("BirdID","FrameID","TestID")]
+    dat_raw <- dat_raw[-which(interaction(dat_raw[,c("BirdID","FrameID","TestID")]) %in% interaction(remove_row[,c("BirdID","FrameID","TestID")])),]
+  }
+
   # ---- Calculate the elbow and wrist angle for each frame
   dat_raw$elbow <- NA
   dat_raw$manus <- NA
@@ -173,9 +181,9 @@ for (i in 1:no_species){
 
   dat_raw$BirdID_FrameSpec = dat_raw$BirdID
 
-  ## ----------------------------------------------------
+  ## -----------------------------------------------------
   ## --------- Iterate through each specimen -------------
-  ## ----------------------------------------------------
+  ## -----------------------------------------------------
 
   for (ind in 1:nrow(dat_body_curr)){
 
@@ -187,35 +195,47 @@ for (i in 1:no_species){
     #### ------- Resize the applicable wings --------
     for (j in 1:length(unique(dat_raw$BirdID_FrameSpec))){
         curr_wingID = unique(dat_raw$BirdID_FrameSpec)[j]
-      # there are gull specific adjustments since wing doesn't match any body
-      if (curr_wingID != curr_BirdID | curr_species == "lar_gla"){
 
-        if (curr_species == "lar_gla" & curr_BirdID == "20_0341"){
+
+      if (curr_wingID != curr_BirdID | curr_species == "lar_gla"){ #Option 1: If the wing does not match the body - resize
+        if (curr_species == "lar_gla" & curr_BirdID == "20_0341"){ #Option 1a:  gull specific define lengths
           adjust = subset(dat_raw, species == curr_species & BirdID == "21_0310")
-
+          # Size based on the distance between Pt2 and Pt3 matched to the ulna length
           target_bone_len    = subset(dat_wingspec, species == curr_species & BirdID == "20_0341")$ulna_length_mm*0.001
           adjust_bone_length = mean(calc_dist(adjust[,c(9:11,30:32)]))
-        } else{
+        } else{ #Option 1b: all other species
           target = subset(dat_raw, species == curr_species & BirdID == curr_BirdID)
           adjust = subset(dat_raw, species == curr_species & BirdID == curr_wingID)
-          # if there is no data for the wing ROM move onto the next wing
-          if(nrow(adjust) == 0){next}
-          target_bone_len    = subset(dat_wingspec, species == curr_species & BirdID == curr_BirdID)$humerus_length_mm*0.001
-          adjust_bone_length = subset(dat_wingspec, species == curr_species & BirdID == curr_wingID)$humerus_length_mm*0.001
+          if(nrow(adjust) == 0){next} # if there is no data for the wing ROM move onto the next wing
+          # Size based on the distance between Pt2 and Pt3 between the different wing specimens
+          target_bone_len    = mean(sqrt((target$pt2_X-target$pt3_X)^2+(target$pt2_Y-target$pt3_Y)^2+(target$pt2_Z-target$pt3_Z)^2))
+          adjust_bone_length = mean(sqrt((adjust$pt2_X-adjust$pt3_X)^2+(adjust$pt2_Y-adjust$pt3_Y)^2+(adjust$pt2_Z-adjust$pt3_Z)^2))
         }
 
-        tmp = resize_to(specimen_to_adjust = adjust, char_colnames = col_char,
-                        adjust_length = adjust_bone_length, target_length = target_bone_len)
-
+        # resize
+        tmp = resize_to(specimen_to_adjust = adjust, char_colnames = col_char, adjust_length = adjust_bone_length, target_length = target_bone_len)
         colnames(tmp) = col_all
-        # Check:
+
+        # Optional Check:
         # scale_factor = target_bone_len/adjust_bone_length # length of target bone/length of bone in wing that will be resized
         # mean(calc_dist(tmp[,c(18:20,39:41)]))/mean(calc_dist(adjust[,c(9:11,30:32)])) == scale_factor
-      }else {
+
+      }else { #Option 2: If the wing matches the body - don't resize
         tmp = subset(dat_raw, species == curr_species & BirdID == curr_BirdID)
         tmp = tmp[,col_all]
       }
 
+      # ------ Remove the outliers ---------
+      # set to remove points where ulna length is over 3 sd away from the mean
+      ulna_length     = sqrt((tmp$pt2_X-tmp$pt3_X)^2+(tmp$pt2_Y-tmp$pt3_Y)^2+(tmp$pt2_Z-tmp$pt3_Z)^2)
+      max_ulna_length = mean(ulna_length)+3*sd(ulna_length)
+      min_ulna_length = mean(ulna_length)-3*sd(ulna_length)
+      remove_row = which(ulna_length > max_ulna_length | ulna_length < min_ulna_length)
+      if(!is.null(nrow(remove_row))){
+        tmp <- tmp[-which(ulna_length > max_ulna_length | ulna_length < min_ulna_length),]
+      }
+
+      # ------ Save all final resized data ---------
       if(!exists("dat_resized")){
         dat_resized = tmp} else{
         dat_resized = rbind(dat_resized,tmp)}
@@ -260,10 +280,15 @@ for (i in 1:no_species){
 
       dat_complete$S[i] = sum(A1,A2,A3,A4,A5,A6,A7)
     }
+
     # ------------------------------ Save data
     filename_new <- paste(output_path,format(Sys.Date(), "%Y_%m_%d"),"_",curr_species,"_",curr_BirdID,"_transformed.csv",sep = "")
     write.csv(dat_complete,filename_new)
     remove(dat_resized) # must be remove to avoid saving from different species
+    #dat_complete$hum_length    = sqrt((dat_complete$pt2_X-dat_complete$pt3_X)^2+(dat_complete$pt2_Y-dat_complete$pt3_Y)^2+(dat_complete$pt2_Z-dat_complete$pt3_Z)^2)
+    #test <- ggplot() + geom_histogram(data = dat_complete, aes(x = hum_length, y = ..density..)) + facet_wrap(~BirdID_FrameSpec)
+    #plot(test)
+    #remove(dat_complete)
   } # end of the specimen loop
 } # end of the species loop
 filename_new <- paste(run_data_path,format(Sys.Date(), "%Y_%m_%d"),"_IDfile.csv",sep = "")
