@@ -201,23 +201,36 @@ for (i in 1:no_species){
         if (curr_species == "lar_gla" & curr_BirdID == "20_0341"){ #Option 1a:  gull specific define lengths
           adjust = subset(dat_raw, species == curr_species & BirdID == "21_0310")
           # Size based on the distance between Pt2 and Pt3 matched to the ulna length
-          target_bone_len    = subset(dat_wingspec, species == curr_species & BirdID == "20_0341")$ulna_length_mm*0.001
-          adjust_bone_length = mean(calc_dist(adjust[,c(9:11,30:32)]))
+          target_bone_len = subset(dat_wingspec, species == curr_species & BirdID == "20_0341")$ulna_length_mm*0.001
+          adjust_bone_len = mean(calc_dist(adjust[,c(9:11,30:32)]))
         } else{ #Option 1b: all other species
           target = subset(dat_raw, species == curr_species & BirdID == curr_BirdID)
           adjust = subset(dat_raw, species == curr_species & BirdID == curr_wingID)
           if(nrow(adjust) == 0){next} # if there is no data for the wing ROM move onto the next wing
           # Size based on the distance between Pt2 and Pt3 between the different wing specimens
-          target_bone_len    = mean(sqrt((target$pt2_X-target$pt3_X)^2+(target$pt2_Y-target$pt3_Y)^2+(target$pt2_Z-target$pt3_Z)^2))
-          adjust_bone_length = mean(sqrt((adjust$pt2_X-adjust$pt3_X)^2+(adjust$pt2_Y-adjust$pt3_Y)^2+(adjust$pt2_Z-adjust$pt3_Z)^2))
-        }
+          # opti-track ulna length
+          target_bone_len = mean(sqrt((target$pt2_X-target$pt3_X)^2+(target$pt2_Y-target$pt3_Y)^2+(target$pt2_Z-target$pt3_Z)^2))
+          adjust_bone_len = mean(sqrt((adjust$pt2_X-adjust$pt3_X)^2+(adjust$pt2_Y-adjust$pt3_Y)^2+(adjust$pt2_Z-adjust$pt3_Z)^2))
+
+          # something went weird with the measurement of the ulna length in one of the stellers jays on optitrack, will use hand measured value instead
+          if (curr_species =="cya_ste"){
+            if(target_bone_len/(subset(dat_wingspec, species == curr_species & BirdID == curr_BirdID)$ulna_length_mm*0.001) < 0.85){
+              target_bone_len = subset(dat_wingspec, species == curr_species & BirdID == curr_BirdID)$ulna_length_mm*0.001
+              print(curr_species)
+            }
+            if(adjust_bone_len/(subset(dat_wingspec, species == curr_species & BirdID == curr_wingID)$ulna_length_mm*0.001) < 0.85){
+              adjust_bone_len = subset(dat_wingspec, species == curr_species & BirdID == curr_wingID)$ulna_length_mm*0.001
+              print(curr_species)
+            }
+          } # End of opti-track fix
+        } # End of Option 1b
 
         # resize
-        tmp = resize_to(specimen_to_adjust = adjust, char_colnames = col_char, adjust_length = adjust_bone_length, target_length = target_bone_len)
+        tmp = resize_to(specimen_to_adjust = adjust, char_colnames = col_char, adjust_length = adjust_bone_len, target_length = target_bone_len)
         colnames(tmp) = col_all
 
         # Optional Check:
-        # scale_factor = target_bone_len/adjust_bone_length # length of target bone/length of bone in wing that will be resized
+        # scale_factor = target_bone_len/adjust_bone_len # length of target bone/length of bone in wing that will be resized
         # mean(calc_dist(tmp[,c(18:20,39:41)]))/mean(calc_dist(adjust[,c(9:11,30:32)])) == scale_factor
 
       }else { #Option 2: If the wing matches the body - don't resize
@@ -263,20 +276,20 @@ for (i in 1:no_species){
       y_vertices = c(dat_complete$pt6_Y[i],dat_complete$pt7_Y[i],dat_complete$pt8_Y[i],dat_complete$pt9_Y[i],dat_complete$pt10_Y[i],dat_complete$pt11_Y[i],dat_complete$pt12_Y[i])
       dat_complete$S_proj[i] <- polyarea(x_vertices, y_vertices)
       ## ----- Calculate the total wing area ------
-      A1 = 0.5*Norm(cross(as.vector(t(dat_complete[i,c("pt11_X","pt11_Y","pt11_Z")]-dat_complete[i,c("pt2_X","pt2_Y","pt2_Z")])),
-                          as.vector(t(dat_complete[i,c("pt11_X","pt11_Y","pt11_Z")]-dat_complete[i,c("pt12_X","pt12_Y","pt12_Z")]))), p = 2)
-      A2 = 0.5*Norm(cross(as.vector(t(dat_complete[i,c("pt2_X","pt2_Y","pt2_Z")]-dat_complete[i,c("pt6_X","pt6_Y","pt6_Z")])),
-                          as.vector(t(dat_complete[i,c("pt2_X","pt2_Y","pt2_Z")]-dat_complete[i,c("pt12_X","pt12_Y","pt12_Z")]))), p = 2)
-      A3 = 0.5*Norm(cross(as.vector(t(dat_complete[i,c("pt11_X","pt11_Y","pt11_Z")]-dat_complete[i,c("pt10_X","pt10_Y","pt10_Z")])),
-                          as.vector(t(dat_complete[i,c("pt11_X","pt11_Y","pt11_Z")]-dat_complete[i,c("pt2_X","pt2_Y","pt2_Z")]))), p = 2)
-      A4 = 0.5*Norm(cross(as.vector(t(dat_complete[i,c("pt10_X","pt10_Y","pt10_Z")]-dat_complete[i,c("pt6_X","pt6_Y","pt6_Z")])),
-                          as.vector(t(dat_complete[i,c("pt10_X","pt10_Y","pt10_Z")]-dat_complete[i,c("pt2_X","pt2_Y","pt2_Z")]))), p = 2)
-      A5 = 0.5*Norm(cross(as.vector(t(dat_complete[i,c("pt10_X","pt10_Y","pt10_Z")]-dat_complete[i,c("pt9_X","pt9_Y","pt9_Z")])),
-                          as.vector(t(dat_complete[i,c("pt10_X","pt10_Y","pt10_Z")]-dat_complete[i,c("pt6_X","pt6_Y","pt6_Z")]))), p = 2)
-      A6 = 0.5*Norm(cross(as.vector(t(dat_complete[i,c("pt9_X","pt9_Y","pt9_Z")]-dat_complete[i,c("pt7_X","pt7_Y","pt7_Z")])),
-                          as.vector(t(dat_complete[i,c("pt9_X","pt9_Y","pt9_Z")]-dat_complete[i,c("pt6_X","pt6_Y","pt6_Z")]))), p = 2)
-      A7 = 0.5*Norm(cross(as.vector(t(dat_complete[i,c("pt9_X","pt9_Y","pt9_Z")]-dat_complete[i,c("pt8_X","pt8_Y","pt8_Z")])),
-                          as.vector(t(dat_complete[i,c("pt9_X","pt9_Y","pt9_Z")]-dat_complete[i,c("pt7_X","pt7_Y","pt7_Z")]))), p = 2)
+      A1 = abs(0.5*Norm(cross(as.vector(t(dat_complete[i,c("pt11_X","pt11_Y","pt11_Z")]-dat_complete[i,c("pt2_X","pt2_Y","pt2_Z")])),
+                              as.vector(t(dat_complete[i,c("pt11_X","pt11_Y","pt11_Z")]-dat_complete[i,c("pt12_X","pt12_Y","pt12_Z")]))), p = 2))
+      A2 = abs(0.5*Norm(cross(as.vector(t(dat_complete[i,c("pt2_X","pt2_Y","pt2_Z")]-dat_complete[i,c("pt6_X","pt6_Y","pt6_Z")])),
+                              as.vector(t(dat_complete[i,c("pt2_X","pt2_Y","pt2_Z")]-dat_complete[i,c("pt12_X","pt12_Y","pt12_Z")]))), p = 2))
+      A3 = abs(0.5*Norm(cross(as.vector(t(dat_complete[i,c("pt11_X","pt11_Y","pt11_Z")]-dat_complete[i,c("pt10_X","pt10_Y","pt10_Z")])),
+                              as.vector(t(dat_complete[i,c("pt11_X","pt11_Y","pt11_Z")]-dat_complete[i,c("pt2_X","pt2_Y","pt2_Z")]))), p = 2))
+      A4 = abs(0.5*Norm(cross(as.vector(t(dat_complete[i,c("pt10_X","pt10_Y","pt10_Z")]-dat_complete[i,c("pt6_X","pt6_Y","pt6_Z")])),
+                              as.vector(t(dat_complete[i,c("pt10_X","pt10_Y","pt10_Z")]-dat_complete[i,c("pt2_X","pt2_Y","pt2_Z")]))), p = 2))
+      A5 = abs(0.5*Norm(cross(as.vector(t(dat_complete[i,c("pt10_X","pt10_Y","pt10_Z")]-dat_complete[i,c("pt9_X","pt9_Y","pt9_Z")])),
+                              as.vector(t(dat_complete[i,c("pt10_X","pt10_Y","pt10_Z")]-dat_complete[i,c("pt6_X","pt6_Y","pt6_Z")]))), p = 2))
+      A6 = abs(0.5*Norm(cross(as.vector(t(dat_complete[i,c("pt9_X","pt9_Y","pt9_Z")]-dat_complete[i,c("pt7_X","pt7_Y","pt7_Z")])),
+                              as.vector(t(dat_complete[i,c("pt9_X","pt9_Y","pt9_Z")]-dat_complete[i,c("pt6_X","pt6_Y","pt6_Z")]))), p = 2))
+      A7 = abs(0.5*Norm(cross(as.vector(t(dat_complete[i,c("pt9_X","pt9_Y","pt9_Z")]-dat_complete[i,c("pt8_X","pt8_Y","pt8_Z")])),
+                              as.vector(t(dat_complete[i,c("pt9_X","pt9_Y","pt9_Z")]-dat_complete[i,c("pt7_X","pt7_Y","pt7_Z")]))), p = 2))
 
       dat_complete$S[i] = sum(A1,A2,A3,A4,A5,A6,A7)
     }
