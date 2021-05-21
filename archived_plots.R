@@ -18,6 +18,14 @@ ROM_plot <- ggplot()+
   scale_y_continuous(name='Wrist angle (°)')
 
 ## to compute the body extremes
+# pull out the maximum wing shapes
+max_wing_prop <- aggregate(list(b_max = dat_final$span),  by=list(species = dat_final$species), max)
+max_wing <- subset(dat_final[,c("species","pt6_X","pt6_Y","pt7_X","pt7_Y","pt8_X","pt8_Y","pt8_Z","pt9_X","pt9_Y","pt10_X","pt10_Y",
+                                "pt11_X","pt11_Y","pt11_Z","pt12_X","pt12_Y","pt12_Z","span")], span %in% max_wing_prop$b_max)
+max_wing$edge_X = max_wing$pt11_X
+max_wing$edge_Y = 0
+max_wing[,2:21] <- max_wing[,2:21]/(0.5*max_wing$span)
+remove(max_wing_prop)
 
 extremes = aggregate(list(BeakTipx_orgShoulder = dat_final$BeakTipx_orgShoulder,
                           Centrez_orgShoulder  = dat_final$Centrez_orgShoulder,
@@ -575,3 +583,98 @@ ygrid <-  seq(floor(min(dat_final$manus)), ceiling(max(dat_final$manus)), 1)
 zgrid <-  phylo_order$species
 data.fit       <- expand.grid(elbow = xgrid, manus = ygrid, species_order = zgrid)
 data.fit$prop_q  <-  predict(test, newdata = data.fit)
+
+## Specific I plots
+##------------------------------
+
+dat_I_sp_plot <- merge(aggregate(list(min_Ixx_specific = dat_comp$min_Ixx_specific,
+                                      min_Iyy_specific = dat_comp$min_Iyy_specific,
+                                      min_Izz_specific = dat_comp$min_Izz_specific,
+                                      min_Ixz_specific = dat_comp$min_Ixz_specific),  by=list(species = dat_comp$species), min),
+                       aggregate(list(max_Ixx_specific = dat_comp$max_Ixx_specific,
+                                      max_Iyy_specific = dat_comp$max_Iyy_specific,
+                                      max_Izz_specific = dat_comp$max_Izz_specific,
+                                      max_Ixz_specific = dat_comp$max_Ixz_specific),  by=list(species = dat_comp$species), max), by = "species")
+
+Ixx_specific <- ggplot() +
+  # add background info
+  geom_rect(data = shading, aes(ymin = col1, ymax = col2, xmin = -Inf, xmax = Inf), alpha = 0.1, position = position_nudge(y = -0.5)) +
+  # add data
+  geom_errorbarh(data = dat_I_sp_plot, aes(xmin = min_Ixx_specific, xmax = max_Ixx_specific, y = species), height = 0, alpha = 0.5)+
+  geom_point(data = aggregate(list(max_Ixx_specific = dat_comp$max_Ixx_specific),  by=list(species = dat_comp$species), max),
+             aes(x = max_Ixx_specific, y = species), fill = col_x, col = "black",pch = 22, alpha = 0.85, size = 0.8) +
+  geom_point(data = aggregate(list(min_Ixx_specific = dat_comp$min_Ixx_specific),  by=list(species = dat_comp$species), min),
+             aes(x = min_Ixx_specific, y = species), fill = col_x, col = "black",pch = 22, alpha = 0.85, size = 0.8) +
+  geom_point(data = aggregate(list(mean_Ixx_specific = dat_comp$mean_Ixx_specific),  by=list(species = dat_comp$species), mean),
+             aes(x = mean_Ixx_specific, y = species), fill = "white", col = col_x, pch = 21, alpha = 1, size = 0.9) +
+  #theme control
+  th +
+  theme(axis.ticks.y=element_blank(),axis.text.y=element_blank()) +
+  #axis control
+  scale_y_discrete(expand = c(0.1,0), limits = rev(phylo_order$species), name = "") +
+  scale_x_continuous(name = expression(paste(bar("I"["xx"]))), limits= c(0,0.03), breaks = c(0,0.01,0.02,0.03), labels = c(0,1,2,3)) +
+  geom_rangeframe() +
+  annotate(geom = "segment", x = 0, xend = 0.03, y = log(0), yend = log(0))
+
+Iyy_specific <- ggplot() +
+  # add background info
+  geom_rect(data = shading, aes(ymin = col1, ymax = col2, xmin = -Inf, xmax = Inf), alpha = 0.1, position = position_nudge(y = -0.5)) +
+  # add data
+  geom_errorbarh(data = dat_I_sp_plot, aes(xmin = min_Iyy_specific, xmax = max_Iyy_specific, y = species), height = 0, alpha = 0.5)+
+  geom_point(data = aggregate(list(max_Iyy_specific = dat_comp$max_Iyy_specific),  by=list(species = dat_comp$species), max),
+             aes(x = max_Iyy_specific, y = species), fill = col_x, col = "black",pch = 22, alpha = 0.85, size = 0.8) +
+  geom_point(data = aggregate(list(min_Iyy_specific = dat_comp$min_Iyy_specific),  by=list(species = dat_comp$species), min),
+             aes(x = min_Iyy_specific, y = species), fill = col_x, col = "black",pch = 22, alpha = 0.85, size = 0.8) +
+  geom_point(data = aggregate(list(mean_Iyy_specific = dat_comp$mean_Iyy_specific),  by=list(species = dat_comp$species), mean),
+             aes(x = mean_Iyy_specific, y = species), fill = "white", col = col_x, pch = 21, alpha = 1, size = 0.9) +
+  #theme control
+  th +
+  theme(axis.ticks.y=element_blank(),axis.text.y=element_blank()) +
+  #axis control
+  scale_y_discrete(expand = c(0.1,0), limits = rev(phylo_order$species), name = "") +
+  scale_x_continuous(name = expression(paste(bar("I"["yy"]))), limits= c(0,0.03), breaks = c(0,0.01,0.02,0.03), labels = c(0,1,2,3)) +
+  geom_rangeframe() +
+  annotate(geom = "segment", x = 0, xend = 0.03, y = log(0), yend = log(0))
+
+Izz_specific <- ggplot() +
+  # add background info
+  geom_rect(data = shading, aes(ymin = col1, ymax = col2, xmin = -Inf, xmax = Inf), alpha = 0.1, position = position_nudge(y = -0.5)) +
+  # add data
+  geom_errorbarh(data = dat_I_sp_plot, aes(xmin = min_Izz_specific, xmax = max_Izz_specific, y = species), height = 0, alpha = 0.5)+
+  geom_point(data = aggregate(list(max_Izz_specific = dat_comp$max_Izz_specific),  by=list(species = dat_comp$species), max),
+             aes(x = max_Izz_specific, y = species), fill = col_x, col = "black",pch = 22, alpha = 0.85, size = 0.8) +
+  geom_point(data = aggregate(list(min_Izz_specific = dat_comp$min_Izz_specific),  by=list(species = dat_comp$species), min),
+             aes(x = min_Izz_specific, y = species), fill = col_x, col = "black",pch = 22, alpha = 0.85, size = 0.8) +
+  geom_point(data = aggregate(list(mean_Izz_specific = dat_comp$mean_Izz_specific),  by=list(species = dat_comp$species), mean),
+             aes(x = mean_Izz_specific, y = species), fill = "white", col = col_x, pch = 21, alpha = 1, size = 0.9) +
+  #theme control
+  th +
+  theme(axis.ticks.y=element_blank(),axis.text.y=element_blank()) +
+  #axis control
+  scale_y_discrete(expand = c(0.1,0), limits = rev(phylo_order$species), name = "") +
+  scale_x_continuous(name = expression(paste(bar("I"["zz"]))), limits= c(0,0.03), breaks = c(0,0.01,0.02,0.03), labels = c(0,1,2,3)) +
+  geom_rangeframe() +
+  annotate(geom = "segment", x = 0, xend = 0.03, y = log(0), yend = log(0))
+
+Ixz_specific <- ggplot() +
+  # add background info
+  geom_rect(data = shading, aes(ymin = col1, ymax = col2, xmin = -Inf, xmax = Inf), alpha = 0.1, position = position_nudge(y = -0.5)) +
+  geom_vline(xintercept = 0, linetype = "dashed", col = "gray")+
+  # add data
+  geom_errorbarh(data = dat_I_sp_plot, aes(xmin = min_Ixz_specific, xmax = max_Ixz_specific, y = species), height = 0, alpha = 0.5)+
+  geom_point(data = aggregate(list(max_Ixz_specific = dat_comp$max_Ixz_specific),  by=list(species = dat_comp$species), max),
+             aes(x = max_Ixz_specific, y = species), fill = col_x, col = "black",pch = 22, alpha = 0.85, size = 0.8) +
+  geom_point(data = aggregate(list(min_Ixz_specific = dat_comp$min_Ixz_specific),  by=list(species = dat_comp$species), min),
+             aes(x = min_Ixz_specific, y = species), fill = col_x, col = "black",pch = 22, alpha = 0.85, size = 0.8) +
+  geom_point(data = aggregate(list(mean_Ixz_specific = dat_comp$mean_Ixz_specific),  by=list(species = dat_comp$species), mean),
+             aes(x = mean_Ixz_specific, y = species), fill = "white", col = col_x, pch = 21, alpha = 1, size = 0.9) +
+  #theme control
+  th +
+  theme(axis.ticks.y=element_blank(),axis.text.y=element_blank()) +
+  #axis control
+  scale_y_discrete(expand = c(0.1,0), limits = rev(phylo_order$species), name = "") +
+  scale_x_continuous(name = expression(paste(bar("I"["xz"]))), limits= c(-0.015,0.015), breaks = c(-0.015,0,0.015), labels = c(-1.5,0,1.5)) +
+  geom_rangeframe() +
+  annotate(geom = "segment", x = -0.015, xend = 0.015, y = log(0), yend = log(0))
+
+

@@ -31,7 +31,7 @@ max(subset(dat_final, species == "col_liv")$wing_CGy_specific_orgShoulder)
 # to highlight the link between relative humerus length and CGy range
 pgls_model_hum_range <-
   MCMCglmm::MCMCglmm(
-    log(range_wing_CGy_specific) ~ log(hum_maxspan),
+    log(range_wing_CGy_specific) ~ log(hum_len),
     random = ~ phylo,
     scale = FALSE, ## whether you use this is up to you -- whatever is fair
     ginverse = list(phylo = inv.phylo$Ainv),
@@ -108,7 +108,7 @@ dat_comp$species[which.max(dat_comp$Ixx_elb_p)]
 ## Longitudinal stablity
 pgls_model_mcmc <-
   MCMCglmm::MCMCglmm(
-    log(max_q) ~ log(full_m),
+    log(max_q_nd) ~ log(full_m),
     random = ~ phylo,
     scale = FALSE, ## whether you use this is up to you -- whatever is fair
     ginverse = list(phylo = inv.phylo$Ainv),
@@ -125,7 +125,7 @@ summary(pgls_model_mcmc)
 
 pgls_model_mcmc <-
   MCMCglmm::MCMCglmm(
-    log(max_q) ~ log(c_l_true),
+    log(c_l_true) ~ log(max_q),
     random = ~ phylo,
     scale = FALSE, ## whether you use this is up to you -- whatever is fair
     ginverse = list(phylo = inv.phylo$Ainv),
@@ -137,3 +137,20 @@ pgls_model_mcmc <-
     pr = TRUE, pl = TRUE ## this saves some model output stuff
   )
 summary(pgls_model_mcmc)
+
+
+pgls_model_mcmc <-
+  MCMCglmm::MCMCglmm(
+    log(-mean_CGx_orgShoulder) ~ log(full_m),
+    random = ~ phylo,
+    scale = FALSE, ## whether you use this is up to you -- whatever is fair
+    ginverse = list(phylo = inv.phylo$Ainv),
+    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
+    data = dat_comp,
+    prior = univ_prior,
+    nitt = 130000, thin = 100, burnin = 30000,
+    verbose = FALSE, ## switch this to TRUE if you feel like it
+    pr = TRUE, pl = TRUE ## this saves some model output stuff
+  )
+summary(pgls_model_mcmc)
+

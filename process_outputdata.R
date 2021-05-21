@@ -6,71 +6,85 @@ library(geiger)
 library(MCMCglmm)
 library(tidyverse)
 library(effectsize) # needed for eta_squared calculation
-
 library(pracma)
 library(ggplot2)
 library(dplyr)
 library(reshape2)
 
+### ----------------------------------------------------------
+### --------------------- Read in data -----------------------
+### ----------------------------------------------------------
 
-# --------------------- Read in data -----------------------
 # CAUTION: All incoming measurements must be in SI units; adjust as required
 # UPDATE REQUIRED: Should probably move final run files into the bird moment folder
 path_data_folder = "/Users/christinaharvey/Dropbox (University of Michigan)/Bird Mass Distribution/outputdata/"
 
-# filename_wing = list.files(path = path_data_folder, pattern = paste("allspecimen_winginfo"))
-# dat_wing      = read.csv(file = paste(path_data_folder,filename_wing,sep= ""))
-# dat_wing     = dat_wing[,-c(1)]
+## ------------- Read in the wing shape data --------------
+filename_wing  = list.files(path = path_data_folder, pattern = paste("allspecimen_winginfo"))
+dat_wing       = read.csv(file = paste(path_data_folder,filename_wing,sep= ""))
+dat_wing       = dat_wing[,-c(1)]
+# ---- Calculate the base aerodynamic properties of the wings ----
+# don't want the y direction included - just want the distance from leading to trailing edge in x-z plane
+# using max chord because we know for a gull that the AC is between 19%-43% of the max chord so this seems like a fair approach
+dat_wing$chord        = sqrt((dat_wing$pt12_X - dat_wing$pt11_X)^2+(dat_wing$pt12_Z - dat_wing$pt11_Z)^2)
+# span is calculated as the furthest distance of the humerus to either P10 or P7.
+# The x component is neglected. Measured from the body center line
+dat_wing$span         = apply(cbind(2*sqrt(dat_wing$pt8_Y^2+dat_wing$pt8_Z^2),2*sqrt(dat_wing$pt9_Y^2+dat_wing$pt9_Z^2),2*sqrt(dat_wing$pt7_Y^2+dat_wing$pt7_Z^2)), 1, max)
+dat_wing$AR           = (dat_wing$span^2)/(2*dat_wing$S)
+dat_wing$AR_proj      = (dat_wing$span^2)/(2*dat_wing$S_proj)
 
-load("2021_04_30_wingdata.RData")
-
+## ------------- Read in the feather data --------------
 filename_feat = list.files(path = path_data_folder, pattern = paste("allspecimen_featherinfo"))
 dat_feat      = read.csv(file = paste(path_data_folder,filename_feat,sep= ""))
 dat_feat      = dat_feat[,-c(1,3:7)]
 
+## ------------- Read in the body morphology data --------------
 filename_bird = list.files(path = path_data_folder, pattern = paste("allspecimen_birdinfo"))
 dat_bird      = read.csv(file = paste(path_data_folder,filename_bird,sep= ""))
 names(dat_bird)[names(dat_bird) == "binomial.x"] = "binomial"
 dat_bird     = dat_bird[,-c(1)]
 
+# set neck length to zero for those modeled with a retracted neck
 for (i in 1:nrow(dat_bird)){
   if(!dat_bird$extend_neck[i]){
     dat_bird$neck_length[i] = 0
   }
 }
 
+## ------------- Read in body results from AvInertia --------------
 filename_body = list.files(path = path_data_folder, pattern = paste("bodyCGandMOI_correct"))
 dat_body      = read.csv(file = paste(path_data_folder,filename_body,sep= ""))
 dat_body      = reshape2::dcast(dat_body, species + BirdID + TestID + FrameID ~ component + object, value.var="value")
 
-# Read in each individual result
+## ------------- Read in wing configuration results from AvInertia --------------
 filename_results = list.files(path = path_data_folder, pattern = paste("results"))
 dat_results = read.csv(paste(path_data_folder,filename_results[1],sep=""))
 for (i in 2:length(filename_results)){
   dat_results = rbind(dat_results,read.csv(paste(path_data_folder,filename_results[i],sep="")))
 }
-# clean up environments
+
+# clean up environment
 remove(filename_wing,filename_feat,filename_bird,filename_body,filename_results)
 
+## ------------- Read in full tree phylogeny --------------
+full_tree <- read.nexus("vikROM_passerines_403sp.tre")
 
-# save(dat_wing,file ="2021_04_30.RData")
+### --------------------------------------------------------------
+### --------------------- Combine all data -----------------------
+### --------------------------------------------------------------
 
-### --------------------- Phylogeny info ---------------------
-## Read in tree
-full_tree <-
-  read.nexus("vikROM_passerines_403sp.tre")
-
-# -------------  Merge with all info -----------------
-dat_final = merge(dat_results,dat_wing[,c("species","BirdID","TestID","FrameID","BirdID_FrameSpec","elbow","manus","pt1_X","pt1_Y","pt1_Z",
-                                         "pt6_X","pt6_Y","pt7_X","pt7_Y","pt8_X","pt8_Y","pt8_Z","pt9_X","pt9_Y","pt10_X","pt10_Y",
-                                         "pt11_X","pt11_Y","pt11_Z","pt12_X","pt12_Y","pt12_Z","S")], by = c("species","BirdID","TestID","FrameID"))
+dat_final = merge(dat_results,dat_wing[,c("species","BirdID","TestID","FrameID","BirdID_FrameSpec",
+                                          "elbow","manus","S","S_proj","chord","span","AR","AR_proj",
+                                          "pt1_X","pt1_Y","pt1_Z")], by = c("species","BirdID","TestID","FrameID"))
 dat_final = merge(dat_final,dat_bird, by = c("species","BirdID"))
-
 dat_final = merge(dat_final,dat_body[,-c(3,4)], by = c("species","BirdID"))
+
+### ------------------------------------------------------------------
+### --------------------- Calculate key params -----------------------
+### ------------------------------------------------------------------
 
 dat_final$full_length  = (dat_final$torsotail_length+dat_final$head_length+dat_final$neck_length)
 dat_final$torso_length = dat_final$torsotail_length - dat_final$tail_length
-dat_final$span         = 2*sqrt(dat_final$pt8_X^2+dat_final$pt8_Y^2+dat_final$pt8_Z^2)
 
 dat_final$full_CGx_specific_orgBeak    = (dat_final$full_CGx-dat_final$head_length-dat_final$neck_length)/dat_final$full_length
 dat_final$full_CGz_specific_orgDorsal  = (dat_final$full_CGz+dat_final$z_dist_to_veh_ref_point_cm)/dat_final$full_length
@@ -96,8 +110,8 @@ dat_final$manus_scaled = dat_final$manus*0.001
 ### ---------------------------------------------------------------------------------------
 
 angle_shoulder = 90
-
-dat_final$shoulderCG_dist <- ((dat_final$wing_CGx-dat_final$pt1_X)^2+(dat_final$wing_CGy-dat_final$pt1_Y)^2+(dat_final$wing_CGz-dat_final$pt1_Z)^2)
+# the most effect will be felt for the wing that has the most distal CG position (independent from it's x or z position)
+dat_final$shoulderCG_dist <- sqrt((dat_final$wing_CGy-dat_final$pt1_Y)^2)
 tmp <- aggregate(list(max_wingCG = dat_final$shoulderCG_dist),
                        by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
 shoulder_motion <- dat_final[which(dat_final$shoulderCG_dist %in% tmp$max_wingCG),c("species","BirdID","elbow","manus","wing_CGx","wing_CGy","wing_CGz","pt1_X","pt1_Y","pt1_Z",
@@ -143,7 +157,8 @@ shoulder_motion$range_CGz_specific = shoulder_motion$range_CGz/(shoulder_motion$
 # Maximum projected wing area and maximum wing span
 test       <- aggregate(list(S_proj_max = dat_final$wing_S_proj,
                              S_max = dat_final$S,
-                             b_max = dat_final$span),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
+                             b_max = dat_final$span,
+                             c_max = dat_final$chord),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
 dat_bird   <- merge(dat_bird,test, by = c("species","BirdID"))
 dat_final  <- merge(dat_final,test, by = c("species","BirdID"))
 
@@ -152,14 +167,6 @@ dat_final$wing_CGy_specific_orgShoulder  = (dat_final$wing_CGy-dat_final$pt1_Y)/
 dat_final$wing_CGx_specific_orgBeak      = (dat_final$wing_CGx-dat_final$head_length-dat_final$neck_length)/(0.5*dat_final$b_max)
 dat_final$wing_CGx_specific_orgShoulder  = (dat_final$wing_CGx-dat_final$pt1_X)/(0.5*dat_final$b_max)
 dat_final$wing_CGz_specific              = dat_final$wing_CGz/(0.5*dat_final$b_max)
-# pull out the maximum wing shapes
-max_wing_prop <- aggregate(list(b_max = dat_final$span),  by=list(species = dat_final$species), max)
-max_wing <- subset(dat_final[,c("species","pt6_X","pt6_Y","pt7_X","pt7_Y","pt8_X","pt8_Y","pt8_Z","pt9_X","pt9_Y","pt10_X","pt10_Y",
-                                "pt11_X","pt11_Y","pt11_Z","pt12_X","pt12_Y","pt12_Z","span")], span %in% max_wing_prop$b_max)
-max_wing$edge_X = max_wing$pt11_X
-max_wing$edge_Y = 0
-max_wing[,2:21] <- max_wing[,2:21]/(0.5*max_wing$span)
-remove(max_wing_prop)
 
 dat_final$full_Ixx_specific  = dat_final$full_Ixx/(dat_final$full_m*dat_final$b_max*dat_final$full_length)
 dat_final$full_Iyy_specific  = dat_final$full_Iyy/(dat_final$full_m*dat_final$b_max*dat_final$full_length)
@@ -175,8 +182,8 @@ dat_bird <- merge(dat_bird,test, by = c("species","BirdID"))
 # uses scaling from:
 # Alerstam, T., Rosén, M., Bäckman, J., Ericson, P. G., & Hellgren, O. (2007).
 # Flight speeds among bird species: allometric and phylogenetic effects. PLoS Biol, 5(8), e197.
-dat_final$prop_q_dot     <- (abs(dat_final$full_CGx-dat_final$pt1_X)*dat_final$S_max*dat_final$full_m^0.24)/dat_final$full_Iyy
-dat_final$prop_q_dot_nd  <- (abs(dat_final$full_CGx-dat_final$pt1_X)*dat_final$S_max*dat_final$full_length^2)/dat_final$full_Iyy
+dat_final$prop_q_dot     <- (abs((dat_final$full_CGx-dat_final$pt1_X)-0.25*dat_final$chord)*dat_final$S_max*dat_final$full_m^0.24)/dat_final$full_Iyy
+dat_final$prop_q_dot_nd  <- (abs((dat_final$full_CGx-dat_final$pt1_X)-0.25*dat_final$chord)*dat_final$S_max*dat_final$full_length^2)/dat_final$full_Iyy
 dat_final$del_M_specific <- dat_final$prop_q_dot*dat_final$full_Iyy/(dat_final$full_m*dat_final$full_length)
 
 dat_final$sachs_pred_Ixx <- dat_final$full_m*(sqrt((0.14*dat_final$wing_m/dat_final$full_m))*dat_final$span*0.5)^2
@@ -215,7 +222,7 @@ for (i in 1:no_specimens){
     # --------------- Fit models ------------------
     # full models
     models <- lapply(varlist, function(x) {lm(substitute(k ~ elbow_scaled*manus_scaled, list(k = as.name(x))), data = tmp)})
-
+    # compute the effect size from the centered values of elbow and wrist to avoid conflating the differences between species in absolute range
     models_adj <- lapply(varlist, function(x) {lm(substitute(k*100 ~ elbow_centered*manus_centered, list(k = as.name(x))), data = tmp)})
 
     CI_values      = lapply(models, confint)
@@ -307,6 +314,7 @@ dat_comp <- merge(dat_comp,test, by = c("species","BirdID"))
 test     <- aggregate(list(max_CGx_orgBeak       = dat_final$full_CGx-dat_final$head_length-dat_final$neck_length,
                            max_CGz_orgDorsal     = dat_final$full_CGz+dat_final$z_dist_to_veh_ref_point_cm,
                            max_CGx_specific      = dat_final$full_CGx_specific_orgBeak,
+                           max_CGx_orgShoulder   = dat_final$full_CGx-dat_final$pt1_X,
                            max_wing_CGy          = dat_final$wing_CGy,
                            max_wing_CGy_specific = dat_final$wing_CGy_specific,
                            max_CGz_specific      = dat_final$full_CGz_specific_orgDorsal,
@@ -322,24 +330,31 @@ test     <- aggregate(list(max_CGx_orgBeak       = dat_final$full_CGx-dat_final$
                            max_q                 = dat_final$prop_q_dot,
                            max_q_nd              = dat_final$prop_q_dot_nd,
                            max_wingspan          = dat_final$span,
-                           max_length            = dat_final$full_length),
+                           max_length            = dat_final$full_length,
+                           max_S                 = dat_final$S_max,
+                           max_S_proj            = dat_final$S_proj_max),
                       by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
 dat_comp <- merge(dat_comp,test, by = c("species","BirdID"))
 # Minimum values
 test     <- aggregate(list(min_CGx_orgBeak       = dat_final$full_CGx-dat_final$head_length-dat_final$neck_length,
                            min_CGz_orgDorsal     = dat_final$full_CGz+dat_final$z_dist_to_veh_ref_point_cm,
                            min_CGx_specific      = dat_final$full_CGx_specific_orgBeak,
+                           min_CGx_orgShoulder   = dat_final$full_CGx-dat_final$pt1_X,
                            min_wing_CGy          = dat_final$wing_CGy,
                            min_wing_CGy_specific = dat_final$wing_CGy_specific,
                            min_CGz_specific      = dat_final$full_CGz_specific_orgDorsal,
                            min_wing_Ixx          = dat_final$wing_Ixx,
+                           min_Ixx               = dat_final$full_Ixx,
                            min_Ixx_specific      = dat_final$full_Ixx_specific,
                            min_Iyy               = dat_final$full_Iyy,
                            min_Iyy_specific      = dat_final$full_Iyy_specific,
                            min_Izz               = dat_final$full_Izz,
+                           min_q                 = dat_final$prop_q_dot,
+                           min_q_nd              = dat_final$prop_q_dot_nd,
+                           min_wingspan          = dat_final$span,
                            min_Izz_specific      = dat_final$full_Izz_specific,
                            min_Ixz_specific      = dat_final$full_Ixz_specific,
-                           hum_maxspan           = (dat_final$humerus_length_mm+dat_final$ulna_length_mm+dat_final$radius_length_mm+dat_final$cmc_length_mm)/dat_final$span),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), min)
+                           hum_len               = (dat_final$humerus_length_mm+dat_final$ulna_length_mm+dat_final$radius_length_mm+dat_final$cmc_length_mm)),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), min)
 dat_comp <- merge(dat_comp,test, by = c("species","BirdID"))
 
 dat_comp$max_wing_CGx <- dat_final$wing_CGx[which(dat_final$wing_CGy %in% dat_comp$max_wing_CGy)]
@@ -364,5 +379,6 @@ univ_prior <-
 
 filename = paste(format(Sys.Date(), "%Y_%m_%d"),"_alldata.csv",sep="")
 write.csv(dat_final,filename)
-
+filename = paste(format(Sys.Date(), "%Y_%m_%d"),"_compdata.csv",sep="")
+write.csv(dat_comp,filename)
 
