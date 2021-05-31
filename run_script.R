@@ -240,10 +240,8 @@ for (m in 1:length(no_species)){
     # ----------- Read in all the wing configuration data ------------
     filename_wingconfigs = list.files(path = path_data_folder, pattern = paste(species_curr,birdid_curr,sep="_"))
     dat_wing_curr        = read.csv(paste(path_data_folder,filename_wingconfigs,sep=""))
-
-    if(names(dat_wing_curr)[1] == "X"){
-      dat_wing_curr <- dat_wing_curr[,-1]
-    }
+    #remove first column
+    if(names(dat_wing_curr)[1] == "X"){dat_wing_curr <- dat_wing_curr[,-1]}
 
     ## --------------------------------------------------
     ## ------------------ Feather Info ------------------
@@ -291,7 +289,7 @@ for (m in 1:length(no_species)){
                                     dat_bird_curr$ulna_diameter_mm,
                                     dat_bird_curr$radius_diameter_mm,
                                     dat_bird_curr$cmc_diameter_mm,NA,NA)
-    dat_bone_curr$bone_out_rad = 0.5*dat_bone_curr$bone_out_rad
+    dat_bone_curr$bone_out_rad = 0.5*dat_bone_curr$bone_out_rad #adjust from diameter to radii
     dat_bone_curr$bone_in_rad  = 0.78*dat_bone_curr$bone_out_rad # Ref. De Margerie (2005)
 
     # --------------- Clean up wing 3D incoming data --------------------
