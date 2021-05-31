@@ -7,7 +7,7 @@
 # ---------------------- Mass Properties - Solid cylinder -------------------------------
 #' Moment of inertia tensor of a solid cylinder
 #'
-#' Reference:https://en.wikipedia.org/wiki/List_of_moments_of_inertia#List_of_3D_inertia_tensors
+#' Reference: https://apps.dtic.mil/sti/pdfs/AD0274936.pdf
 #'
 #' @param r radius of the cylinder (m)
 #' @param h height of the cylinder (m)
@@ -35,7 +35,7 @@ calc_inertia_cylsolid <- function(r, h, m){
 # ---------------------- Mass Properties - Hollow cylinder -------------------------------
 #' Moment of inertia tensor of a hollow cylinder
 #'
-#' Reference:https://en.wikipedia.org/wiki/List_of_moments_of_inertia#List_of_3D_inertia_tensors
+#' Reference:https://apps.dtic.mil/sti/pdfs/AD0274936.pdf
 #'
 #' @param r_out outer radius of the cylinder (m)
 #' @param r_in inner radius of the cylinder (m)
@@ -156,10 +156,37 @@ calc_inertia_ellcone <- function(w, h, lp, lf, rho){
   return(I)
 }
 
+# -------------------- Mass Properties - solid elliptical cylinder  -------------------------------
+#' Moment of inertia tensor of a solid elliptical cylinder
+#' Reference: https://www.efunda.com/math/solids/solids_display.cfm?SolidName=EllipticalCylinder
+#'
+#' @param w   full width of the base - oriented along the x axis (m)
+#' @param h   full width of the base - oriented along the y axis (m)
+#' @param l   length of the cylinder - oriented along the z axis (m)
+#' @param m mass of the cylinder (kg)
+#'
+#' @author Christina Harvey
+#'
+#' @return a 3x3 matrix representing the moment of inertia tensor of a solid elliptical cylinder about
+#' it's center of gravity
+#'
+#' @export
+#'
+calc_inertia_ellcyl <- function(w, h, l, m){
+
+  I = matrix(0, nrow = 3, ncol = 3)
+  I[1,1] = (1/4)*(0.5*w)^2 + (1/12)*l^2 # Ixx
+  I[2,2] = (1/4)*(0.5*h)^2 + (1/12)*l^2 # Iyy
+  I[3,3] = (1/4)*((0.5*w)^2+(0.5*h)^2)  # Izz
+  I = m*I
+
+  return(I)
+}
+
 
 # -------------------- Mass Properties - solid square pyramid  -------------------------------
 #' Moment of inertia tensor of a solid square pyramid - mid way through blue notebook
-#' Reference: https://pdfs.semanticscholar.org/2be7/9651965bdda4a353ca72fd950748d74ecae3.pdf
+#' Reference: https://apps.dtic.mil/sti/pdfs/AD0274936.pdf
 #' All outputs are based on an origin at the centered point on the base
 #'
 #' @param w entire width of one side of the pyramid base (m)
@@ -188,8 +215,8 @@ calc_inertia_pyrasolid <- function(w, h, m){
 }
 
 # -------------------- Mass Properties - flat rectangular plate  -------------------------------
-#' Moment of inertia tensor of a flat rectangular plate
-#'
+#' Moment of inertia tensor of a flat rectangular plate - assumes thickness is approximately zero
+#' Reference: https://apps.dtic.mil/sti/pdfs/AD0274936.pdf
 #' @param w full width of one side of the plate - short edge (m)
 #' @param h height of the plate - long edge (m)
 #' @param m mass of the plate (kg)
@@ -246,6 +273,7 @@ calc_inertia_platetri <- function(pts, A, rho, t, desired_prop){
   pts = rbind(pts,pts[1,]) # need to add the first point to allow circular calculation
 
   # ------------ Center of Gravity Calculation -----------------
+  # Returns the centroid times the area. Ref: page 2
   x1  = 0
   y1  = 0
   for (i in 1:3){
@@ -256,6 +284,7 @@ calc_inertia_platetri <- function(pts, A, rho, t, desired_prop){
   CG = c(x1, y1, pts[1,3]); # Frame of reference: Incoming points | Origin: Incoming points
 
   # ------------ Moment of Inertia Calculation -----------------
+  # Returns the second moment of area
   if(desired_prop == "I"){
     # adjust the incoming points to be so that the origin of the pts is on the plate's center of gravity
     adj_pts = pts # define the new matrix
@@ -277,11 +306,11 @@ calc_inertia_platetri <- function(pts, A, rho, t, desired_prop){
 
 
     I = matrix(0, nrow = 3, ncol = 3) # define matrix
-    I[1,1] = y2      # Ixx - (y^2)dA
-    I[2,2] = x2      # Iyy - (x^2)dA
-    I[3,3] = (x2+y2) # Izz - (x^2 + y^2)dA
-    I[1,2] = Ixy     # Ixy - (xy)dA
-    I[2,1] = Ixy     # Iyx - (xy)dA
+    I[1,1] = y2       # Ixx - (y^2)dA
+    I[2,2] = x2       # Iyy - (x^2)dA
+    I[3,3] = (x2+y2)  # Izz - (x^2 + y^2)dA
+    I[1,2] = -Ixy     # Ixy - (xy)dA
+    I[2,1] = -Ixy     # Iyx - (xy)dA
 
     I = (1/12)*rho*t*I
 

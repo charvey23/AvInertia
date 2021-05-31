@@ -144,6 +144,7 @@ combine_inertialprop <- function(curr_torsotail_data,left_wing_data,right_wing_d
 
   curr_full_bird     = rbind(curr_full_bird,curr_full_bird_vrp[1:6,],dat_err,
                              new_row1,new_row2,new_row3,new_row4,new_row5,new_row6,new_row7,new_row8,new_row9,new_row10,new_row11,new_row12)
+
   return(curr_full_bird)
 }
 
@@ -231,7 +232,7 @@ massprop_restbody <- function(dat_wingID_curr, dat_bird_curr){
 
   # CAUTION: INGOING CG_x must be positive as it calculates a total distance along the known axis
   torso     = massprop_torso(m_torso, m_legs, dat_bird_curr$body_width_max, dat_bird_curr$body_height_max,
-                             dat_bird_curr$x_loc_of_body_max, dat_bird_curr$body_width_at_leg_insert, dat_bird_curr$body_height_at_leg_insert, dat_bird_curr$x_loc_leg_insertion,
+                             dat_bird_curr$x_loc_of_body_max, dat_bird_curr$body_width_at_leg_insert, dat_bird_curr$x_loc_leg_insertion,
                              l_torso, abs(CG_x_torso), CG_z_torso, neck_start, tail_start)
 
   # ----------------------------------------------------
@@ -473,7 +474,7 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
   prop_feathers = list()
   I_feathers_pri = rbind(rowSums(res_pri$I[,1,]),rowSums(res_pri$I[,2,]),rowSums(res_pri$I[,3,]))
   I_feathers_sec = rbind(rowSums(res_sec$I[,1,]),rowSums(res_sec$I[,2,]),rowSums(res_sec$I[,3,]))
-  prop_feathers$I  = I_feathers_pri + I_feathers_sec +alula$I + prop_tertiary1$I + prop_tertiary2$I
+  prop_feathers$I  = I_feathers_pri + I_feathers_sec + alula$I + prop_tertiary1$I + prop_tertiary2$I
   prop_feathers$m  = sum(dat_feat_curr$m_f) + dat_bird_curr$tertiary_mass
   prop_feathers$CG = (colSums(res_pri$CGm) + colSums(res_sec$CGm) + alula$CG*m_alula +
                         prop_tertiary1$CG*0.5*dat_bird_curr$tertiary_mass + prop_tertiary2$CG*0.5*dat_bird_curr$tertiary_mass)/prop_feathers$m
