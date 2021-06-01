@@ -66,7 +66,7 @@ calc_inertia_cylhollow <- function(r_out, r_in, h, m){
 # -------------------- Mass Properties - solid ellipse   -------------------------------
 #' Moment of inertia tensor of solid ellipse CG or a half ellipse centered on the base
 #'
-#' Reference:https://en.wikipedia.org/wiki/List_of_moments_of_inertia#List_of_3D_inertia_tensors
+#' Reference:https://apps.dtic.mil/sti/pdfs/AD0274936.pdf
 #'
 #' @param a half the height along the x direction (m)
 #' @param b half the width along the y direction  (m)
@@ -98,7 +98,7 @@ calc_inertia_ellipse <- function(a, b, c, m){
 #' Moment of inertia tensor of a solid circular cone pyramid
 #'
 #' All outputs are based on an origin at the centered point on the base
-#' Reference: https://scienceworld.wolfram.com/physics/MomentofInertiaCone.html
+#' Reference: https://apps.dtic.mil/sti/pdfs/AD0274936.pdf
 #'
 #' @param r radius of the cone base (m)
 #' @param h height of the cone (m)
@@ -117,9 +117,9 @@ calc_inertia_ellipse <- function(a, b, c, m){
 calc_inertia_conesolid <- function(r, h, m){
 
   I = matrix(0, nrow = 3, ncol = 3)
-  I[1,1] = ((1.5*r^2)+h^2) # Ixx
-  I[2,2] = ((1.5*r^2)+h^2) # Iyy
-  I[3,3] = 3*(r^2)         # Izz
+  I[1,1] = (1.5*r^2+h^2) # Ixx
+  I[2,2] = (1.5*r^2+h^2) # Iyy
+  I[3,3] = 3*(r^2)       # Izz
   I = (1/10)*m*I
 
   return(I)
@@ -128,41 +128,41 @@ calc_inertia_conesolid <- function(r, h, m){
 # -------------------- Mass Properties - solid elliptical cone  -------------------------------
 #' Moment of inertia tensor of a solid elliptical cone - end of purple notebook derivation verified in green
 #'
-#' @param w   full width of the wide base (m)
-#' @param h   full width of the wide base (m)
-#' @param lp  length of the partial cone (m)
-#' @param lf  length of the full cone as if it had not been cut (m) - Note: if computing full cone lf = lp
-#' @param rho density of the partial cone (kg/m^3)
+#' @param A   half height of the wide base (m)
+#' @param B   half width of the wide base (m)
+#' @param l   length of the cone (m)
+#' @param m   mass of the cone (kg)
 #'
 #' @author Christina Harvey
 #'
-#' @return a 3x3 matrix representing the moment of inertia tensor of a partial solid elliptical cone about
+#' @return a 3x3 matrix representing the moment of inertia tensor of a solid elliptical cone about
 #' the center of the wider base with z oriented towards the end.
 #'
 #' @section
 #' CAUTION: Origin of the output tensor is NOT at the center of gravity but at the center of the base.
 #' @export
 #'
-calc_inertia_ellcone <- function(w, h, lp, lf, rho){
+calc_inertia_ellcone <- function(A, B, l, m){
 
   I = matrix(0, nrow = 3, ncol = 3)
-  tmpxy = (((lp-lf)^5/lf^4)+lf)
-  tmpz  = (lp^3/(3*lf^2))*((6*lp^2)-(15*lp*lf)+(10*lf^2))
-  I[1,1] = (tmpxy*(w^2/8) + tmpz) # Ixx
-  I[2,2] = (tmpxy*(h^2/8) + tmpz) # Iyy
-  I[3,3] = (1/8)*tmpxy*(w^2+h^2)  # Izz
-  I = (1/40)*rho*w*h*pi*I
+  tmpx2 = (3/20)*A^2
+  tmpy2 = (3/20)*B^2
+  tmpz2  = (1/10)*l^2
+  I[1,1] = tmpy2 + tmpz2 # Ixx
+  I[2,2] = tmpx2 + tmpz2 # Iyy
+  I[3,3] = tmpx2 + tmpy2 # Izz
+  I = m*I
 
   return(I)
 }
 
 # -------------------- Mass Properties - solid elliptical cylinder  -------------------------------
 #' Moment of inertia tensor of a solid elliptical cylinder
-#' Reference: https://www.efunda.com/math/solids/solids_display.cfm?SolidName=EllipticalCylinder
+#' Reference: https://apps.dtic.mil/sti/pdfs/AD0274936.pdf
 #'
-#' @param w   full width of the base - oriented along the x axis (m)
-#' @param h   full width of the base - oriented along the y axis (m)
-#' @param l   length of the cylinder - oriented along the z axis (m)
+#' @param a   half height of the base - oriented along the x axis in torso FOR (z axis in full bird FOR) (m)
+#' @param b   half width of the base - oriented along the y axis in torso FOR (y axis in full bird FOR)  (m)
+#' @param l   length of the cylinder - oriented along the z axis in torso FOR (x axis in full bird FOR)  (m)
 #' @param m mass of the cylinder (kg)
 #'
 #' @author Christina Harvey
@@ -172,12 +172,12 @@ calc_inertia_ellcone <- function(w, h, lp, lf, rho){
 #'
 #' @export
 #'
-calc_inertia_ellcyl <- function(w, h, l, m){
+calc_inertia_ellcyl <- function(a, b, l, m){
 
   I = matrix(0, nrow = 3, ncol = 3)
-  I[1,1] = (1/4)*(0.5*w)^2 + (1/12)*l^2 # Ixx
-  I[2,2] = (1/4)*(0.5*h)^2 + (1/12)*l^2 # Iyy
-  I[3,3] = (1/4)*((0.5*w)^2+(0.5*h)^2)  # Izz
+  I[1,1] = (1/4)*b^2 + (1/12)*l^2 # Ixx
+  I[2,2] = (1/4)*a^2 + (1/12)*l^2 # Iyy
+  I[3,3] = (1/4)*(a^2+b^2)  # Izz
   I = m*I
 
   return(I)

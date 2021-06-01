@@ -805,9 +805,18 @@ massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, l_leg, l
   CG_cut  = c(0,0,l_par+0.25*(l_full-l_par))                        # Frame of reference: Torso | Origin: Hemiellipsoid base
   # CG of the partial cone
   CG_par1 = (1/v_par)*(v_full*CG_full - v_cut*CG_cut)               # Frame of reference: Torso | Origin: Hemiellipsoid base
+  m_cut   = rho_par*v_cut
+  m_full  = rho_par*v_full
+  # MOI of the full cone about the wide base
+  I_full = calc_inertia_ellcone(0.5*h_max, 0.5*w_max, l_full, m_full)          # Frame of reference: Torso | Origin: Hemiellipsoid base
 
-  # MOI of the partial cone about the wide base
-  I_par1  = calc_inertia_ellcone(w_max, h_max, l_par, l_full, rho_par)  # Frame of reference: Torso | Origin: Hemiellipsoid base
+  I_cut  = calc_inertia_ellcone(0.5*h_leg, 0.5*w_leg, (l_full-l_par), m_cut)  # Frame of reference: Torso | Origin: Leg insertion cut base
+  # move the origin to the cut cone CG
+  I_cut2 = parallelaxis(I_cut,-c(0,0,0.25*(l_full - l_par)),m_cut,"A")          # Frame of reference: Torso | Origin: Cut cone CG
+  I_cut3 = parallelaxis(I_cut2,CG_cut,m_cut,"CG")                               # Frame of reference: Torso | Origin: Hemiellipsoid base
+  #remove the ghost part of the cone
+  I_par1 = I_full - I_cut3                                                      # Frame of reference: Torso | Origin: Hemiellipsoid base
+
   # Adjust the moment of inertia to be about the center of gravity of the partial cone
   I_parCG = parallelaxis(I_par1,CG_par1,m_par,"A")                      # Frame of reference: Torso | Origin: Partial Cone CG
   # Define CG wrt to VRP origin
@@ -822,7 +831,7 @@ massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, l_leg, l
     # CG of the end cone
     CG_end1 = c(0,0,0.25*l_end)                                              # Frame of reference: Torso | Origin: Base of the end cone
     # MOI of the end cone about the wide base
-    I_end1  = calc_inertia_ellcone(w_leg, h_leg, l_end, l_end, rho_back)     # Frame of reference: Torso | Origin: Base of the end cone
+    I_end1  = calc_inertia_ellcone(h_leg*0.5, w_leg*0.5, l_end, m_end)       # Frame of reference: Torso | Origin: Base of the end cone
     # Adjust the moment of inertia to be about the center of gravity of the partial cone
     I_endCG = parallelaxis(I_end1,CG_end1,m_end,"A")                         # Frame of reference: Torso | Origin: End Cone CG
     # Define CG wrt to VRP origin
@@ -836,7 +845,7 @@ massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, l_leg, l
     # NOTE: we need to offset the body from the x axis to ensure that the VRP z-location of the CG is correct in the Torso frame of ref this is the positive x direction
     CG_end2 = c(0,0,0.5*l_end) + c(CG_body_z,0,l_leg)                        # Frame of reference: Torso | Origin: VRP
     # MOI of the end cylinder about its CG
-    I_endCG  = calc_inertia_ellcyl(w_leg, h_leg, l_end, m_end)                # Frame of reference: Torso | Origin: End Cyl CG
+    I_endCG  = calc_inertia_ellcyl(h_leg*0.5, w_leg*0.5, l_end, m_end)                # Frame of reference: Torso | Origin: End Cyl CG
     # Adjust the MOI to be about the VRP
     I_end_vrp = parallelaxis(I_endCG,-CG_end2,m_end,"CG")                     # Frame of reference: Torso | Origin: VRP
   }
