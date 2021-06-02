@@ -466,7 +466,7 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
   alula   = massprop_pm(m_alula, Pt6)
 
   # ----------------------------------- Tertiaries -----------------------------------
-  edge_tert      = c(Pt11[1],Pt12[2],Pt12[3]) # position where the teritaries likely encounter the body
+  edge_tert      = c(Pt11[1],min(Pt12[2],Pt11[2]),Pt12[3]) # position where the teritaries likely encounter the body
   prop_tertiary1 = massprop_skin(0.5*dat_bird_curr$tertiary_mass,rho_cor,rbind(Pt12,edge_tert,Pt2))
   prop_tertiary2 = massprop_skin(0.5*dat_bird_curr$tertiary_mass,rho_cor,rbind(Pt11,Pt2,edge_tert))
 
@@ -540,7 +540,7 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr, dat
 
   # Plot to verify correct outputs
   if (plot_var != 0){
-    CGplot = plot_CGloc(clean_pts,mass_properties,mass_properties_skin,mass_properties_bone,mass_properties_feathers,mass_properties_muscle, plot_var)
+    CGplot = plot_CGloc(clean_pts,mass_properties,mass_properties_skin,mass_properties_bone,mass_properties_feathers,mass_properties_muscle, prop_tertiary1, prop_tertiary2, plot_var)
   }
 
   return(mass_properties)

@@ -158,7 +158,7 @@ massprop_muscles <- function(m,rho,l,start,end){
 
 #' Skin mass properties
 #'
-#' Calculate the moment of inertia of skin/ tertiaries modeled as a flat triangular plate
+#' Calculate the moment of inertia of skin or tertiaries modeled as a flat triangular plate
 #'
 #' @param m Mass of skin (kg)
 #' @param rho Density of skin (kg/m^3)
