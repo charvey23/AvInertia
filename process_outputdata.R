@@ -86,13 +86,17 @@ dat_final = merge(dat_final,dat_body[,-c(3,4)], by = c("species","BirdID"))
 dat_final$full_length  = (dat_final$torsotail_length+dat_final$head_length+dat_final$neck_length)
 dat_final$torso_length = dat_final$torsotail_length - dat_final$tail_length
 
+dat_final$full_CGx_orgBeak             = (dat_final$full_CGx-dat_final$head_length-dat_final$neck_length)
 dat_final$full_CGx_specific_orgBeak    = (dat_final$full_CGx-dat_final$head_length-dat_final$neck_length)/dat_final$full_length
+dat_final$full_CGz_orgDorsal           = (dat_final$full_CGz+dat_final$z_dist_to_veh_ref_point_cm)
 dat_final$full_CGz_specific_orgDorsal  = (dat_final$full_CGz+dat_final$z_dist_to_veh_ref_point_cm)/dat_final$full_length
 dat_final$shoulderx_specific_orgBeak   = (dat_final$pt1_X-dat_final$head_length-dat_final$neck_length)/dat_final$full_length
 dat_final$shoulderz_specific_orgDorsal = (dat_final$pt1_Z+dat_final$z_dist_to_veh_ref_point_cm)/dat_final$full_length
 
 dat_final$full_CGx_specific_orgShoulder = (dat_final$full_CGx-dat_final$pt1_X)/dat_final$full_length
+dat_final$full_CGx_orgShoulder          = (dat_final$full_CGx-dat_final$pt1_X)
 dat_final$full_CGz_specific_orgShoulder = (dat_final$full_CGz-dat_final$pt1_Z)/dat_final$full_length
+dat_final$full_CGz_orgShoulder          = (dat_final$full_CGz-dat_final$pt1_Z)
 dat_final$BeakTipx_orgShoulder          = (dat_final$head_length+dat_final$neck_length+dat_final$pt1_X)/dat_final$full_length
 dat_final$Centrez_orgShoulder           = (dat_final$pt1_Z)/dat_final$full_length
 dat_final$TailTipx_orgShoulder          = (-dat_final$torsotail_length-dat_final$pt1_X)/dat_final$full_length
@@ -120,9 +124,9 @@ shoulder_motion$rest_m   = (shoulder_motion$full_m-2*shoulder_motion$wing_m)
 shoulder_motion$rest_CGx = (shoulder_motion$full_m*shoulder_motion$full_CGx - 2*(shoulder_motion$wing_m*shoulder_motion$wing_CGx))/shoulder_motion$rest_m
 shoulder_motion$rest_CGz = (shoulder_motion$full_m*shoulder_motion$full_CGz - 2*(shoulder_motion$wing_m*shoulder_motion$wing_CGz))/shoulder_motion$rest_m
 
-# - Rotate the wing forward about the shoulder in the x-y plane
+# - Rotate the wing forward about the shoulder in the x-y plane - allows a rotation about Pt1
 new_wing_CGx = (cosd(angle_shoulder)*(shoulder_motion$wing_CGx-shoulder_motion$pt1_X) + sind(angle_shoulder)*(shoulder_motion$wing_CGy-shoulder_motion$pt1_Y)) + shoulder_motion$pt1_X
-new_wing_CGy = (-sind(angle_shoulder)*(shoulder_motion$wing_CGx-shoulder_motion$pt1_X) + cosd(angle_shoulder)*(shoulder_motion$wing_CGy-shoulder_motion$pt1_Y)) +shoulder_motion$pt1_Y
+new_wing_CGy = (-sind(angle_shoulder)*(shoulder_motion$wing_CGx-shoulder_motion$pt1_X) + cosd(angle_shoulder)*(shoulder_motion$wing_CGy-shoulder_motion$pt1_Y)) + shoulder_motion$pt1_Y
 
 shoulder_motion$forward_CGx          = (shoulder_motion$rest_m*shoulder_motion$rest_CGx + 2*shoulder_motion$wing_m*new_wing_CGx)/shoulder_motion$full_m
 shoulder_motion$forward_CGx_specific = (shoulder_motion$forward_CGx-shoulder_motion$pt1_X)/shoulder_motion$full_length
@@ -193,14 +197,14 @@ dat_final$yaw_div   <- (dat_final$full_Iyy - dat_final$full_Ixx)/dat_final$full_
 ## ---- Compute the regression coefficients for each species for each variable -------
 
 no_specimens <- nrow(dat_bird)
-dat_model_out        <- data.frame(matrix(nrow = no_specimens*8*2, ncol = 5))
+dat_model_out        <- data.frame(matrix(nrow = no_specimens*9*2, ncol = 5))
 names(dat_model_out) <- c("species","model_variable","elb","man","elbman")
 varlist_sp       <- c("full_Ixx_specific","full_Iyy_specific","full_Izz_specific","full_Ixz_specific",
-                   "full_CGx_specific_orgBeak","wing_CGy_specific","full_CGz_specific_orgDorsal","wing_CGx_specific_orgBeak")
-short_varlist_sp <- c("Ixx_sp","Iyy_sp","Izz_sp","Ixz_sp","CGx_sp","CGy_sp","CGz_sp","CGx_wing_sp")
+                   "full_CGx_specific_orgBeak","full_CGx_specific_orgShoulder","wing_CGy_specific","full_CGz_specific_orgDorsal","wing_CGx_specific_orgBeak")
+short_varlist_sp <- c("Ixx_sp","Iyy_sp","Izz_sp","Ixz_sp","CGx_sp","CGx_sp_sh","CGy_sp","CGz_sp","CGx_wing_sp")
 varlist_abs      <- c("full_Ixx","full_Iyy","full_Izz","full_Ixz",
-                      "full_CGx","wing_CGy","full_CGz","wing_CGx")
-short_varlist_abs<- c("Ixx","Iyy","Izz","Ixz","CGx","CGy","CGz", "CGx_wing")
+                      "full_CGx_orgBeak","full_CGx_orgShoulder","wing_CGy","full_CGz","wing_CGx")
+short_varlist_abs<- c("Ixx","Iyy","Izz","Ixz","CGx","CGx_sh","CGy","CGz", "CGx_wing")
 dat_bird$species <- as.character(dat_bird$species)
 success = TRUE
 count = 1
@@ -270,35 +274,34 @@ tmp       = aggregate(list(torsotail_length = dat_bird$torsotail_length),  by=li
 dat_comp  = merge(dat_comp, tmp, by = c("species","BirdID"))
 
 # Include other important factors
-# Range of each component
-test     <- aggregate(list(range_CGx = dat_final$full_CGx,
-                           range_CGx_specific = dat_final$full_CGx_specific_orgBeak,
-                           range_wing_CGy = dat_final$wing_CGy,
+# Range of each component - doesn't matter where the origin is for the range
+test     <- aggregate(list(range_CGx               = dat_final$full_CGx,
+                           range_CGx_specific      = dat_final$full_CGx_specific_orgBeak,
+                           range_wing_CGy          = dat_final$wing_CGy,
                            range_wing_CGy_specific = dat_final$wing_CGy_specific,
-                           range_CGz = dat_final$full_CGz,
-                           range_CGz_specific = dat_final$full_CGz_specific_orgDorsal,
-                           range_Ixx = dat_final$full_Ixx,
-                           range_Ixx_specific = dat_final$full_Ixx_specific,
-                           range_Iyy = dat_final$full_Iyy,
-                           range_Iyy_specific = dat_final$full_Iyy_specific,
-                           range_Izz = dat_final$full_Izz,
-                           range_Izz_specific = dat_final$full_Izz_specific),
+                           range_CGz               = dat_final$full_CGz,
+                           range_CGz_specific      = dat_final$full_CGz_specific_orgDorsal,
+                           range_Ixx               = dat_final$full_Ixx,
+                           range_Ixx_specific      = dat_final$full_Ixx_specific,
+                           range_Iyy               = dat_final$full_Iyy,
+                           range_Iyy_specific      = dat_final$full_Iyy_specific,
+                           range_Izz               = dat_final$full_Izz,
+                           range_Izz_specific      = dat_final$full_Izz_specific),
                       by=list(species = dat_final$species, BirdID = dat_final$BirdID), FUN=function(x){max(x)-min(x)})
 dat_comp <- merge(dat_comp,test, by = c("species","BirdID"))
 
 # Include other important factors
 # Range of each component
-test     <- aggregate(list(mean_CGx_orgBeak      = dat_final$full_CGx-dat_final$head_length-dat_final$neck_length,
-                           mean_CGz_orgDorsal    = dat_final$full_CGz+dat_final$z_dist_to_veh_ref_point_cm,
-                           mean_CGx_orgShoulder  = dat_final$full_CGx - dat_final$pt1_X,
-                           mean_CGz_orgShoulder  = dat_final$full_CGz - dat_final$pt1_Z,
-                           mean_CGz_orgDorsal= dat_final$full_CGz+dat_final$z_dist_to_veh_ref_point_cm,
-                           mean_wing_CGy     = dat_final$wing_CGy,
-                           mean_CGx_specific_orgBeak = dat_final$full_CGx_specific_orgBeak,
-                           mean_CGz_specific_orgDorsal = dat_final$full_CGz_specific_orgDorsal,
+test     <- aggregate(list(mean_CGx_orgBeak      = dat_final$full_CGx_orgBeak,
+                           mean_CGz_orgDorsal    = dat_final$full_CGz_orgDorsal,
+                           mean_CGx_orgShoulder  = dat_final$full_CGx_orgShoulder,
+                           mean_CGz_orgShoulder  = dat_final$full_CGz_orgShoulder,
+                           mean_wing_CGy                 = dat_final$wing_CGy,
+                           mean_CGx_specific_orgBeak     = dat_final$full_CGx_specific_orgBeak,
+                           mean_CGz_specific_orgDorsal   = dat_final$full_CGz_specific_orgDorsal,
                            mean_CGx_specific_orgShoulder = dat_final$full_CGx_specific_orgShoulder,
                            mean_CGz_specific_orgShoulder = dat_final$full_CGz_specific_orgShoulder,
-                           mean_wing_CGy_specific = dat_final$wing_CGy_specific,
+                           mean_wing_CGy_specific        = dat_final$wing_CGy_specific,
                            mean_Ixx_specific = dat_final$full_Ixx_specific,
                            mean_Iyy_specific = dat_final$full_Iyy_specific,
                            mean_Izz_specific = dat_final$full_Izz_specific,
@@ -311,10 +314,10 @@ test     <- aggregate(list(mean_CGx_orgBeak      = dat_final$full_CGx-dat_final$
                       by=list(species = dat_final$species, BirdID = dat_final$BirdID), mean)
 dat_comp <- merge(dat_comp,test, by = c("species","BirdID"))
 # Maximum values
-test     <- aggregate(list(max_CGx_orgBeak       = dat_final$full_CGx-dat_final$head_length-dat_final$neck_length,
-                           max_CGz_orgDorsal     = dat_final$full_CGz+dat_final$z_dist_to_veh_ref_point_cm,
+test     <- aggregate(list(max_CGx_orgBeak       = dat_final$full_CGx_orgBeak,
+                           max_CGz_orgDorsal     = dat_final$full_CGz_orgDorsal,
                            max_CGx_specific      = dat_final$full_CGx_specific_orgBeak,
-                           max_CGx_orgShoulder   = dat_final$full_CGx-dat_final$pt1_X,
+                           max_CGx_orgShoulder   = dat_final$full_CGx_orgShoulder,
                            max_wing_CGy          = dat_final$wing_CGy,
                            max_wing_CGy_specific = dat_final$wing_CGy_specific,
                            max_CGz_specific      = dat_final$full_CGz_specific_orgDorsal,
@@ -336,10 +339,10 @@ test     <- aggregate(list(max_CGx_orgBeak       = dat_final$full_CGx-dat_final$
                       by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
 dat_comp <- merge(dat_comp,test, by = c("species","BirdID"))
 # Minimum values
-test     <- aggregate(list(min_CGx_orgBeak       = dat_final$full_CGx-dat_final$head_length-dat_final$neck_length,
-                           min_CGz_orgDorsal     = dat_final$full_CGz+dat_final$z_dist_to_veh_ref_point_cm,
+test     <- aggregate(list(min_CGx_orgBeak       = dat_final$full_CGx_orgBeak,
+                           min_CGz_orgDorsal     = dat_final$full_CGz_orgDorsal,
                            min_CGx_specific      = dat_final$full_CGx_specific_orgBeak,
-                           min_CGx_orgShoulder   = dat_final$full_CGx-dat_final$pt1_X,
+                           min_CGx_orgShoulder   = dat_final$full_CGx_orgShoulder,
                            min_wing_CGy          = dat_final$wing_CGy,
                            min_wing_CGy_specific = dat_final$wing_CGy_specific,
                            min_CGz_specific      = dat_final$full_CGz_specific_orgDorsal,
@@ -376,6 +379,9 @@ univ_prior <-
        R = list(V = 1, nu = 0.02))
 
 # to compute Pagels lambda - (pgls_model_mcmc$VCV[, 1] / (pgls_model_mcmc$VCV[, 1] + pgls_model_mcmc$VCV[, 2])) %>% mean
+
+
+dat_sens = dat_final[which(dat_final$prop_q_dot_nd %in% dat_comp$max_q_nd),]
 
 filename = paste(format(Sys.Date(), "%Y_%m_%d"),"_alldata.csv",sep="")
 write.csv(dat_final,filename)
