@@ -37,8 +37,8 @@ plot_CGloc <- function(clean_pts,mass_properties,mass_properties_skin,mass_prope
     ggplot2::geom_point(ggplot2::aes(x=clean_pts[1:4,2], y=clean_pts[1:4,1]), col = "black", fill = "white", pch = 22) +
     ggplot2::geom_point(ggplot2::aes(x=clean_pts[5:10,2], y=clean_pts[5:10,1]), col = "gray50", pch = 15) +
     ggplot2::geom_point(ggplot2::aes(x=clean_pts[5:10,2], y=clean_pts[5:10,1]), col = "black", pch = 0) +
-    ggplot2::geom_point(ggplot2::aes(x=0.11005137, y=0.00354631), col = "gray50", pch = 15) +
-    ggplot2::geom_point(ggplot2::aes(x=0.11005137, y=0.00354631), col = "black", pch = 0) +
+    ggplot2::geom_point(ggplot2::aes(x=0.1081319428, y=-0.0242471017), col = "gray50", pch = 15) +
+    ggplot2::geom_point(ggplot2::aes(x=0.1081319428, y=-0.0242471017), col = "black", pch = 0) +
     # Theme
     th +
     # Axis control
@@ -61,13 +61,13 @@ plot_CGloc <- function(clean_pts,mass_properties,mass_properties_skin,mass_prope
     ggplot2::geom_point(ggplot2::aes(x=subset(mass_properties_bone, object == "CGy")$value, y=-subset(mass_properties_bone, object == "CGz")$value),col = "black", fill = "#FAC5C6", pch = 21) +
     ggplot2::geom_point(ggplot2::aes(x=subset(primaries, object == "CGy")$value, y=-subset(primaries, object == "CGz")$value), col = "black",fill = "#A0B3DC", pch = 21) +
     ggplot2::geom_point(ggplot2::aes(x=subset(secondaries, object == "CGy")$value, y=-subset(secondaries, object == "CGz")$value), col = "black",fill = "#9AD09B", pch = 21) +
-    ggplot2::geom_point(ggplot2::aes(x=subset(mass_properties_muscle, object == "CGy")$value, y=-subset(mass_properties_muscle, object == "CGz")$value), fill = "black",col = "#FAC5C6", pch = 21) +
+    ggplot2::geom_point(ggplot2::aes(x=subset(mass_properties_muscle, object == "CGy")$value, y=-subset(mass_properties_muscle, object == "CGz")$value), col = "black",fill = "#FAC5C6", pch = 21) +
     ggplot2::geom_point(ggplot2::aes(x=subset(mass_properties, component == "wing" & object == "CGy")$value, y=-subset(mass_properties, component == "wing" & object == "CGz")$value), col = "black", size  = 3) +
     ggplot2::geom_point(ggplot2::aes(x=clean_pts[1:4,2], y=-clean_pts[1:4,3]), col = "black", fill = "white", pch = 22) +
     ggplot2::geom_point(ggplot2::aes(x=clean_pts[5:10,2], y=-clean_pts[5:10,3]), col = "gray50", pch = 15) +
     ggplot2::geom_point(ggplot2::aes(x=clean_pts[5:10,2], y=-clean_pts[5:10,3]), col = "black", pch = 0) +
-    ggplot2::geom_point(ggplot2::aes(x=0.11005137, y=-0.01009165), col = "gray50", pch = 15) +
-    ggplot2::geom_point(ggplot2::aes(x=0.11005137, y=-0.01009165), col = "black", pch = 0) +
+    ggplot2::geom_point(ggplot2::aes(x=0.1081319428, y=-0.0005026221), col = "gray50", pch = 15) +
+    ggplot2::geom_point(ggplot2::aes(x=0.1081319428, y=-0.0005026221), col = "black", pch = 0) +
     # Theme
     th +
     # Axis control

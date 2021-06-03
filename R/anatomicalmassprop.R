@@ -772,8 +772,7 @@ massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, l_leg, l
 
   ## ------ Sanity checks ---------
   if(m_ell < 0 | m_par < 0 | m_end < 0){ # Check that no components have negative mass
-    warning("Error: The mass of one or more of the torso sections is negative.")
-    browser()
+    stop("Error: The mass of one or more of the torso sections is negative.")
     }
 
   if(abs(m_end+m_par+m_ell-m_body)>0.001){ # Check that the mass matches the expected value
