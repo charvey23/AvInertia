@@ -214,7 +214,7 @@ plot_minstab <- dists_minstab %>%
 1-length(which(dat_sens_opt_min$z0 > 1))/1000
 
 #exported as 7x5
-fig_pmc <- plot_grid(plot_x_cg,plot_minstab,plot_minstab,
+fig_pmc <- plot_grid(plot_x_cg,plot_maxstab,plot_minstab,
                       #arrangement data
                       ncol = 1,
                       rel_heights = c(1,1,1),

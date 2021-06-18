@@ -5,8 +5,10 @@
 Ixx_val_mcmc_output
 
 # ----- Comparison of pigeon data -------
-
+# absolute values of Ixxwing
 Ixx_max[which(Ixx_max$species == "col_liv"),c("species","wing_hum_Ixx")]
+# maximum yCGwing difference between our values and Berg and Rayner
+max(subset(dat_final, species == "col_liv")$wing_CGy_specific_orgShoulder)-(0.071/0.323)
 
 # Cywing comparative discussion
 # maximum Cywing relative to the shoulder
@@ -188,5 +190,5 @@ tmp = aggregate(list(c_l_theory = dat_final$chord/dat_final$full_length), by = l
 # Evolution
 OU_xcg$opt$aicc-BM_xcg$opt$aicc
 
-
-
+OU_maxstab$opt$aicc-BM_maxstab$opt$aicc
+OU_minstab$opt$aicc-BM_minstab$opt$aicc

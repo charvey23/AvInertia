@@ -34,74 +34,8 @@ colnames(all_data_means_mat) <- colnames(select_if(all_data_means, is.numeric))
 # log transform all data - absolute is just for CGx which is negative
 all_data_means_mat <- apply(all_data_means_mat,2,function(x) log(abs(x)))
 
-
+# calculate the phylogenetic signal for the stability metrics
 physignal(all_data_means_mat[,c("max_q_nd","min_q_nd")], pruned_mcc)
-
-
-
-source("influ_continuous_BMmult.R")
-# sets all birds to be within the same group
-gp.end        = rep(1,22)
-names(gp.end) = pruned_mcc$tip.label
-#compare.evol.rates(A=all_data_means_mat[,c("head_height","head_length","head_mass")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
-# both computes the final rate and the influence per species
-dat_rate_head  <- influ_continuous_BMmult(data=all_data_means_mat[,c("head_height","head_length","head_mass")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
-dat_rate_torso <- influ_continuous_BMmult(data=all_data_means_mat[,c("body_height_max","body_width_max","torso_length","torso_mass")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
-dat_rate_tail  <- influ_continuous_BMmult(data=all_data_means_mat[,c("tail_width","tail_length","tail_mass_g")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
-dat_rate_hum   <- influ_continuous_BMmult(data=all_data_means_mat[,c("humerus_diameter_mm","humerus_length_mm","humerus_mass_g")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
-dat_rate_rad   <- influ_continuous_BMmult(data=all_data_means_mat[,c("radius_diameter_mm","radius_length_mm","radius_mass_g")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
-dat_rate_uln   <- influ_continuous_BMmult(data=all_data_means_mat[,c("ulna_diameter_mm","ulna_length_mm","ulna_mass_g")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
-dat_rate_cmc   <- influ_continuous_BMmult(data=all_data_means_mat[,c("cmc_diameter_mm","cmc_length_mm","cmc_mass_g")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
-dat_rate_P     <- influ_continuous_BMmult(data=all_data_means_mat[,c("feat_length.P","feat_width.P","feat_mass.P")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
-dat_rate_S     <- influ_continuous_BMmult(data=all_data_means_mat[,c("feat_length.S","feat_width.S","feat_mass.S")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
-dat_rate_CG    <- influ_continuous_BMmult(data=all_data_means_mat[,c("mean_CGx_orgBeak","mean_CGz_orgDorsal")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
-dat_rate_CG_sh <- influ_continuous_BMmult(data=all_data_means_mat[,c("mean_CGx_orgShoulder","mean_CGz_orgShoulder")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
-dat_rate_CG_wing    <- influ_continuous_BMmult(data=all_data_means_mat[,c("max_wing_CGx","max_wing_CGy")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
-dat_rate_fullbird <- influ_continuous_BMmult(data=all_data_means_mat[,c("full_length","max_wingspan","full_m")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
-
-dat_var_tot           <- data.frame(matrix(nrow = 0, ncol = 2))
-colnames(dat_var_tot) <- c("component","mean_sig_sq")
-
-dat_var_tot = rbind(dat_var_tot,list(component = "head", mean_sig_sq = dat_rate_head$full.model.estimates$sigsq))
-dat_var_tot = rbind(dat_var_tot,list(component = "torso",mean_sig_sq = dat_rate_torso$full.model.estimates$sigsq))
-dat_var_tot = rbind(dat_var_tot,list(component = "tail",mean_sig_sq = dat_rate_tail$full.model.estimates$sigsq))
-dat_var_tot = rbind(dat_var_tot,list(component = "humerus",mean_sig_sq = dat_rate_hum$full.model.estimates$sigsq))
-dat_var_tot = rbind(dat_var_tot,list(component = "radius",mean_sig_sq = dat_rate_rad$full.model.estimates$sigsq))
-dat_var_tot = rbind(dat_var_tot,list(component = "ulna",mean_sig_sq = dat_rate_uln$full.model.estimates$sigsq))
-dat_var_tot = rbind(dat_var_tot,list(component = "cmc",mean_sig_sq = dat_rate_cmc$full.model.estimates$sigsq))
-dat_var_tot = rbind(dat_var_tot,list(component = "full_CG",mean_sig_sq = dat_rate_CG$full.model.estimates$sigsq))
-dat_var_tot = rbind(dat_var_tot,list(component = "full_CG_sh",mean_sig_sq = dat_rate_CG_sh$full.model.estimates$sigsq))
-dat_var_tot = rbind(dat_var_tot,list(component = "full_I",mean_sig_sq = dat_rate_I$full.model.estimates$sigsq))
-#dat_var_tot = rbind(dat_var_tot,list(component = "full_CG_sp",mean_sig_sq = dat_rate_CG_sp$full.model.estimates$sigsq))
-#dat_var_tot = rbind(dat_var_tot,list(component = "full_I_sp",mean_sig_sq = dat_rate_I_sp$full.model.estimates$sigsq))
-dat_var_tot = rbind(dat_var_tot,list(component = "wing_CG",mean_sig_sq = dat_rate_CG_wing$full.model.estimates$sigsq))
-#dat_var_tot = rbind(dat_var_tot,list(component = "wing_CG_sp",mean_sig_sq = dat_rate_CG_wing_sp$full.model.estimates$sigsq))
-dat_var_tot = rbind(dat_var_tot,list(component = "P",mean_sig_sq = dat_rate_P$full.model.estimates$sigsq))
-dat_var_tot = rbind(dat_var_tot,list(component = "S",mean_sig_sq = dat_rate_S$full.model.estimates$sigsq))
-dat_var_tot = rbind(dat_var_tot,list(component = "full_bird",mean_sig_sq = dat_rate_fullbird$full.model.estimates$sigsq))
-
-dat_var_range  <- data.frame(matrix(nrow = 0, ncol = 3))
-colnames(dat_var_range) <- c("component","species","mean_sig_sq")
-
-dat_var_range = rbind(dat_var_range,list(component = rep("head",22), species = dat_rate_head$sensi.estimates$species, mean_sig_sq = dat_rate_head$sensi.estimates$sigsq))
-dat_var_range = rbind(dat_var_range,list(component = rep("torso",22), species = dat_rate_torso$sensi.estimates$species, mean_sig_sq = dat_rate_torso$sensi.estimates$sigsq))
-dat_var_range = rbind(dat_var_range,list(component = rep("tail",22), species = dat_rate_tail$sensi.estimates$species, mean_sig_sq = dat_rate_tail$sensi.estimates$sigsq))
-dat_var_range = rbind(dat_var_range,list(component = rep("humerus",22), species = dat_rate_hum$sensi.estimates$species, mean_sig_sq = dat_rate_hum$sensi.estimates$sigsq))
-dat_var_range = rbind(dat_var_range,list(component = rep("radius",22), species = dat_rate_rad$sensi.estimates$species, mean_sig_sq = dat_rate_rad$sensi.estimates$sigsq))
-dat_var_range = rbind(dat_var_range,list(component = rep("ulna",22), species = dat_rate_uln$sensi.estimates$species, mean_sig_sq = dat_rate_uln$sensi.estimates$sigsq))
-dat_var_range = rbind(dat_var_range,list(component = rep("cmc",22), species = dat_rate_cmc$sensi.estimates$species, mean_sig_sq = dat_rate_cmc$sensi.estimates$sigsq))
-dat_var_range = rbind(dat_var_range,list(component = rep("full_CG",22), species = dat_rate_CG$sensi.estimates$species, mean_sig_sq = dat_rate_CG$sensi.estimates$sigsq))
-dat_var_range = rbind(dat_var_range,list(component = rep("full_CG_sh",22), species = dat_rate_CG_sh$sensi.estimates$species, mean_sig_sq = dat_rate_CG_sh$sensi.estimates$sigsq))
-dat_var_range = rbind(dat_var_range,list(component = rep("full_I",22), species = dat_rate_I$sensi.estimates$species, mean_sig_sq = dat_rate_I$sensi.estimates$sigsq))
-#dat_var_range = rbind(dat_var_range,list(component = rep("full_CG_sp",22), species = dat_rate_CG_sp$sensi.estimates$species, mean_sig_sq = dat_rate_CG_sp$sensi.estimates$sigsq))
-#dat_var_range = rbind(dat_var_range,list(component = rep("full_I_sp",22), species = dat_rate_I_sp$sensi.estimates$species, mean_sig_sq = dat_rate_I_sp$sensi.estimates$sigsq))
-dat_var_range = rbind(dat_var_range,list(component = rep("P",22), species = dat_rate_P$sensi.estimates$species, mean_sig_sq = dat_rate_P$sensi.estimates$sigsq))
-dat_var_range = rbind(dat_var_range,list(component = rep("S",22), species = dat_rate_S$sensi.estimates$species, mean_sig_sq = dat_rate_S$sensi.estimates$sigsq))
-dat_var_range = rbind(dat_var_range,list(component = rep("wing_CG",22), species = dat_rate_CG_wing$sensi.estimates$species, mean_sig_sq = dat_rate_CG_wing$sensi.estimates$sigsq))
-#dat_var_range = rbind(dat_var_range,list(component = rep("wing_CG_sp",22), species = dat_rate_CG_wing_sp$sensi.estimates$species, mean_sig_sq = dat_rate_CG_wing_sp$sensi.estimates$sigsq))
-dat_var_range = rbind(dat_var_range,list(component = rep("full_bird",22), species = dat_rate_fullbird$sensi.estimates$species, mean_sig_sq = dat_rate_fullbird$sensi.estimates$sigsq))
-
-dat_var_range$component = factor(dat_var_range$component, levels = rev(c("full_bird","head","torso","tail","humerus","ulna","radius","cmc","P","S","full_CG","full_CG_sh","full_I","wing_CG")))
 
 ind_var_CGx = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("mean_CGx_orgBeak")], model = "BM")
 ind_var_CGz = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("mean_CGz_orgDorsal")], model = "BM")
@@ -110,7 +44,9 @@ ind_var_CGz_sh = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("me
 
 BM_xcg = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("mean_CGx_specific_orgShoulder")], model = "BM")
 OU_xcg = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("mean_CGx_specific_orgShoulder")], model = "OU")
+BM_maxstab = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("max_stab")], model = "BM")
 OU_maxstab = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("max_stab")], model = "OU")
+BM_minstab = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("min_stab")], model = "BM")
 OU_minstab = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("min_stab")], model = "OU")
 
 # to verify that the OU model is an appropriate fit given the size of our data
@@ -153,4 +89,65 @@ for (i in 1:length(morpho_traits)){
   check_OU$alpha[i] = OU_model$opt$alpha
   check_OU$w[i]     = w[2]
 }
+
+
+# ----- Below is code to calculate the multivariate BM results for each body component ----
+#
+# source("influ_continuous_BMmult.R")
+# # sets all birds to be within the same group
+# gp.end        = rep(1,22)
+# names(gp.end) = pruned_mcc$tip.label
+# #compare.evol.rates(A=all_data_means_mat[,c("head_height","head_length","head_mass")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+# # both computes the final rate and the influence per species
+# dat_rate_head  <- influ_continuous_BMmult(data=all_data_means_mat[,c("head_height","head_length","head_mass")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+# dat_rate_torso <- influ_continuous_BMmult(data=all_data_means_mat[,c("body_height_max","body_width_max","torso_length","torso_mass")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+# dat_rate_tail  <- influ_continuous_BMmult(data=all_data_means_mat[,c("tail_width","tail_length","tail_mass_g")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+# dat_rate_hum   <- influ_continuous_BMmult(data=all_data_means_mat[,c("humerus_diameter_mm","humerus_length_mm","humerus_mass_g")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+# dat_rate_rad   <- influ_continuous_BMmult(data=all_data_means_mat[,c("radius_diameter_mm","radius_length_mm","radius_mass_g")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+# dat_rate_uln   <- influ_continuous_BMmult(data=all_data_means_mat[,c("ulna_diameter_mm","ulna_length_mm","ulna_mass_g")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+# dat_rate_cmc   <- influ_continuous_BMmult(data=all_data_means_mat[,c("cmc_diameter_mm","cmc_length_mm","cmc_mass_g")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+# dat_rate_P     <- influ_continuous_BMmult(data=all_data_means_mat[,c("feat_length.P","feat_width.P","feat_mass.P")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+# dat_rate_S     <- influ_continuous_BMmult(data=all_data_means_mat[,c("feat_length.S","feat_width.S","feat_mass.S")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+# dat_rate_CG    <- influ_continuous_BMmult(data=all_data_means_mat[,c("mean_CGx_orgBeak","mean_CGz_orgDorsal")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+# dat_rate_CG_sh <- influ_continuous_BMmult(data=all_data_means_mat[,c("mean_CGx_orgShoulder","mean_CGz_orgShoulder")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+# dat_rate_CG_wing    <- influ_continuous_BMmult(data=all_data_means_mat[,c("max_wing_CGx","max_wing_CGy")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+# dat_rate_fullbird <- influ_continuous_BMmult(data=all_data_means_mat[,c("full_length","max_wingspan","full_m")], phy=pruned_mcc, method="simulation",gp=gp.end,iter=999)
+#
+# dat_var_tot           <- data.frame(matrix(nrow = 0, ncol = 2))
+# colnames(dat_var_tot) <- c("component","mean_sig_sq")
+#
+# dat_var_tot = rbind(dat_var_tot,list(component = "head", mean_sig_sq = dat_rate_head$full.model.estimates$sigsq))
+# dat_var_tot = rbind(dat_var_tot,list(component = "torso",mean_sig_sq = dat_rate_torso$full.model.estimates$sigsq))
+# dat_var_tot = rbind(dat_var_tot,list(component = "tail",mean_sig_sq = dat_rate_tail$full.model.estimates$sigsq))
+# dat_var_tot = rbind(dat_var_tot,list(component = "humerus",mean_sig_sq = dat_rate_hum$full.model.estimates$sigsq))
+# dat_var_tot = rbind(dat_var_tot,list(component = "radius",mean_sig_sq = dat_rate_rad$full.model.estimates$sigsq))
+# dat_var_tot = rbind(dat_var_tot,list(component = "ulna",mean_sig_sq = dat_rate_uln$full.model.estimates$sigsq))
+# dat_var_tot = rbind(dat_var_tot,list(component = "cmc",mean_sig_sq = dat_rate_cmc$full.model.estimates$sigsq))
+# dat_var_tot = rbind(dat_var_tot,list(component = "full_CG",mean_sig_sq = dat_rate_CG$full.model.estimates$sigsq))
+# dat_var_tot = rbind(dat_var_tot,list(component = "full_CG_sh",mean_sig_sq = dat_rate_CG_sh$full.model.estimates$sigsq))
+# dat_var_tot = rbind(dat_var_tot,list(component = "full_I",mean_sig_sq = dat_rate_I$full.model.estimates$sigsq))
+# dat_var_tot = rbind(dat_var_tot,list(component = "wing_CG",mean_sig_sq = dat_rate_CG_wing$full.model.estimates$sigsq))
+# dat_var_tot = rbind(dat_var_tot,list(component = "P",mean_sig_sq = dat_rate_P$full.model.estimates$sigsq))
+# dat_var_tot = rbind(dat_var_tot,list(component = "S",mean_sig_sq = dat_rate_S$full.model.estimates$sigsq))
+# dat_var_tot = rbind(dat_var_tot,list(component = "full_bird",mean_sig_sq = dat_rate_fullbird$full.model.estimates$sigsq))
+#
+# dat_var_range  <- data.frame(matrix(nrow = 0, ncol = 3))
+# colnames(dat_var_range) <- c("component","species","mean_sig_sq")
+#
+# dat_var_range = rbind(dat_var_range,list(component = rep("head",22), species = dat_rate_head$sensi.estimates$species, mean_sig_sq = dat_rate_head$sensi.estimates$sigsq))
+# dat_var_range = rbind(dat_var_range,list(component = rep("torso",22), species = dat_rate_torso$sensi.estimates$species, mean_sig_sq = dat_rate_torso$sensi.estimates$sigsq))
+# dat_var_range = rbind(dat_var_range,list(component = rep("tail",22), species = dat_rate_tail$sensi.estimates$species, mean_sig_sq = dat_rate_tail$sensi.estimates$sigsq))
+# dat_var_range = rbind(dat_var_range,list(component = rep("humerus",22), species = dat_rate_hum$sensi.estimates$species, mean_sig_sq = dat_rate_hum$sensi.estimates$sigsq))
+# dat_var_range = rbind(dat_var_range,list(component = rep("radius",22), species = dat_rate_rad$sensi.estimates$species, mean_sig_sq = dat_rate_rad$sensi.estimates$sigsq))
+# dat_var_range = rbind(dat_var_range,list(component = rep("ulna",22), species = dat_rate_uln$sensi.estimates$species, mean_sig_sq = dat_rate_uln$sensi.estimates$sigsq))
+# dat_var_range = rbind(dat_var_range,list(component = rep("cmc",22), species = dat_rate_cmc$sensi.estimates$species, mean_sig_sq = dat_rate_cmc$sensi.estimates$sigsq))
+# dat_var_range = rbind(dat_var_range,list(component = rep("full_CG",22), species = dat_rate_CG$sensi.estimates$species, mean_sig_sq = dat_rate_CG$sensi.estimates$sigsq))
+# dat_var_range = rbind(dat_var_range,list(component = rep("full_CG_sh",22), species = dat_rate_CG_sh$sensi.estimates$species, mean_sig_sq = dat_rate_CG_sh$sensi.estimates$sigsq))
+# dat_var_range = rbind(dat_var_range,list(component = rep("full_I",22), species = dat_rate_I$sensi.estimates$species, mean_sig_sq = dat_rate_I$sensi.estimates$sigsq))
+# dat_var_range = rbind(dat_var_range,list(component = rep("P",22), species = dat_rate_P$sensi.estimates$species, mean_sig_sq = dat_rate_P$sensi.estimates$sigsq))
+# dat_var_range = rbind(dat_var_range,list(component = rep("S",22), species = dat_rate_S$sensi.estimates$species, mean_sig_sq = dat_rate_S$sensi.estimates$sigsq))
+# dat_var_range = rbind(dat_var_range,list(component = rep("wing_CG",22), species = dat_rate_CG_wing$sensi.estimates$species, mean_sig_sq = dat_rate_CG_wing$sensi.estimates$sigsq))
+# dat_var_range = rbind(dat_var_range,list(component = rep("full_bird",22), species = dat_rate_fullbird$sensi.estimates$species, mean_sig_sq = dat_rate_fullbird$sensi.estimates$sigsq))
+#
+# dat_var_range$component = factor(dat_var_range$component, levels = rev(c("full_bird","head","torso","tail","humerus","ulna","radius","cmc","P","S","full_CG","full_CG_sh","full_I","wing_CG")))
 

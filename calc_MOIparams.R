@@ -2,7 +2,7 @@
 ## necessary for a direct comparison
 devtools::load_all()
 
-shift_Iorigin <- function(input_I,input_origin,input_CG,input_cg_or_a,input_m,new_origin,name){
+shift_Iorigin <- function(input_I,input_origin,input_CG,input_cg_or_a,input_m,new_origin,name,dat_info){
   dat    = list()
   dat$I  = matrix(0, nrow = 3, ncol = 3)
   dat$CG = matrix(0, nrow = 3, ncol = 1)
@@ -19,7 +19,7 @@ shift_Iorigin <- function(input_I,input_origin,input_CG,input_cg_or_a,input_m,ne
   dat$I  = parallelaxis(I_CG,-dat$CG,input_m,"CG")
 
   dat$m = input_m
-  new_row = store_data(dat_final[i,],dat,mass_properties,name)
+  new_row = store_data(dat_info,dat,mass_properties,name)
 }
 
 
@@ -47,16 +47,11 @@ for (i in which(dat_final$wing_Ixx %in% dat_comp$max_wing_Ixx)){
 
   wing$m = dat_final$wing_m[i]
 
-  #I defined about the wing CG
-  I_CG  = parallelaxis(wing$I,-wing$CG,wing$m,"A")
+  hum_head = c(dat_final$pt1_X[i],
+               dat_final$pt1_Y[i],
+               dat_final$pt1_Z[i])
 
-  wing$CG[1] = dat_final$wing_CGx[i] - dat_final$pt1_X[i]
-  wing$CG[2] = dat_final$wing_CGy[i] - dat_final$pt1_Y[i]
-  wing$CG[3] = dat_final$wing_CGz[i] - dat_final$pt1_Z[i]
-
-  wing$I  = parallelaxis(I_CG,-wing$CG,wing$m,"CG")
-
-  new_row = store_data(dat_final[i,],wing,mass_properties,"wing_hum")
+  new_row     = shift_Iorigin(wing$I,c(0,0,0),wing$CG,"A",wing$m,hum_head,"wing_hum",dat_final[i,])
 
   if(i == 804){
     Ixx_max = new_row
@@ -185,7 +180,7 @@ for (i in 1:nrow(I_contr)){
 
   bones$m     = I_contr$bones_m[i]
 
-  bones_row     = shift_Iorigin(bones$I,c(0,0,0),bones$CG,"A",bones$m,full_CG,"bone")
+  bones_row     = shift_Iorigin(bones$I,c(0,0,0),bones$CG,"A",bones$m,full_CG,"bone",I_contr[i,])
 
   ## ----------- Muscles ------------
   muscles    = dat
@@ -208,7 +203,7 @@ for (i in 1:nrow(I_contr)){
 
   muscles$m     = I_contr$muscles_m[i]
 
-  muscles_row     = shift_Iorigin(muscles$I,c(0,0,0),muscles$CG,"A",muscles$m,full_CG,"muscle")
+  muscles_row     = shift_Iorigin(muscles$I,c(0,0,0),muscles$CG,"A",muscles$m,full_CG,"muscle",I_contr[i,])
 
 
   ## ----------- Feathers ------------
@@ -232,7 +227,7 @@ for (i in 1:nrow(I_contr)){
 
   feathers$m     = I_contr$feathers_m[i]
 
-  feathers_row     = shift_Iorigin(feathers$I,c(0,0,0),feathers$CG,"A",feathers$m,full_CG,"feathers")
+  feathers_row     = shift_Iorigin(feathers$I,c(0,0,0),feathers$CG,"A",feathers$m,full_CG,"feathers",I_contr[i,])
 
   ## ----------- Skin ------------
   skin    = dat
@@ -255,7 +250,7 @@ for (i in 1:nrow(I_contr)){
 
   skin$m     = I_contr$skin_m[i]
 
-  skin_row     = shift_Iorigin(skin$I,c(0,0,0),skin$CG,"A",skin$m,full_CG,"skin")
+  skin_row     = shift_Iorigin(skin$I,c(0,0,0),skin$CG,"A",skin$m,full_CG,"skin",I_contr[i,])
 
   ##-------------------------------------------
   ##---------------- Body ---------------------
@@ -282,7 +277,7 @@ for (i in 1:nrow(I_contr)){
 
   head$m     = I_contr$head_m[i]
 
-  head_row     = shift_Iorigin(head$I,c(0,0,0),head$CG,"A",head$m,full_CG,"head")
+  head_row     = shift_Iorigin(head$I,c(0,0,0),head$CG,"A",head$m,full_CG,"head",I_contr[i,])
 
   ## ----------- Torso ------------
   torso    = dat
@@ -305,7 +300,7 @@ for (i in 1:nrow(I_contr)){
 
   torso$m     = I_contr$torso_m[i]
 
-  torso_row     = shift_Iorigin(torso$I,c(0,0,0),torso$CG,"A",torso$m,full_CG,"torso")
+  torso_row     = shift_Iorigin(torso$I,c(0,0,0),torso$CG,"A",torso$m,full_CG,"torso",I_contr[i,])
 
   ## ----------- Tail ------------
   tail    = dat
@@ -328,7 +323,7 @@ for (i in 1:nrow(I_contr)){
 
   tail$m     = I_contr$tail_m[i]
 
-  tail_row     = shift_Iorigin(tail$I,c(0,0,0),tail$CG,"A",tail$m,full_CG,"tail")
+  tail_row     = shift_Iorigin(tail$I,c(0,0,0),tail$CG,"A",tail$m,full_CG,"tail",I_contr[i,])
 
   ## ----------- Neck ------------
   neck    = dat
@@ -351,7 +346,7 @@ for (i in 1:nrow(I_contr)){
 
   neck$m     = I_contr$neck_m[i]
 
-  neck_row     = shift_Iorigin(neck$I,c(0,0,0),neck$CG,"A",neck$m,full_CG,"neck")
+  neck_row     = shift_Iorigin(neck$I,c(0,0,0),neck$CG,"A",neck$m,full_CG,"neck",I_contr[i,])
 
   ### ---- Just to check that the shift worked correctly ----
   I_contr_fullCG = rbind(feathers_row,skin_row,muscles_row,bones_row,head_row,neck_row,torso_row,tail_row)
