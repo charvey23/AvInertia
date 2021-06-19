@@ -172,7 +172,6 @@ iter = 0
 ## ----------------------------------------------------
 ## --------- Iterate through each species -------------
 ## ----------------------------------------------------
-#1:length(no_species)
 for (m in 1:length(no_species)){
 
   # ----------- Filter the data to the current species ---------
@@ -412,7 +411,7 @@ for (m in 1:length(no_species)){
       dat_bird_all = rbind(dat_bird_all,dat_bird_curr)
       dat_body_all = rbind(dat_body_all,curr_torsotail_data)
     }
-
+    browser()
     remove(all_data)
    } # end of the specimen loop
 } # end of the species loop

@@ -9,21 +9,22 @@ Authors@R:
            comment = c(ORCID = "0000-0002-2830-0844")),
       person(given = "Vikram B.",
            family = "Baliga", 
-           role = c("aut", "cre"),
+           role = "aut",
            email = "vbaliga87@gmail.com",
            comment = c(ORCID = "0000-0002-9367-8974")),
       person(given = "Jasmin B.",
            family = "Wong", 
-           role = c("aut", "cre"),
+           role = "aut",
            email = "tba",
            comment = c(ORCID = "tba")))
-Description: This package was developed to compute the center of gravity 
-and moment of inertia tensor of any flying bird. It functions by modelling 
-a bird as a composite structure of simple geometric objects. This requires
-detailed morphological measurements of bird specimens although those obtained 
-for the associated paper have been included in the package for use. Refer to the
-vignettes and supplementary material for detailed information on the package 
-function.
+Description: 
+    This package was developed to compute the center of gravity and moment of 
+    inertia tensor of any flying bird. It functions by modelling a bird as a 
+    composite structure of simple geometric objects. This requires detailed 
+    morphological measurements of bird specimens although those obtained for 
+    the associated paper have been included in the package for use. Refer to 
+    the vignettes and supplementary material for detailed information on the 
+    package function.
 License: `use_mit_license()`, `use_gpl3_license()` or friends to
     pick a license
 Encoding: UTF-8

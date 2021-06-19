@@ -848,10 +848,10 @@ massprop_tail <- function(m,l_tail,w_tail,start,end){
 #'
 #' @export
 
-massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, l_leg,
-                           l_tot, CG_true_x, CG_true_z, start, end){
+massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, l_leg,l_tot, CG_true_x, CG_true_z, start, end){
 
   # ----------------------------- Adjust axis ----------------------------------
+  z_axis = end-start
   # In this case this is not arbitrary and defines the y axis
   temp_vec = c(0,-1,0)
   # z points along the VRP positive z axis
