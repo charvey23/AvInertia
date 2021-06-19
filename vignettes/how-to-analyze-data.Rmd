@@ -16,33 +16,64 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Hi Christina! This is a large header
+# Determine the inertial characteristics of a flying bird.
 
-## This is a smaller header
+This package was developed to determine the center of gravity and moment of inertia for a bird in a general flight configuration. This code assumes that birds are a composite structure of simple geometric shapes. For details on the specific assumptions please refer to:
 
-### Keep adding "#" in the Rmd file to continually decrease header size if you'd like
+%```{r setup}
+%library(AvInertia)
+%```
 
-You can write text as you'd like. Then to inject code, use "```" to enclose
-blocks of code and also use "{r}" to specify that is is R code. Like this:
+Generally, you should already have all of the necessary measurements loaded into R in the form of a database. We have included the data set from our paper. The bird properties are reported in the metric system and all measurements have been taken with the origin placed at the bird (vehicle) reference point (VRP).  
 
-```{r setup}
-library(AvInertia)
+%```{r load_data}
+%load(dat_id_curr)
+%load(dat_bird_curr)
+%load(dat_wing_curr)
+%load(dat_feat_curr)
+%load(dat_bone_curr)
+%load(dat_mat)
+%load(clean_pts)
+%```
+
+## 1. Determine the center of gravity of the bird's torso (including the legs)
+
+```{r calc_torso}
+dat_torsotail_out = massprop_restbody(dat_id_curr, dat_bird_curr)
 ```
 
-These code "chunks" should have names. The one above is named "setup".
+## 2. Calculate the inertia of the flight feathers about the tip of the calamus
 
-Here's another example:
-
-```{r plot_some_stuff, fig.height=5, fig.width=5}
-plot(1:10)
+```{r calc_feat}
+feather_inertia <- compute_feat_inertia(dat_mat, dat_feat_curr, dat_bird_curr)
 ```
 
-In the above chunk, I named the chunk "plot_some_stuff" and specified the figure's
-height and width (in inches, I think?)
+## 3. Determine the center of gravity of one of the bird's wings 
 
-Emojis work too: 🐢
-(But probably not in the code block!)
+```{r calc_wing_noplot}
+dat_wing_out      = massprop_birdwing(dat_id_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts, feather_inertia, plot_var = 0)
+```
 
-Whenever you would like to see the output of this file, hit the "Knit" button
-above. It will "knit" an html file that will either show up in the "Viewer" pane
-inside RStudio or in your web browser (you can set this however you'd like)
+### Visualize the center of gravity of each wing component in the x and y axis
+
+```{r calc_wing_plotxy, fig.width = 4}
+dat_wing_out      = massprop_birdwing(dat_id_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts, feather_inertia, plot_var = "xy")
+```
+
+### or the y and z axis
+
+```{r calc_wing_plotyz, fig.width = 4}
+dat_wing_out      = massprop_birdwing(dat_id_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts, feather_inertia, plot_var = "yz")
+```
+
+## 4. If computing for asymmetric case, input a different set of clean pts 
+
+Note: that in this case the wing should still be input as it it is on the right-hand side of the bird. The following code will adjust.
+
+## 5. Combine all data and obtain the center of gravity, moment of inertia and principal axes of the bird
+
+```{r combine_prop}
+curr_full_bird      = combine_inertialprop(dat_torsotail_out,dat_wing_out,dat_wing_out, symmetric=TRUE)
+```
+
+This will return a long format data frame with all the individual components I about the VRP and both the full bird I about the VRP and about the full center of gravity.

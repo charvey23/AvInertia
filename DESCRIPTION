@@ -1,13 +1,29 @@
 Package: AvInertia
-Title: What the Package Does (One Line, Title Case)
+Title: Calculate the inertial properties of a flying bird
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    c(person(given = "Christina",
+           family = "Harvey",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+           email = "harveyca@umich.edu",
+           comment = c(ORCID = "0000-0002-2830-0844")),
+      person(given = "Vikram B.",
+           family = "Baliga", 
+           role = c("aut", "cre"),
+           email = "vbaliga87@gmail.com",
+           comment = c(ORCID = "0000-0002-9367-8974")),
+      person(given = "Jasmin B.",
+           family = "Wong", 
+           role = c("aut", "cre"),
+           email = "tba",
+           comment = c(ORCID = "tba")))
+Description: This package was developed to compute the center of gravity 
+and moment of inertia tensor of any flying bird. It functions by modelling 
+a bird as a composite structure of simple geometric objects. This requires
+detailed morphological measurements of bird specimens although those obtained 
+for the associated paper have been included in the package for use. Refer to the
+vignettes and supplementary material for detailed information on the package 
+function.
 License: `use_mit_license()`, `use_gpl3_license()` or friends to
     pick a license
 Encoding: UTF-8

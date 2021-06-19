@@ -3,5 +3,8 @@
 .RData
 2020_05_25_OrientedWings.csv
 data/2020_05_25_OrientedWings.csv
+OldCode/
+largedata/
+AnalysisData/
 inst/doc
 .DS_Store
