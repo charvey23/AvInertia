@@ -9,7 +9,7 @@ library(stringr)
 library(gtools)
 library(pracma)
 
-source('/Users/christinaharvey/Documents/birdmoment/transformROM_supportingfunctions.R')
+source('/Users/christinaharvey/Documents/AvInertia/transformROM_supportingfunctions.R')
 
 ### -------------- Read in all morphological measurements ------------
 run_data_path = "/Users/christinaharvey/Dropbox (University of Michigan)/Bird Mass Distribution/rundata/"

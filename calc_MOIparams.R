@@ -77,7 +77,6 @@ Ixx_val_mcmc <-
 Ixx_val_mcmc_output  = summary(Ixx_val_mcmc)
 
 
-
 ## --------------------- Calculate the inertia PGLS relationship ----------------------
 Ixx_model_mcmc <-
   MCMCglmm::MCMCglmm(

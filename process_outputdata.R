@@ -1,4 +1,4 @@
-# This script was written to analyse the data that is returned from the birdmoment package
+# This script was written to analyse the data that is returned from the AvInertia package
 ## Load up necessary packages
 library(phytools)
 library(ape)

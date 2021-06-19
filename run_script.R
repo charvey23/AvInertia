@@ -392,6 +392,7 @@ for (m in 1:length(no_species)){
       new_row2 = data.frame(species = dat_id_curr$species[1], BirdID = dat_id_curr$BirdID[1],TestID = dat_id_curr$TestID[1], FrameID = dat_id_curr$FrameID[1],
                             component = "wing", object = "S", value = dat_pt_curr$S)
       all_data = rbind(all_data, curr_wing_data, curr_full_bird, new_row1,new_row2)
+      browser()
     } # end of the individual wing configuration loop
     # for the sake of memory need to recast from long to wide format to save
     all_data = reshape2::dcast(all_data, species + BirdID + TestID + FrameID ~ component + object, value.var="value")

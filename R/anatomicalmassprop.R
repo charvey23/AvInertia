@@ -279,7 +279,7 @@ massprop_skin <- function(m,rho,pts){
 massprop_pm <- function(m,pt){
 
   emtpy_I = matrix(0, nrow = 3, ncol = 3) # 0 tensor for point mass about it's
-  own CG
+  #own CG
 
   mass_prop = list() # pre-define
 

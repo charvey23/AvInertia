@@ -1,10 +1,10 @@
 ---
-title: "How to analyze data in birdmoment"
+title: "How to analyze data in AvInertia"
 author: "Christina Harvey"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{How to analyze data in birdmoment}
+  %\VignetteIndexEntry{How to analyze data in AvInertia}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -26,7 +26,7 @@ You can write text as you'd like. Then to inject code, use "```" to enclose
 blocks of code and also use "{r}" to specify that is is R code. Like this:
 
 ```{r setup}
-library(birdmoment)
+library(AvInertia)
 ```
 
 These code "chunks" should have names. The one above is named "setup".
