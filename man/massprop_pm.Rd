@@ -7,15 +7,19 @@
 massprop_pm(m, pt)
 }
 \arguments{
-\item{m}{Mass of skin (kg)}
+\item{m}{Mass of point mass (kg)}
 
-\item{pt}{a 1x3 vector (x,y,z) representing the  location of the point mass. Frame of reference: VRP | Origin: VRP}
+\item{pt}{a 1x3 vector (x,y,z) representing the location of the point mass.
+Frame of reference: VRP | Origin: VRP}
 }
 \value{
 This function returns a list that includes:
 \itemize{
-\item{I}{a 3x3 matrix representing the moment of inertia tensor of a point mass}
-\item{CG}{a 1x3 vector representing the center of gravity position of a point mass}
+\item{I}{a 3x3 matrix representing the moment of inertia tensor
+of a point mass}
+\item{CG}{a 1x3 vector representing the center of gravity position
+of a point mass}
+\item{m}{a double that returns the input mass}
 }
 }
 \description{
@@ -23,7 +27,8 @@ Calculate the moment of inertia of any point mass
 }
 \section{Warning}{
 
-Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
+Parallel axis theorem does not apply between two arbitrary points.
+One point must be the object's center of gravity.
 }
 
 \author{

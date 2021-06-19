@@ -15,10 +15,7 @@ massprop_feathers(
   rho_med,
   w_vp,
   w_vd,
-  angle,
-  start,
-  end,
-  normal
+  angle
 )
 }
 \arguments{
@@ -26,7 +23,7 @@ massprop_feathers(
 
 \item{l_c}{Length of the calamus; start of vane to end of calamus(m)}
 
-\item{l_r_cor}{Length of rachis/vane; tip to start of vane (m)}
+\item{l_r_cor}{Length of rachis; tip to start of vane (m)}
 
 \item{w_cal}{Width (diameter) of the cortex part of the calamus (m)}
 
@@ -42,19 +39,27 @@ massprop_feathers(
 
 \item{w_vd}{Width of distal (closest to wing tip) vane (m)}
 
-\item{angle}{Angle between calamus and the vane}
+\item{angle}{Angle between calamus and the vane taken the supplement angle
+to the interior angle. Negative indicates the feather tip is rotated
+proximally relative to the start of the feather vane.}
 
-\item{start}{a 1x3 vector (x,y,z) representing the 3D point where feather starts. (Frame of reference: VRP | Origin: VRP)}
+\item{start}{a 1x3 vector (x,y,z) representing the 3D point
+where feather starts. (Frame of reference: VRP | Origin: VRP)}
 
-\item{end}{a 1x3 vector (x,y,z) representing the 3D point where feather ends (Frame of reference: VRP | Origin: VRP)}
+\item{end}{a 1x3 vector (x,y,z) representing the 3D point
+where feather tip ends (Frame of reference: VRP | Origin: VRP)}
 
-\item{normal}{Vector that defines the normal to each feather plane. (Frame of reference: VRP | Origin: VRP)}
+\item{normal}{Vector that defines the normal to each feather plane.
+(Frame of reference: VRP | Origin: VRP)}
 }
 \value{
 This function returns a list that includes:
 \itemize{
-\item{I}{a 3x3 matrix representing the moment of inertia tensor of a simplified feather}
-\item{CG}{a 1x3 vector representing the center of gravity position of a simplified feather}
+\item{I}{a 3x3 matrix representing the moment of inertia tensor of a
+simplified feather}
+\item{CG}{a 1x3 vector representing the center of gravity position of a
+simplified feather}
+\item{m}{a double that returns the feather mass}
 }
 }
 \description{
@@ -62,7 +67,11 @@ Calculate the moment of inertia of skin modeled as a flat triangular plate
 }
 \section{Warning}{
 
-Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
+Parallel axis theorem does not apply between two arbitrary points.
+One point must be the object's center of gravity.
+
+CAUTION: While computing the variable components of the feather the x axis
+is the normal of the feather.
 }
 
 \author{

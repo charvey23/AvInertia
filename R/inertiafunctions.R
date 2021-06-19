@@ -374,14 +374,45 @@ calc_inertia_platetri <- function(pts, A, rho, t, desired_prop){
 
 #' Compute the inertia of the individual feathers
 #'
-#' @param dat_mat
-#' @param dat_feat_curr
-#' @param dat_bird_curr
+#' @param dat_mat Dataframe related to the current species input as a
+#' dataframe with the following structure:
+#' \itemize{
+#' \item{material}{Material information. Must include the following:
+#' "Cortex", "Medullary"}
+#' \item{density}{Density of each material (kg/m^3)}
+#' }
+#' @param dat_feat_curr Dataframe related to the current bird wing feathers
+#' input as a dataframe with the following structure:
+#' \itemize{
+#' \item{feather}{Feather ID code. Must be in standard format i.e.
+#' 1st primary is "P1", third secondary is "S3", etc.
+#' Alula feathers should be grouped and named "alula".}
+#' \item{m_f}{Mass of feather in the same row as the
+#' appropriate feather ID code (kg)}
+#' \item{l_cal}{Length of calamus in the same row as the
+#' appropriate feather ID code (m)}
+#' \item{l_vane}{Length of rachis/vane in the same row as the
+#' appropriate feather ID code (m)}
+#' \item{w_cal}{Width (diameter) of calamus in the same row as the
+#' appropriate feather ID code (m)}
+#' \item{w_vp}{Width of proximal vane (average value) in the same row as the
+#' appropriate feather ID code (m)}
+#' \item{w_vd}{Width of distal vane (average value)  in the same row as the
+#' appropriate feather ID code (m)}
+#' \item{vane_angle}{Interior angle between the rachis and calamus  (degrees)}
+#' }
+#' NOTE: Alula feathers will be treated as point mass so only the mass of the
+#' feathers is required. Other columns can be left blank.
+#' @param dat_bird_curr Dataframe related to the current bird wing that must
+#' include the following columns:
+#' \itemize{
+#' \item{barb_radius}{Radius of feather barb  for current species (m)}
+#' \item{barb_distance}{Distance between feather barbs for current species (m)}
+#' }
 #'
 #' @return
 #' @export
 #'
-#' @examples
 
 compute_feat_inertia <- function(dat_mat, dat_feat_curr, dat_bird_curr){
 

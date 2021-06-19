@@ -2,20 +2,25 @@
 % Please edit documentation in R/mathematicalfunctions.R
 \name{calc_rot}
 \alias{calc_rot}
-\title{A 3x3 rotation matrix constructed by projecting the new axes onto the original system. Likely results in rotation about all axes.}
+\title{A 3x3 rotation matrix constructed by projecting the new axes onto the
+original system. Likely results in rotation about all axes.}
 \usage{
 calc_rot(z_vector, x_vector)
 }
 \arguments{
-\item{z_vector}{a 1x3 vector representing the direction for the desired z axis of the new frame of reference.}
+\item{z_vector}{a 1x3 vector representing the direction for the desired z
+axis of the new frame of reference. Frame of reference: VRP}
 
-\item{x_vector}{a 1x3 vector representing the direction for the desired x axis of the new frame of reference.}
+\item{x_vector}{a 1x3 vector representing the direction for the desired x
+axis of the new frame of reference. Frame of reference: VRP}
 }
 \value{
-a 3x3 matrix representing the rotation matrix that transforms between VRP frame and object frame
+a 3x3 matrix representing the rotation matrix that transforms between
+VRP frame and object frame
 }
 \description{
-A 3x3 rotation matrix constructed by projecting the new axes onto the original system. Likely results in rotation about all axes.
+A 3x3 rotation matrix constructed by projecting the new axes onto the
+original system. Likely results in rotation about all axes.
 }
 \author{
 Christina Harvey

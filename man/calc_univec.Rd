@@ -15,12 +15,6 @@ the unit vector in the size of the input vector
 \description{
 Determine the unit vector of any input vector
 }
-\examples{
-
-output = calc_univec(c(2,6,5))
-length_output = pracma::Norm(output) #should equal 1 if a unit vector
-
-}
 \author{
 Christina Harvey
 }

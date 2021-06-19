@@ -17,33 +17,29 @@ massprop_bones(m, l, r_out, r_in, rho, start, end)
 
 \item{rho}{Density of the bone (kg/m^3)}
 
-\item{start}{a 1x3 vector (x,y,z) representing the 3D point where bone starts. Frame of reference: VRP | Origin: VRP}
+\item{start}{a 1x3 vector (x,y,z) representing the 3D point where bone starts.
+Points from the VRP to the bone start. Frame of reference: VRP | Origin: VRP}
 
-\item{end}{a 1x3 vector (x,y,z) representing the 3D point where bone ends. Frame of reference: VRP | Origin: VRP}
+\item{end}{a 1x3 vector (x,y,z) representing the 3D point where bone ends.
+Points from the VRP to the bone start. Frame of reference: VRP | Origin: VRP}
 }
 \value{
 This function returns a list that includes:
 \itemize{
-\item{I}{a 3x3 matrix representing the moment of inertia tensor of a bone modeled as a hollow cylinder with two solid end caps}
-\item{CG}{a 1x3 vector representing the center of gravity position of a bone modeled as a hollow cylinder with two solid end caps}
+\item{I}{a 3x3 matrix representing the moment of inertia tensor of a bone
+modeled as a hollow cylinder with two solid end caps}
+\item{CG}{a 1x3 vector representing the center of gravity position of a bone
+modeled as a hollow cylinder with two solid end caps}
+\item{m}{a double that returns the input bone mass}
 }
 }
 \description{
-Calculate the moment of inertia of a bone modeled as a hollow cylinder with two solid end caps
+Calculate the moment of inertia of a bone modeled as a hollow cylinder
+with two solid end caps
 }
 \section{Warning}{
 
-Parallel axis theorem does not apply between two arbitrary points. One point must be the object's center of gravity.
+Parallel axis theorem does not apply between two arbitrary points.
+One point must be the object's center of gravity.
 }
 
-\examples{
-
-# This example takes the humerus data contained within the package to predict
-# the humerus moment of inertia and center of gravity with the origin at the VRP and in the VRP frame of reference.
-
-library(AvInertia)
-
-massprop_bones(m,l,r_out,r_in,rho,start,end)
-
-
-}

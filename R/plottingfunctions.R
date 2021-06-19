@@ -19,7 +19,8 @@
 #' \item{pt12x, pt12y, pt12z}{Point on exterior shoulder position
 #' (wing root leading edge)}
 #' }
-#' @param mass_properties
+#' @param mass_properties Dataframe containing the center of gravity and
+#' moment of inertia components of the full wing.
 #' @param mass_properties_skin Dataframe containing the center of gravity and
 #' moment of inertia components of the skin.
 #' Formatted with the following columns: "species","BirdID","TestID","FrameID",

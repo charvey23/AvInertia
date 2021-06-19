@@ -17,15 +17,6 @@ a scalar value. Returns 1 if i and j are equal otherwise returns 0
 \description{
 Kroneckerdelta function
 }
-\examples{
-
- # should return 1
- kronecker_delta(7,7)
-
- # should return 0
- kronecker_delta(5,4)
-
-}
 \author{
 Christina Harvey
 }
