@@ -3,15 +3,14 @@
 This package was developed to compute the center of gravity and moment of inertia tensor of any flying bird. 
 It functions by modelling a bird as a composite structure of simple geometric objects. 
 
-#Installation
+# Installation
 You can install AvInertia from CRAN via:
 
 
-#Documentation
-Morphological measurements of the target specimen are necessary and the specific items are outlined in the supplementary methods.
-Please 
+# Example
+Do this instead of the vignette? Or copy paste vignette here?
 
-#Contributing and/or raising Issues
+# Contributing and/or raising Issues
 We welcome feedback on bugs, improvements, and/or feature requests. 
 Please see our Issues templates on GitHub to make a bug fix request or feature request.
 
