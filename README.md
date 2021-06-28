@@ -1,3 +1,13 @@
+AvInertia
+================
+
+This package was developed to compute the center of gravity and moment
+of inertia tensor of any flying bird. It functions by modeling a bird as
+a composite structure of simple geometric objects. This requires
+detailed morphological measurements of bird specimens although those
+obtained for the associated paper have been included in the package for
+use. Refer to the vignette and supplementary material for detailed
+information on the package function.
 
 ## Installation
 
