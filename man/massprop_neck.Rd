@@ -7,20 +7,22 @@
 massprop_neck(m, r, l, start, end)
 }
 \arguments{
-\item{m}{Mass of muscle (kg)}
+\item{m}{Mass of muscle (kg).}
 
-\item{start}{a 1x3 vector (x,y,z) representing the 3D point where neck starts. Frame of reference: VRP | Origin: VRP}
+\item{r}{Radius of the neck (m).}
 
-\item{end}{a 1x3 vector (x,y,z) representing the 3D point where neck ends. Frame of reference: VRP | Origin: VRP}
+\item{l}{Length of the stretched neck (m).}
 
-\item{rho}{Density of muscle (kg/m^3)}
+\item{start}{a 1x3 vector (x,y,z) representing the 3D point where neck starts. Frame of reference: VRP | Origin: VRP.}
+
+\item{end}{a 1x3 vector (x,y,z) representing the 3D point where neck ends. Frame of reference: VRP | Origin: VRP.}
 }
 \value{
 This function returns a list that includes:
 \itemize{
-\item{I}{a 3x3 matrix representing the moment of inertia tensor of a neck modeled as a solid cylinder}
-\item{CG}{a 1x3 vector representing the center of gravity position of a neck modeled as a solid cylinder}
-\item{m}{a double that returns the neck mass}
+\item{I}{a 3x3 matrix representing the moment of inertia tensor of a neck modeled as a solid cylinder.}
+\item{CG}{a 1x3 vector representing the center of gravity position of a neck modeled as a solid cylinder.}
+\item{m}{a double that returns the neck mass.}
 }
 }
 \description{

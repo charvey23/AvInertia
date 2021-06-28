@@ -48,7 +48,7 @@
 #' @param plot_var Character of either "yx" or "yz".
 #' Defines the output axes of the plot.
 #'
-#' @return
+#' @return A plot of the request axes
 #' @export
 #'
 
@@ -62,8 +62,13 @@ plot_CGloc <-
            prop_tertiary1,
            prop_tertiary2,
            plot_var) {
+    # Set variables to NULL to avoid having to define as a global variable as
+    # CRAN can't see a binding for feather within the dataframe dat_feat_curr
+    component=NULL
+    object=NULL
     primaries   = mass_properties_feathers[grep("P", mass_properties_feathers$component), ]
     secondaries = mass_properties_feathers[grep("S", mass_properties_feathers$component), ]
+
 
     #--- Predefine the main theme ----
     th <- ggplot2::theme_classic() +

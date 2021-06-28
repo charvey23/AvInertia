@@ -7,20 +7,21 @@
 parallelaxis(I, offset_vec, m, cg_a)
 }
 \arguments{
-\item{offset_vec}{Distance between the objects CG and the arbitrary pt A (m)
+\item{I}{a 3x3 matrix representing the moment of inertia tensor about the
+center of gravity of the object (kg-m^2).}
+
+\item{offset_vec}{a 1x3 vector representing the distance (x,y,z) between
+the objects CG and the arbitrary pt A (m).
 Vector should always point from the CG to the arbitrary point A.}
 
-\item{m}{Mass of the object (kg)}
+\item{m}{Mass of the object (kg).}
 
 \item{cg_a}{If input I is about the CG enter "CG" or if I is about an
 arbitrary axis enter "A".}
-
-\item{I_CG}{Moment of intertia tensor (3x3) about the center of gravity of
-the object (kg-m^2)}
 }
 \value{
 a 3x3 matrix representing the transformed moment of inertia tensor
-after a solid body translation
+after a solid body translation defined by the offset vector.
 }
 \description{
 Reads in an initial tensor and an offset to compute the transformed tensor.

@@ -4,33 +4,40 @@
 \alias{orient_feather}
 \title{Determine the feather orientation}
 \usage{
-orient_feather(no_pri, no_sec, Pt1, Pt2, Pt3, Pt4, Pt8, Pt9, Pt10, Pt11)
+orient_feather(no_pri, no_sec, Pt1, Pt2, Pt3, Pt4, Pt8, Pt9, Pt10, Pt11, Pt12)
 }
 \arguments{
-\item{no_pri}{a scalar representing the amount of primary feathers}
+\item{no_pri}{a scalar representing the amount of primary feathers.}
 
-\item{no_sec}{a scalar representing the amount of secondary feathers}
+\item{no_sec}{a scalar representing the amount of secondary feathers.}
 
-\item{Pt1}{a matrix of 3 values representing the point on the
-shoulder joint (m)}
+\item{Pt1}{a 1x3 vector (x,y,z) representing the point on the
+shoulder joint (m).}
 
-\item{Pt2}{a matrix of 3 values representing the point on the
-elbow joint (m)}
+\item{Pt2}{a 1x3 vector (x,y,z) representing the point on the
+elbow joint (m).}
 
-\item{Pt3}{a matrix of 3 values representing the point on the
-wrist joint (m)}
+\item{Pt3}{a 1x3 vector (x,y,z) representing the point on the
+wrist joint (m).}
 
-\item{Pt4}{a matrix of 3 values representing the point on the
-end of carpometacarpus (m)}
+\item{Pt4}{a 1x3 vector (x,y,z) representing the point on the
+end of carpometacarpus (m).}
 
-\item{Pt9}{a matrix of 3 values representing the point on tip
-of most distal primary (m)}
+\item{Pt8}{a 1x3 vector (x,y,z) representing the point on tip
+of most distal primary (m).}
 
-\item{Pt10}{a matrix of 3 values representing the point on tip
-of last primary to model as if on the end of the carpometacarpus (m)}
+\item{Pt9}{a 1x3 vector (x,y,z) representing the point on the tip
+of the last primary to model as if it is on the end of the carpometacarpus (m).}
 
-\item{Pt11}{a matrix of 3 values representing the point on tip
-of most proximal secondary feather (m)}
+\item{Pt10}{1x3 vector (x,y,z) representing the point on tip
+of last primary to model as if it was distributed along the carpometacarpus (m).
+Usually the first secondary feather tip.}
+
+\item{Pt11}{1x3 vector (x,y,z) representing the point on
+tip of most proximal secondary feather (m).}
+
+\item{Pt12}{1x3 vector (x,y,z) representing the point on
+exterior shoulder position (wing root leading edge) (m).}
 }
 \value{
 a list called "feather". This contains three matrices.

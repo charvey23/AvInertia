@@ -15,14 +15,14 @@ pt1x, pt1y, pt1z
 pt2x, pt1y, pt2z
 pt3x, pt3y, pt3z}
 
+\item{A}{area of the triangular plate (m)}
+
 \item{rho}{density of the material (kg/m^3)}
 
 \item{t}{thickness of the plate (m)}
 
 \item{desired_prop}{a string containing either "I" or "CG" depending on the
 desired output}
-
-\item{a}{area of the triangular plate (m)}
 }
 \value{
 a 3x3 matrix representing the moment of inertia tensor of a flat
@@ -31,7 +31,7 @@ its center of gravity. Z axis defined as the normal to the input points.
 }
 \description{
 Reference: https://apps.dtic.mil/dtic/tr/fulltext/u2/a183444.pdf
-page 4 eqns 2.16-2.20
+page 4 equations 2.16-2.20
 }
 \section{Warning}{
 

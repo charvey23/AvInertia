@@ -3,7 +3,7 @@
 \name{massprop_restbody}
 \alias{massprop_restbody}
 \title{Calculate the center of gravity and moment of inertia for the head, neck,
-torso and tail}
+torso and tail.}
 \usage{
 massprop_restbody(dat_wingID_curr, dat_bird_curr)
 }
@@ -11,46 +11,48 @@ massprop_restbody(dat_wingID_curr, dat_bird_curr)
 \item{dat_wingID_curr}{Dataframe related to the current bird wing ID
 info that must include the following columns:
 \itemize{
-\item{species}{Species ID code as a string}
-\item{BirdID}{Bird ID code as a string}
-\item{TestID}{Test ID code as a string}
-\item{frameID}{Video frame ID code as a string}
+\item{species}{Species ID code as a string.}
+\item{BirdID}{Bird ID code as a string.}
+\item{TestID}{Test ID code as a string.}
+\item{frameID}{Video frame ID code as a string.}
 }}
 
 \item{dat_bird_curr}{Dataframe related to the current bird wing that must
 include the following columns:
 \itemize{
 \item{extend_neck}{Logical input defining whether the neck should be
-modelled as extended or not}
-\item{head_length}{Mass of full bird for the current wing (kg)}
-\item{head_mass}{Mass of one wing, should be the current wing (kg)}
-\item{head_height}{Radius of feather barb  for current species (m)}
-\item{neck_mass}{Distance between feather barbs for current species (m)}
-\item{neck_width}{Mass of all muscles in the brachial region
-of the wing (kg)}
-\item{neck_length}{Mass of all muscles in the antebrachial region
-of the wing (kg)}
-\item{torsotail_length}{Mass of all muscles in the manus region
-of the wing (kg)}
-\item{torsotail_mass}
-\item{tail_length}
-\item{tail_mass}
-\item{tail_width}
-\item{right_leg_mass}
-\item{left_leg_mass}
-\item{body_width_max}
-\item{body_width_at_leg_insert}
-\item{x_loc_of_body_max}
-\item{x_loc_leg_insertion}
-\item{x_loc_TorsotailCoG}
-\item{z_loc_TorsotailCoG}
+modeled as extended or not.}
+\item{head_length}{Length of the head from base to tip (m).}
+\item{head_mass}{Mass of the head (kg).}
+\item{head_height}{Height of the head at the base (m).}
+\item{neck_mass}{Mass of the neck (kg).}
+\item{neck_width}{OPTIONAL - Average width of the stretched neck (m).}
+\item{neck_length}{OPTIONAL - Length of the stretched neck (m).}
+\item{torsotail_length}{Length from the beginning of the torso to the tip of the tail (m).}
+\item{torsotail_mass}{Mass of the torso and tail (kg).}
+\item{tail_length}{Length of the tail (m).}
+\item{tail_mass}{Mass of the tail (kg).}
+\item{tail_width}{Average width of the furled tail (m).}
+\item{right_leg_mass}{Mass of the right leg (kg).}
+\item{left_leg_mass}{Mass of the left leg (kg).}
+\item{body_width_max}{Maximum width of the torso (m).}
+\item{body_width_at_leg_insert}{Width of the body at the point
+where the legs are inserted (m).}
+\item{x_loc_of_body_max}{x coordinate from the VRP in the
+full bird frame of reference of the maximum body width (m).}
+\item{x_loc_leg_insertion}{x coordinate from the VRP in the
+full bird frame of reference of the leg insertion location (m).}
+\item{x_loc_TorsotailCoG}{x coordinate from the VRP in the
+full bird frame of reference of the center of gravity of the torso and tail (m).}
+\item{z_loc_TorsotailCoG}{x coordinate from the VRP in the
+full bird frame of reference of the the center of gravity of the torso and tail (m).}
 }}
 }
 \value{
 Function returns a dataframe that includes the moment of inertia and
-center of gravity of head, neck, torso and tail
+center of gravity of head, neck, torso and tail.
 }
 \description{
 Function that reads in anatomical data and returns the moment of inertia
-tensor and center of gravity for the head, neck, tail and torso
+tensor and center of gravity for the head, neck, tail and torso.
 }

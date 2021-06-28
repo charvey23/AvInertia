@@ -42,15 +42,6 @@ massprop_feathers(
 \item{angle}{Angle between calamus and the vane taken the supplement angle
 to the interior angle. Negative indicates the feather tip is rotated
 proximally relative to the start of the feather vane.}
-
-\item{start}{a 1x3 vector (x,y,z) representing the 3D point
-where feather starts. (Frame of reference: VRP | Origin: VRP)}
-
-\item{end}{a 1x3 vector (x,y,z) representing the 3D point
-where feather tip ends (Frame of reference: VRP | Origin: VRP)}
-
-\item{normal}{Vector that defines the normal to each feather plane.
-(Frame of reference: VRP | Origin: VRP)}
 }
 \value{
 This function returns a list that includes:

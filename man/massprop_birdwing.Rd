@@ -3,7 +3,7 @@
 \name{massprop_birdwing}
 \alias{massprop_birdwing}
 \title{Calculate the center of gravity and moment of inertia for a
-halfspan wing}
+halfspan wing.}
 \usage{
 massprop_birdwing(
   dat_wingID_curr,
@@ -20,27 +20,27 @@ massprop_birdwing(
 \item{dat_wingID_curr}{Dataframe related to the current bird wing ID info
 that must include the following columns:
 \itemize{
-\item{species}{Species ID code as a string}
-\item{BirdID}{Bird ID code as a string}
-\item{TestID}{Test ID code as a string}
-\item{frameID}{Video frame ID code as a string}
+\item{species}{Species ID code as a string.}
+\item{BirdID}{Bird ID code as a string.}
+\item{TestID}{Test ID code as a string.}
+\item{frameID}{Video frame ID code as a string.}
 }}
 
 \item{dat_bird_curr}{Dataframe related to the current bird wing that must
 include the following columns:
 \itemize{
-\item{total_bird_mass}{Mass of full bird for the current wing (kg)}
-\item{wing_mass}{Mass of one wing, should be the current wing (kg)}
-\item{barb_radius}{Radius of feather barb  for current species (m)}
-\item{barb_distance}{Distance between feather barbs for current species (m)}
+\item{total_bird_mass}{Mass of full bird for the current wing (kg).}
+\item{wing_mass}{Mass of one wing, should be the current wing (kg).}
+\item{barb_radius}{Radius of feather barb  for current species (m).}
+\item{barb_distance}{Distance between feather barbs for current species (m).}
 \item{brachial_muscle_mass}{Mass of all muscles in the brachial region
-of the wing (kg)}
+of the wing (kg).}
 \item{antebrachial_muscle_mass}{Mass of all muscles in the antebrachial region
-of the wing (kg)}
+of the wing (kg).}
 \item{manus_muscle_mass}{Mass of all muscles in the manus region
-of the wing (kg)}
-\item{all_skin_coverts_mass}
-\item{tertiary_mass}
+of the wing (kg).}
+\item{all_skin_coverts_mass}{Mass of all skin and covert feathers (kg).}
+\item{tertiary_mass}{Mass of tertiary feathers (kg).}
 }}
 
 \item{dat_bone_curr}{Dataframe (6 row x 5 column) related to the current bird
@@ -49,13 +49,13 @@ wing bones that must include the following columns:
 \item{bone}{Bone ID code. Must include:
 "Humerus","Ulna","Radius","Carpometacarpus","Ulnare" and "Radiale".}
 \item{bone_mass}{Mass of bone in the same row as the appropriate
-bone ID code (kg)}
+bone ID code (kg).}
 \item{bone_len}{Length of bone in the same row as the appropriate
-bone ID code (m)}
+bone ID code (m).}
 \item{bone_out_rad}{Outer radius of bone in the same row as the appropriate
-bone ID code (m)}
+bone ID code (m).}
 \item{bone_in_rad}{Inner radius of bone in the same row as the appropriate
-bone ID code (m)}
+bone ID code (m).}
 }}
 
 \item{dat_feat_curr}{Dataframe related to the current bird wing feathers
@@ -65,18 +65,18 @@ input as a dataframe with the following structure:
 1st primary is "P1", third secondary is "S3", etc.
 Alula feathers should be grouped and named "alula".}
 \item{m_f}{Mass of feather in the same row as the
-appropriate feather ID code (kg)}
+appropriate feather ID code (kg).}
 \item{l_cal}{Length of calamus in the same row as the
-appropriate feather ID code (m)}
+appropriate feather ID code (m).}
 \item{l_vane}{Length of rachis/vane in the same row as the
-appropriate feather ID code (m)}
+appropriate feather ID code (m).}
 \item{w_cal}{Width (diameter) of calamus in the same row as the
-appropriate feather ID code (m)}
+appropriate feather ID code (m).}
 \item{w_vp}{Width of proximal vane (average value) in the same row as the
-appropriate feather ID code (m)}
+appropriate feather ID code (m).}
 \item{w_vd}{Width of distal vane (average value)  in the same row as the
-appropriate feather ID code (m)}
-\item{vane_angle}{Interior angle between the rachis and calamus  (degrees)}
+appropriate feather ID code (m).}
+\item{vane_angle}{Interior angle between the rachis and calamus  (degrees).}
 }
 NOTE: Alula feathers will be treated as point mass so only the mass of the
 feathers is required. Other columns can be left blank.}
@@ -86,26 +86,42 @@ dataframe with the following structure:
 \itemize{
 \item{material}{Material information. Must include the following:
 "Bone","Skin","Muscle","Cortex", "Medullary"}
-\item{density}{Density of each material (kg/m^3)}
+\item{density}{Density of each material (kg/m^3).}
 }}
 
-\item{clean_pts}{Dataframe of the key positions of the bird as follows:
+\item{clean_pts}{A data frame of the key positions of the bird as follows:
 \itemize{
-\item{pt1x, pt1y, pt1z}{Point on the shoulder joint}
-\item{pt2x, pt1y, pt2z}{Point on the elbow joint}
-\item{pt3x, pt3y, pt3z}{Point on the wrist joint}
-\item{pt4x, pt4y, pt4z}{Point on the end of carpometacarpus}
+\item{pt1x, pt1y, pt1z}{Point on the shoulder joint (m).}
+\item{pt2x, pt1y, pt2z}{Point on the elbow joint (m).}
+\item{pt3x, pt3y, pt3z}{Point on the wrist joint (m).}
+\item{pt4x, pt4y, pt4z}{Point on the end of carpometacarpus (m).}
 \item{pt6x, pt6y, pt6z}{Point on the leading edge of the wing in front of the
-wrist joint}
-\item{pt8x, pt8y, pt8z}{Point on tip of most distal primary}
-\item{pt9x, pt9y, pt9z}{Point that defines the end of carpometacarpus}
-\item{pt10x, pt10y, pt10z}{Point on tip of last primary to model as if on the
-end of the carpometacarpus}
-\item{pt11x, pt11y, pt11z}{Point on tip of most proximal feather
-(wing root trailing edge)}
+wrist joint (m).}
+\item{pt8x, pt8y, pt8z}{Point on tip of most distal primary (m).}
+\item{pt9x, pt9y, pt9z}{Point on the tip of the last primary to model as if
+it is on the end of the carpometacarpus (m).}
+\item{pt10x, pt10y, pt10z}{Point on tip of last primary to model as if
+it was distributed along the carpometacarpus (m).}
+\item{pt11x, pt11y, pt11z}{Point on tip of most proximal feather (m).}
 \item{pt12x, pt12y, pt12z}{Point on exterior shoulder position
-(wing root leading edge)}
+(wing root leading edge) (m).}
 }}
+
+\item{feather_inertia}{A list with one entry per flight feather. Each primary feather includes the following variables:
+\itemize{
+\item{I_pri}{a 3x3 matrix representing the moment of inertia about each feather calamus tip (kg-m^2).}
+\item{CG_pri}{a 1x3 vector (x,y,z) representing the center of gravity of the primary feather (m).}
+\item{m_pri}{a double representing the mass of the primary feather (kg).}
+}
+Each secondary feather includes the following variables:
+\itemize{
+\item{I_sec}{a 3x3 matrix representing the moment of inertia about each feather calamus tip (kg-m^2).}
+\item{CG_sec}{a 1x3 vector (x,y,z) representing the center of gravity of the primary feather (m).}
+\item{m_sec}{a double representing the mass of the primary feather (kg).}
+}}
+
+\item{plot_var}{A string that defines the x-axis and y-axis of the output plot.
+Can either equal "yx" or "yz".}
 }
 \value{
 Function returns a dataframe that includes the moment of inertia and
@@ -114,7 +130,7 @@ major anatomical group i.e. skin, feathers, bones, muscles.
 }
 \description{
 Function that reads in anatomical data and returns the moment of inertia
-tensor and center of gravity of a wing one side of the bird
+tensor and center of gravity of a wing one side of the bird.
 }
 \section{CAUTION}{
 

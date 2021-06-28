@@ -383,7 +383,7 @@ for (m in 1:length(no_species)){
       # Compute the CG and I for the wing configuration - plot var can be "yx" or "yz"
       curr_wing_data      = massprop_birdwing(dat_id_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts, feather_inertia, plot_var = 0)
       # Combine the torso and wing outputs
-      curr_full_bird      = combine_inertialprop(curr_torsotail_data,curr_wing_data,curr_wing_data, symmetric=TRUE)
+      curr_full_bird      = combine_inertialprop(curr_torsotail_data,curr_wing_data,curr_wing_data,dat_id_curr, dat_bird_curr, symmetric=TRUE)
 
       new_row1 = data.frame(species = dat_id_curr$species[1], BirdID = dat_id_curr$BirdID[1],TestID = dat_id_curr$TestID[1], FrameID = dat_id_curr$FrameID[1],
                             component = "wing", object = "S_proj", value = dat_pt_curr$S_proj)

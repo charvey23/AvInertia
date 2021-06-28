@@ -119,18 +119,19 @@ calc_rot <- function(z_vector, x_vector){
 #' Reads in an initial tensor and an offset to compute the transformed tensor.
 #' Will be in the same frame of reference as the input tensor.
 #'
-#' @param I_CG Moment of intertia tensor (3x3) about the center of gravity of
-#' the object (kg-m^2)
-#' @param offset_vec Distance between the objects CG and the arbitrary pt A (m)
+#' @param I a 3x3 matrix representing the moment of inertia tensor about the
+#' center of gravity of the object (kg-m^2).
+#' @param offset_vec a 1x3 vector representing the distance (x,y,z) between
+#' the objects CG and the arbitrary pt A (m).
 #' Vector should always point from the CG to the arbitrary point A.
-#' @param m Mass of the object (kg)
+#' @param m Mass of the object (kg).
 #' @param cg_a If input I is about the CG enter "CG" or if I is about an
 #' arbitrary axis enter "A".
 #'
 #' @author Christina Harvey
 #'
 #' @return a 3x3 matrix representing the transformed moment of inertia tensor
-#' after a solid body translation
+#' after a solid body translation defined by the offset vector.
 #'
 #' @export
 #'

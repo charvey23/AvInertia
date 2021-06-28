@@ -1,20 +1,35 @@
-# AvInertia: Calculate a bird's inertial properties
 
-This package was developed to compute the center of gravity and moment of inertia tensor of any flying bird. 
-It functions by modelling a bird as a composite structure of simple geometric objects. 
+## Installation
 
-# Installation
-You can install AvInertia from CRAN via:
+You can install `AvInertia` from CRAN via:
 
+``` r
+install.packages("AvInertia")
+```
 
-# Example
-Do this instead of the vignette? Or copy paste vignette here?
+Or to get the latest (developmental) version through GitHub, use:
 
-# Contributing and/or raising Issues
-We welcome feedback on bugs, improvements, and/or feature requests. 
-Please see our Issues templates on GitHub to make a bug fix request or feature request.
+``` r
+devtools::install_github("charvey23/AvInertia")
+```
 
-To contribute code via a pull request, please consult our Contributing Guide first.
+## Example
 
-# Citation
-Please cite AvInertia in any publication for which you find it useful. Further background and results, can be found in the journal article.
+Refer to our vignette for a detailed example.
+
+## Contributing and/or raising Issues
+
+Feedback on bugs, improvements, and/or feature requests are all welcome.
+Please see the Issues templates on GitHub to make a bug fix request or
+feature request.
+
+To contribute code via a pull request, please consult the Contributing
+Guide first.
+
+## Citation
+
+TBA
+
+## License
+
+GPL (\>= 3) + file LICENSE

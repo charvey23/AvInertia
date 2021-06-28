@@ -102,22 +102,23 @@ massprop_bones <- function(m,l,r_out,r_in,rho,start,end){
 #' Calculate the moment of inertia of a muscle modeled as a solid cylinder
 #' distributed along the bone length
 #'
-#' @param m Mass of muscle (kg)
-#' @param rho Density of muscle (kg/m^3)
+#' @param m Mass of muscle (kg).
+#' @param rho Density of muscle (kg/m^3).
+#' @param l Length of the muscle group (m).
 #' @param start a 1x3 vector (x,y,z) representing the 3D point where bone starts.
-#' Frame of reference: VRP | Origin: VRP
+#' Frame of reference: VRP | Origin: VRP.
 #' @param end a 1x3 vector (x,y,z) representing the 3D point where bone ends.
-#' Frame of reference: VRP | Origin: VRP
+#' Frame of reference: VRP | Origin: VRP.
 #'
 #' @author Christina Harvey
 #'
 #' @return This function returns a list that includes:
 #' \itemize{
 #' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a muscle
-#' modeled as a solid cylinder distributed along the bone length}
+#' modeled as a solid cylinder distributed along the bone length.}
 #' \item{CG}{a 1x3 vector representing the center of gravity position of a muscle
-#' modeled as a solid cylinder distributed along the bone length}
-#' \item{m}{a double that returns the input muscle mass}
+#' modeled as a solid cylinder distributed along the bone length.}
+#' \item{m}{a double that returns the input muscle mass.}
 #' }
 #'
 #' @section Warning:
@@ -313,12 +314,7 @@ massprop_pm <- function(m,pt){
 #' @param angle Angle between calamus and the vane taken the supplement angle
 #' to the interior angle. Negative indicates the feather tip is rotated
 #' proximally relative to the start of the feather vane.
-#' @param start a 1x3 vector (x,y,z) representing the 3D point
-#' where feather starts. (Frame of reference: VRP | Origin: VRP)
-#' @param end a 1x3 vector (x,y,z) representing the 3D point
-#' where feather tip ends (Frame of reference: VRP | Origin: VRP)
-#' @param normal Vector that defines the normal to each feather plane.
-#' (Frame of reference: VRP | Origin: VRP)
+#'
 #' @author Christina Harvey
 #'
 #' @section Warning:
@@ -512,22 +508,27 @@ structural2VRP_feat <- function(m_f, I_fCG, CG_start, start, end, normal){
 #'
 #' Code that returns the orientation of each primary and secondary feather on the wing.
 #'
-#' @param no_pri a scalar representing the amount of primary feathers
-#' @param no_sec a scalar representing the amount of secondary feathers
-#' @param Pt1 a matrix of 3 values representing the point on the
-#' shoulder joint (m)
-#' @param Pt2 a matrix of 3 values representing the point on the
-#' elbow joint (m)
-#' @param Pt3 a matrix of 3 values representing the point on the
-#' wrist joint (m)
-#' @param Pt4 a matrix of 3 values representing the point on the
-#' end of carpometacarpus (m)
-#' @param Pt9 a matrix of 3 values representing the point on tip
-#' of most distal primary (m)
-#' @param Pt10 a matrix of 3 values representing the point on tip
-#' of last primary to model as if on the end of the carpometacarpus (m)
-#' @param Pt11 a matrix of 3 values representing the point on tip
-#' of most proximal secondary feather (m)
+#' @param no_pri a scalar representing the amount of primary feathers.
+#' @param no_sec a scalar representing the amount of secondary feathers.
+#' @param Pt1 a 1x3 vector (x,y,z) representing the point on the
+#' shoulder joint (m).
+#' @param Pt2 a 1x3 vector (x,y,z) representing the point on the
+#' elbow joint (m).
+#' @param Pt3 a 1x3 vector (x,y,z) representing the point on the
+#' wrist joint (m).
+#' @param Pt4 a 1x3 vector (x,y,z) representing the point on the
+#' end of carpometacarpus (m).
+#' @param Pt8 a 1x3 vector (x,y,z) representing the point on tip
+#' of most distal primary (m).
+#' @param Pt9 a 1x3 vector (x,y,z) representing the point on the tip
+#' of the last primary to model as if it is on the end of the carpometacarpus (m).
+#' @param Pt10 1x3 vector (x,y,z) representing the point on tip
+#' of last primary to model as if it was distributed along the carpometacarpus (m).
+#' Usually the first secondary feather tip.
+#' @param Pt11 1x3 vector (x,y,z) representing the point on
+#' tip of most proximal secondary feather (m).
+#' @param Pt12 1x3 vector (x,y,z) representing the point on
+#' exterior shoulder position (wing root leading edge) (m).
 #'
 #' @author Christina Harvey
 #'
@@ -544,7 +545,7 @@ structural2VRP_feat <- function(m_f, I_fCG, CG_start, start, end, normal){
 #'
 #' @export
 
-orient_feather <- function(no_pri,no_sec,Pt1,Pt2,Pt3,Pt4,Pt8,Pt9,Pt10,Pt11){
+orient_feather <- function(no_pri,no_sec,Pt1,Pt2,Pt3,Pt4,Pt8,Pt9,Pt10,Pt11,Pt12){
 
   # pre-define variables
   count             = 1
@@ -632,18 +633,19 @@ orient_feather <- function(no_pri,no_sec,Pt1,Pt2,Pt3,Pt4,Pt8,Pt9,Pt10,Pt11){
 #'
 #' Calculate the moment of inertia of a neck modeled as a solid cylinder
 #'
-#' @param m Mass of muscle (kg)
-#' @param rho Density of muscle (kg/m^3)
-#' @param start a 1x3 vector (x,y,z) representing the 3D point where neck starts. Frame of reference: VRP | Origin: VRP
-#' @param end a 1x3 vector (x,y,z) representing the 3D point where neck ends. Frame of reference: VRP | Origin: VRP
+#' @param m Mass of muscle (kg).
+#' @param r Radius of the neck (m).
+#' @param l Length of the stretched neck (m).
+#' @param start a 1x3 vector (x,y,z) representing the 3D point where neck starts. Frame of reference: VRP | Origin: VRP.
+#' @param end a 1x3 vector (x,y,z) representing the 3D point where neck ends. Frame of reference: VRP | Origin: VRP.
 #'
 #' @author Christina Harvey
 #'
 #' @return This function returns a list that includes:
 #' \itemize{
-#' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a neck modeled as a solid cylinder}
-#' \item{CG}{a 1x3 vector representing the center of gravity position of a neck modeled as a solid cylinder}
-#'\item{m}{a double that returns the neck mass}
+#' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a neck modeled as a solid cylinder.}
+#' \item{CG}{a 1x3 vector representing the center of gravity position of a neck modeled as a solid cylinder.}
+#'\item{m}{a double that returns the neck mass.}
 #' }
 #'
 #' @section Warning:
@@ -781,7 +783,7 @@ massprop_head <- function(m,r,l,start,end){
 #'
 #' @export
 
-massprop_tail <- function(m,l_tail,w_tail,start,end){
+massprop_tail <- function(m,l,w,start,end){
 
   # ------------------------------- Adjust axis --------------------------------
   z_axis     = end-start
@@ -792,15 +794,15 @@ massprop_tail <- function(m,l_tail,w_tail,start,end){
 
   # -------------------------- Moment of inertia -------------------------------
   # calculate the tail offset
-  off  = VRP2object %*% start                          # Frame of reference: Tail | Origin: VRP
-  I_t1 = calc_inertia_platerect(w_tail, l_tail, m)     # Frame of reference: Tail | Origin: Tail CG
-  CG_t = off + c(0,0,0.5*l_tail)                       # Frame of reference: Tail | Origin: VRP
-  I_t2 = parallelaxis(I_t1,-CG_t,m,"CG")               # Frame of reference: Tail | Origin: VRP
+  off  = VRP2object %*% start                            # Frame of reference: Tail | Origin: VRP
+  I_t1 = calc_inertia_platerect(w, l, m)                 # Frame of reference: Tail | Origin: Tail CG
+  CG_t = off + c(0,0,0.5*l)                              # Frame of reference: Tail | Origin: VRP
+  I_t2 = parallelaxis(I_t1,-CG_t,m,"CG")                 # Frame of reference: Tail | Origin: VRP
 
   mass_prop = list() # pre-define
   # Adjust frame to VRP axes
-  mass_prop$I  = t(VRP2object) %*% I_t2 %*% VRP2object     # Frame of reference: VRP | Origin: VRP
-  mass_prop$CG = t(VRP2object) %*% CG_t                    # Frame of reference: VRP | Origin: VRP
+  mass_prop$I  = t(VRP2object) %*% I_t2 %*% VRP2object   # Frame of reference: VRP | Origin: VRP
+  mass_prop$CG = t(VRP2object) %*% CG_t                  # Frame of reference: VRP | Origin: VRP
   mass_prop$m  = m
 
   return(mass_prop)

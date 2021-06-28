@@ -25,7 +25,7 @@ Reference:https://apps.dtic.mil/sti/pdfs/AD0274936.pdf
 }
 \section{CAUTION}{
  Origin is at the center of gravity for a full ellipse or at the
-center of the base if modelling a half ellipse.
+center of the base if modeling a half ellipse.
 }
 
 \author{

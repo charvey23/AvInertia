@@ -85,7 +85,7 @@ calc_inertia_cylhollow <- function(r_out, r_in, h, m){
 #'
 #' @section
 #' CAUTION: Origin is at the center of gravity for a full ellipse or at the
-#' center of the base if modelling a half ellipse.
+#' center of the base if modeling a half ellipse.
 #'
 #' @export
 #'
@@ -273,7 +273,7 @@ calc_inertia_platerect <- function(w, h, m){
 #' Moment of inertia tensor of a flat triangular plate
 #'
 #' Reference: https://apps.dtic.mil/dtic/tr/fulltext/u2/a183444.pdf
-#' page 4 eqns 2.16-2.20
+#' page 4 equations 2.16-2.20
 #'
 #' @param pts a matrix of the three 3D points that define a point on
 #' the triangular plate.
@@ -283,7 +283,7 @@ calc_inertia_platerect <- function(w, h, m){
 #' pt2x, pt1y, pt2z
 #' pt3x, pt3y, pt3z
 #'
-#' @param a  area of the triangular plate (m)
+#' @param A  area of the triangular plate (m)
 #' @param rho density of the material (kg/m^3)
 #' @param t  thickness of the plate (m)
 #' @param desired_prop a string containing either "I" or "CG" depending on the
@@ -410,11 +410,26 @@ calc_inertia_platetri <- function(pts, A, rho, t, desired_prop){
 #' \item{barb_distance}{Distance between feather barbs for current species (m)}
 #' }
 #'
-#' @return
+#' @return A list with one entry per flight feather. Each primary feather includes the following variables:
+#' \itemize{
+#' \item{I_pri}{a 3x3 matrix representing the moment of inertia about each feather calamus tip (kg-m^2).}
+#' \item{CG_pri}{a 1x3 vector (x,y,z) representing the center of gravity of the primary feather (m).}
+#' \item{m_pri}{a double representing the mass of the primary feather (kg).}
+#' }
+#' Each secondary feather includes the following variables:
+#' \itemize{
+#' \item{I_sec}{a 3x3 matrix representing the moment of inertia about each feather calamus tip (kg-m^2).}
+#' \item{CG_sec}{a 1x3 vector (x,y,z) representing the center of gravity of the primary feather (m).}
+#' \item{m_sec}{a double representing the mass of the primary feather (kg).}
+#' }
+#'
 #' @export
 #'
 
 compute_feat_inertia <- function(dat_mat, dat_feat_curr, dat_bird_curr){
+  # Set feather to NULL to avoid having to define as a global variable as
+  # CRAN can't see a binding for feather within the dataframe dat_feat_curr
+  feather=NULL
 
   # density information
   rho_cor = dat_mat$density[which(dat_mat$material == "Cortex")]

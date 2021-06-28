@@ -8,18 +8,35 @@ combine_inertialprop(
   curr_torsotail_data,
   left_wing_data,
   right_wing_data,
+  dat_id_curr,
+  dat_bird_curr,
   symmetric
 )
 }
 \arguments{
-\item{curr_torsotail_data}{{Output dataframe from massprop_restbody}}
+\item{curr_torsotail_data}{{Output dataframe from massprop_restbody.}}
 
-\item{left_wing_data}{{Output dataframe from massprop_birdwing}}
+\item{left_wing_data}{{Output dataframe from massprop_birdwing.}}
 
-\item{right_wing_data}{{Output dataframe from massprop_birdwing}}
+\item{right_wing_data}{{Output dataframe from massprop_birdwing.}}
+
+\item{dat_id_curr}{Dataframe related to the current bird wing ID
+info that must include the following columns:
+\itemize{
+\item{species}{Species ID code as a string.}
+\item{BirdID}{Bird ID code as a string.}
+\item{TestID}{Test ID code as a string.}
+\item{frameID}{Video frame ID code as a string.}
+}}
+
+\item{dat_bird_curr}{Dataframe related to the current bird wing that must
+include the following columns:
+\itemize{
+\item{total_bird_mass}{Mass of full bird for the current wing (kg).}
+}}
 
 \item{symmetric}{{Logical indicating if the input wings are symmetric or not.
-If True than left_wing_data = right_wing_data}}
+If True than left_wing_data = right_wing_data.}}
 }
 \description{
 Combines data exported from massprop_restbody

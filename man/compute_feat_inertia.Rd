@@ -46,7 +46,18 @@ include the following columns:
 }}
 }
 \value{
-
+A list with one entry per flight feather. Each primary feather includes the following variables:
+\itemize{
+\item{I_pri}{a 3x3 matrix representing the moment of inertia about each feather calamus tip (kg-m^2).}
+\item{CG_pri}{a 1x3 vector (x,y,z) representing the center of gravity of the primary feather (m).}
+\item{m_pri}{a double representing the mass of the primary feather (kg).}
+}
+Each secondary feather includes the following variables:
+\itemize{
+\item{I_sec}{a 3x3 matrix representing the moment of inertia about each feather calamus tip (kg-m^2).}
+\item{CG_sec}{a 1x3 vector (x,y,z) representing the center of gravity of the primary feather (m).}
+\item{m_sec}{a double representing the mass of the primary feather (kg).}
+}
 }
 \description{
 Compute the inertia of the individual feathers

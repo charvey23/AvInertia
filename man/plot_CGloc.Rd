@@ -72,7 +72,7 @@ Formatted with the following columns: "species","BirdID","TestID","FrameID",
 Defines the output axes of the plot.}
 }
 \value{
-
+A plot of the request axes
 }
 \description{
 Plot the center of gravity of each component

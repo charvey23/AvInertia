@@ -4,20 +4,20 @@
 \alias{massprop_tail}
 \title{Head mass properties}
 \usage{
-massprop_tail(m, l_tail, w_tail, start, end)
+massprop_tail(m, l, w, start, end)
 }
 \arguments{
 \item{m}{Mass of muscle (kg)}
+
+\item{l}{Length of the tail (m)}
+
+\item{w}{Width of the tail (m)}
 
 \item{start}{a 1x3 vector (x,y,z) representing the 3D point where head starts.
 Frame of reference: VRP | Origin: VRP}
 
 \item{end}{a 1x3 vector (x,y,z) representing the 3D point where head ends.
 Frame of reference: VRP | Origin: VRP}
-
-\item{l}{Length of the tail (m)}
-
-\item{w}{Width of the tail (m)}
 }
 \value{
 This function returns a list that includes:
