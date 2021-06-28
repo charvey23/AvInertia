@@ -12,7 +12,7 @@ Authors@R:
            role = "aut",
            email = "vbaliga87@gmail.com",
            comment = c(ORCID = "0000-0002-9367-8974")),
-      person(given = "Jasmin B.",
+      person(given = "Jasmin C.M.",
            family = "Wong", 
            role = "aut",
            email = "tba",
@@ -25,8 +25,7 @@ Description:
     the associated paper have been included in the package for use. Refer to 
     the vignettes and supplementary material for detailed information on the 
     package function.
-License: `use_mit_license()`, `use_gpl3_license()` or friends to
-    pick a license
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)

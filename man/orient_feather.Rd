@@ -4,7 +4,7 @@
 \alias{orient_feather}
 \title{Determine the feather orientation}
 \usage{
-orient_feather(no_pri, no_sec, Pt1, Pt2, Pt3, Pt4, Pt9, Pt10, Pt11)
+orient_feather(no_pri, no_sec, Pt1, Pt2, Pt3, Pt4, Pt8, Pt9, Pt10, Pt11)
 }
 \arguments{
 \item{no_pri}{a scalar representing the amount of primary feathers}

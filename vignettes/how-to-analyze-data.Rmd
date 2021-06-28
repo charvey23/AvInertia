@@ -53,13 +53,13 @@ feather_inertia <- compute_feat_inertia(dat_mat, dat_feat_curr, dat_bird_curr)
 dat_wing_out      = massprop_birdwing(dat_id_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts, feather_inertia, plot_var = 0)
 ```
 
-### Visualize the center of gravity of each wing component in the x and y axis
+Visualize the center of gravity of each wing component in the x and y axis
 
 ```{r calc_wing_plotxy, fig.width = 4}
 dat_wing_out      = massprop_birdwing(dat_id_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts, feather_inertia, plot_var = "yx")
 ```
 
-### or the y and z axis
+or the y and z axis
 
 ```{r calc_wing_plotyz, fig.width = 4}
 dat_wing_out      = massprop_birdwing(dat_id_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts, feather_inertia, plot_var = "yz")
