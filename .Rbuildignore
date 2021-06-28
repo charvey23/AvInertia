@@ -9,3 +9,6 @@
 ^OldCode$
 ^largedata$
 ^codemeta\.json$
+^README\.Rmd$
+^CRAN-RELEASE$
+^cran-comments\.md$
