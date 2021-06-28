@@ -56,7 +56,7 @@ dat_wing_out      = massprop_birdwing(dat_id_curr, dat_bird_curr, dat_bone_curr,
 ### Visualize the center of gravity of each wing component in the x and y axis
 
 ```{r calc_wing_plotxy, fig.width = 4}
-dat_wing_out      = massprop_birdwing(dat_id_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts, feather_inertia, plot_var = "xy")
+dat_wing_out      = massprop_birdwing(dat_id_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts, feather_inertia, plot_var = "yx")
 ```
 
 ### or the y and z axis

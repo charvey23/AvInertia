@@ -292,7 +292,6 @@ plot_CGloc <-
       ggplot2::scale_x_continuous(
         name = "y (m)",
         limits = c(0, 0.6),
-        breaks = c(0, 0.1),
         position = "top"
       ) +
       ggthemes::geom_rangeframe() +
