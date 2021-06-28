@@ -20,21 +20,20 @@ knitr::opts_chunk$set(
 
 This package was developed to determine the center of gravity and moment of inertia for a bird in a general flight configuration. This code assumes that birds are a composite structure of simple geometric shapes. For details on the specific assumptions please refer to:
 
-%```{r setup}
-%library(AvInertia)
-%```
+```{r setup}
+library(AvInertia)
+```
 
 Generally, you should already have all of the necessary measurements loaded into R in the form of a database. We have included the data set from our paper. The bird properties are reported in the metric system and all measurements have been taken with the origin placed at the bird (vehicle) reference point (VRP).  
 
-%```{r load_data}
-%load(dat_id_curr)
-%load(dat_bird_curr)
-%load(dat_wing_curr)
-%load(dat_feat_curr)
-%load(dat_bone_curr)
-%load(dat_mat)
-%load(clean_pts)
-%```
+```{r load_data}
+data(dat_id_curr, package = "AvInertia")
+data(dat_bird_curr, package = "AvInertia")
+data(dat_feat_curr, package = "AvInertia")
+data(dat_bone_curr, package = "AvInertia")
+data(dat_mat, package = "AvInertia")
+data(clean_pts, package = "AvInertia")
+```
 
 ## 1. Determine the center of gravity of the bird's torso (including the legs)
 
@@ -48,7 +47,7 @@ dat_torsotail_out = massprop_restbody(dat_id_curr, dat_bird_curr)
 feather_inertia <- compute_feat_inertia(dat_mat, dat_feat_curr, dat_bird_curr)
 ```
 
-## 3. Determine the center of gravity of one of the bird's wings 
+## 3. Determine the center of gravity of one of the bird's wings
 
 ```{r calc_wing_noplot}
 dat_wing_out      = massprop_birdwing(dat_id_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts, feather_inertia, plot_var = 0)
@@ -66,7 +65,7 @@ dat_wing_out      = massprop_birdwing(dat_id_curr, dat_bird_curr, dat_bone_curr,
 dat_wing_out      = massprop_birdwing(dat_id_curr, dat_bird_curr, dat_bone_curr, dat_feat_curr, dat_mat, clean_pts, feather_inertia, plot_var = "yz")
 ```
 
-## 4. If computing for asymmetric case, input a different set of clean pts 
+## 4. If computing for asymmetric case, input a different set of clean pts
 
 Note: that in this case the wing should still be input as it it is on the right-hand side of the bird. The following code will adjust.
 

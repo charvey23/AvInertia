@@ -21,10 +21,18 @@
 combine_inertialprop <- function(curr_torsotail_data,left_wing_data,
                                  right_wing_data, symmetric){
 
+  # --------------------- Initialize variables -----------------------
+  # pre-define storage matrices
+  mass_properties = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
+  colnames(mass_properties) = c("species","BirdID","TestID","FrameID",
+                                "prop_type","component","value")
+
   # Compute the full bird results
   fullbird    = list()
   fullbird$I  = matrix(0, nrow = 3, ncol = 3)
   fullbird$CG = matrix(0, nrow = 3, ncol = 1)
+
+  # --------------------- Combine results -----------------------
   # --- Mass ---
   fullbird$m = sum(subset(curr_torsotail_data, object == "m")$value,
                    subset(left_wing_data, object == "m" &
@@ -200,8 +208,8 @@ combine_inertialprop <- function(curr_torsotail_data,left_wing_data,
 
   # Save the error between the measured bird mass and the final output mass
   err_mass = fullbird$m - dat_bird_curr$total_bird_mass
-  dat_err  = data.frame(species = species_curr,
-                        BirdID = birdid_curr,
+  dat_err  = data.frame(species = dat_id_curr$species,
+                        BirdID = dat_id_curr$BirdID,
                         TestID = dat_id_curr$TestID,
                         FrameID = dat_id_curr$FrameID,
                         component = "full", object = "m_err",
@@ -677,7 +685,7 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr,
   res_sec$m   = array(dim = c(no_sec))
 
   # determine the orientation and normal of each feather
-  feather_info = orient_feather(no_pri,no_sec,Pt1,Pt2,Pt3,Pt4,Pt9,Pt10,Pt11)
+  feather_info = orient_feather(no_pri,no_sec,Pt1,Pt2,Pt3,Pt4,Pt8,Pt9,Pt10,Pt11)
   # --------------------------- Primaries --------------------------------------
   #  P1 -> P10
   for (i in 1:no_pri){
