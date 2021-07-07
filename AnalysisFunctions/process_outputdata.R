@@ -67,7 +67,7 @@ for (i in 2:length(filename_results)){
 remove(filename_wing,filename_feat,filename_bird,filename_body,filename_results)
 
 ## ------------- Read in full tree phylogeny --------------
-full_tree <- read.nexus("vikROM_passerines_403sp.tre")
+full_tree <- read.nexus("/Users/christinaharvey/documents/AvInertia/AnalysisData/vikROM_passerines_403sp.tre")
 
 ### --------------------------------------------------------------
 ### --------------------- Combine all data -----------------------

@@ -2,7 +2,7 @@
 path_data_folder = "/Users/christinaharvey/Dropbox (University of Michigan)/Bird Mass Distribution/outputdata/"
 # write in a save function into process_data that pulls out the maximum agility wing configs for each individual
 # read in here
-devtools::load_all()
+library(AvInertia)
 
 dat_sens_max_ag   = dat_final[which(dat_final$prop_q_dot_nd %in% dat_comp$max_q_nd),]
 dat_sens_max_stab = dat_final[which((0.25*dat_final$chord/-dat_final$full_CGx_orgShoulder) %in% dat_comp$max_stab),]
@@ -161,13 +161,15 @@ save(dat_sens_opt_out,file = filename)
 library("ggplot2")
 library("tidyr")
 library("dplyr")
+
+load("/Users/christinaharvey/Documents/AvInertia/AnalysisData/2021_06_04_pmc_xcg_output.RData")
 dists_x_cg <- data.frame(null = out_xcg$null, test = out_xcg$test)
 plot_x_cg <- dists_x_cg %>%
   gather(dists_x_cg, value) %>%
   ggplot(aes(value, fill = dists_x_cg)) +
   geom_density(alpha = 0.5) +
   geom_vline(xintercept = out_xcg$lr) +
-  scale_fill_manual(values = c("null" = "black","test" = "gray70"), name = "Model fit", labels = c("BM (null)","OU")) +
+  scale_fill_manual(values = c("null" = "black","test" = "#FFCC00"), name = "Model fit", labels = c("BM (null)","OU")) +
   # theme control
   th +
   # axis control
@@ -177,13 +179,14 @@ plot_x_cg <- dists_x_cg %>%
   annotate(geom = "segment", x = 0, xend = 30, y = log(0), yend = log(0))+
   annotate(geom = "segment", y = 0, yend = 1.5, x = log(0), xend = log(0))
 
+load("/Users/christinaharvey/Documents/AvInertia/AnalysisData/2021_06_04_pmc_maxstab_output.RData")
 dists_maxstab <- data.frame(null = out_maxstab$null, test = out_maxstab$test)
 plot_maxstab <- dists_maxstab %>%
   gather(dists_maxstab, value) %>%
   ggplot(aes(value, fill = dists_maxstab)) +
   geom_density(alpha = 0.5) +
-  geom_vline(xintercept = out_xcg$lr) +
-  scale_fill_manual(values = c("null" = "black","test" = "gray70"), name = "Model fit", labels = c("BM (null)","OU")) +
+  geom_vline(xintercept = out_maxstab$lr) +
+  scale_fill_manual(values = c("null" = "black","test" = "#FFCC00"), name = "Model fit", labels = c("BM (null)","OU")) +
   # theme control
   th +
   # axis control
@@ -193,13 +196,14 @@ plot_maxstab <- dists_maxstab %>%
   annotate(geom = "segment", x = 0, xend = 30, y = log(0), yend = log(0))+
   annotate(geom = "segment", y = 0, yend = 1, x = log(0), xend = log(0))
 
+load("/Users/christinaharvey/Documents/AvInertia/AnalysisData/2021_06_04_pmc_minstab_output.RData")
 dists_minstab <- data.frame(null = out_minstab$null, test = out_minstab$test)
 plot_minstab <- dists_minstab %>%
   gather(dists_minstab, value) %>%
   ggplot(aes(value, fill = dists_minstab)) +
   geom_density(alpha = 0.5) +
-  geom_vline(xintercept = out_xcg$lr) +
-  scale_fill_manual(values = c("null" = "black","test" = "gray70"), name = "Model fit", labels = c("BM (null)","OU")) +
+  geom_vline(xintercept = out_minstab$lr) +
+  scale_fill_manual(values = c("null" = "black","test" = "#FFCC00"), name = "Model fit", labels = c("BM (null)","OU")) +
   # theme control
   th +
   # axis control
@@ -208,10 +212,6 @@ plot_minstab <- dists_minstab %>%
   geom_rangeframe() +
   annotate(geom = "segment", x = 0, xend = 30, y = log(0), yend = log(0))+
   annotate(geom = "segment", y = 0, yend = 1, x = log(0), xend = log(0))
-
-#dat_sens_opt_max <- dat_sens_opt_out - run this after loading saved data
-1-length(which(dat_sens_opt_max$z0 < 1))/1000
-1-length(which(dat_sens_opt_min$z0 > 1))/1000
 
 #exported as 7x5
 fig_pmc <- plot_grid(plot_x_cg,plot_maxstab,plot_minstab,
@@ -222,6 +222,17 @@ fig_pmc <- plot_grid(plot_x_cg,plot_maxstab,plot_minstab,
                       labels = c("a","b","c"),
                       label_size = 10,
                       label_fontfamily = "sans")
+
+#dat_sens_opt_max <- dat_sens_opt_out - run this after loading saved data
+1-length(which(dat_sens_opt_max$z0 < 1))/1000
+1-length(which(dat_sens_opt_min$z0 > 1))/1000
+
+load("/Users/christinaharvey/Documents/AvInertia/AnalysisData/2021_06_04_maxstab_z0.RData")
+dat_sens_opt_max <- dat_sens_opt_out
+load("/Users/christinaharvey/Documents/AvInertia/AnalysisData/2021_06_04_minstab_z0.RData")
+dat_sens_opt_min <- dat_sens_opt_out
+
+
 #exported as 3.5x5
 boot_stab <- ggplot()+
   # add background info
@@ -237,9 +248,8 @@ boot_stab <- ggplot()+
   annotate(geom = "segment", x = 0.5, xend = 1.5, y = log(0), yend = log(0))+
   annotate(geom = "segment", y = 0, yend = 12, x = log(0), xend = log(0))
 
-
-
 ## ----------------------------------- Figure S3 -------------------------------------------------
+load("/Users/christinaharvey/Documents/AvInertia/AnalysisData/2021_06_07_CGsensana.RData")
 
 sens_agility <- ggplot()+
   geom_rect(data = shading, aes(ymin = col1, ymax = col2, xmin = 0.1, xmax = 20), alpha = 0.1, position = position_nudge(y = -0.5)) +

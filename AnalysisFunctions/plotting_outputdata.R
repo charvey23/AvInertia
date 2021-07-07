@@ -10,11 +10,11 @@ library(geomorph)
 library(mvMORPH)
 library(pmc)
 
-source("plotting_setup.R")
-source("calc_CGparams.R")
-source("calc_MOIparams.R")
-source("calc_manparams.R")
-source("calc_evoparams.R")
+source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/plotting_setup.R")
+source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/calc_CGparams.R")
+source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/calc_MOIparams.R")
+source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/calc_manparams.R")
+source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/calc_evoparams.R")
 
 ## --------------------------------------------------------------------------------------------------------------------
 ## ------------------------------------------- Figure 1 ---------------------------------------------------------------
