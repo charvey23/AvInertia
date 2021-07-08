@@ -1,8 +1,11 @@
 ## -------------------- Calculate the Ixx_wing about the humeral head ------------------
 ## necessary for a direct comparison
-devtools::load_all()
+library(AvInertia)
 
 shift_Iorigin <- function(input_I,input_origin,input_CG,input_cg_or_a,input_m,new_origin,name,dat_info){
+  mass_properties = as.data.frame(matrix(0, nrow = 0, ncol = 7)) # overall data
+  colnames(mass_properties) = c("species","BirdID","TestID","FrameID",
+                                "component","object","value")
   dat    = list()
   dat$I  = matrix(0, nrow = 3, ncol = 3)
   dat$CG = matrix(0, nrow = 3, ncol = 1)

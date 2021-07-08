@@ -15,13 +15,6 @@ max(subset(dat_final, species == "col_liv")$wing_CGy_specific_orgShoulder)-(0.07
 max(dat_final$wing_CGy_specific_orgShoulder)
 dat_final$species[which.max(dat_final$wing_CGy_specific_orgShoulder)]
 
-#maximum CGy for a pigeon
-max(subset(dat_final, species == "col_liv")$wing_CGy_specific_orgShoulder)
-#relative difference
-max(subset(dat_final, species == "col_liv")$wing_CGy_specific_orgShoulder)-(0.071/0.323)
-#absolute differece
-(max(subset(dat_final, species == "col_liv")$wing_CGy_specific_orgShoulder)-(0.071/0.323))*max(subset(dat_final, species == "col_liv")$span)*0.5
-
 # ---------- Full Bird CG -----------
 # Full bird CGx range due to elbow and wrist
 max(dat_comp$range_CGx)
@@ -38,6 +31,10 @@ dat_comp$species[which.max(dat_comp$range_CGz)]
 dat_comp$species[which.max(dat_comp$range_CGz_specific)]
 dat_comp$range_CGz[which.max(dat_comp$range_CGz_specific)]
 
+#Significance of wrist on CGx - will be the same independent of the origin position
+max(dat_comp$CGx_man_p)
+min(dat_comp$CGx_man_etap)
+
 #Significance of elbow on CGx - will be the same independent of the origin position
 max(dat_comp$CGx_elb_p)
 min(dat_comp$CGx_elb_etap)
@@ -46,11 +43,11 @@ max(dat_comp$CGx_elb)
 min(dat_comp$CGx_elb)
 #Significance of wrist on CGx
 max(dat_comp$CGx_man_p)
-min(dat_comp$CGx_man_etap)
+
 #Check the sign - if different than can't say if it always moved forwards or aftwards
 max(dat_comp$CGx_man)
 min(dat_comp$CGx_man)
-# check to say if fair to say "tend to move forward"
+# check to say if fair to say "tend to move forward" should be over half
 length(which(dat_comp$CGx_elb > 0))
 
 #Significance of elbow on CGz
@@ -86,20 +83,8 @@ shoulder_motion$species[which(shoulder_motion$range_CGx_specific < 0.05)]
 min(shoulder_motion$range_CGx_specific)
 shoulder_motion$species[which.min(shoulder_motion$range_CGx_specific)]
 
-pgls_model_mcmc <-
-  MCMCglmm::MCMCglmm(
-    range_CGx_specific ~ span_ratio,
-    random = ~ phylo,
-    scale = FALSE, ## whether you use this is up to you -- whatever is fair
-    ginverse = list(phylo = inv.phylo$Ainv),
-    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
-    data = shoulder_motion,
-    prior = univ_prior,
-    nitt = 130000, thin = 100, burnin = 30000,
-    verbose = FALSE, ## switch this to TRUE if you feel like it
-    pr = TRUE, pl = TRUE ## this saves some model output stuff
-  )
-summary(pgls_model_mcmc)
+# obtain p-value for range plot with wing length
+CG_range_model_mcmc_output
 
 
 # Wing only CGy range due to elbow and wrist
@@ -117,7 +102,7 @@ min(dat_comp$CGy_elb_etap)
 max(dat_comp$CGy_man_p)
 min(dat_comp$CGy_man_etap)
 
-## check that the wing position is scaling with wingspan - per Rayner
+## check how the wing position is scaling with wingspan - per Rayner
 pgls_model_mcmc <-
   MCMCglmm::MCMCglmm(
     log(max_wing_CGy) ~ log(max_wingspan),
@@ -131,7 +116,7 @@ pgls_model_mcmc <-
     verbose = FALSE, ## switch this to TRUE if you feel like it
     pr = TRUE, pl = TRUE ## this saves some model output stuff
   )
-
+summary(pgls_model_mcmc) # if 95% overlap 1 this is indistinguishable from isometry
 
 ## --------------------- Moment of Inertia -------------------
 
@@ -151,44 +136,24 @@ tmp = aggregate(list(Ixz_range =  dat_comp$I),  by=list(species = dat_comp$speci
 
 
 ## ---------------------- Agility -----------------------
-pgls_model_mcmc <-
-  MCMCglmm::MCMCglmm(
-    log(max_q) ~ log(full_m),
-    random = ~ phylo,
-    scale = FALSE, ## whether you use this is up to you -- whatever is fair
-    ginverse = list(phylo = inv.phylo$Ainv),
-    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
-    data = dat_comp,
-    prior = univ_prior,
-    nitt = 130000, thin = 100, burnin = 30000,
-    verbose = FALSE, ## switch this to TRUE if you feel like it
-    pr = TRUE, pl = TRUE ## this saves some model output stuff
-  )
-summary(pgls_model_mcmc)
+max_q_model_mcmc_output
+
 dat_comp$species[which.max(dat_comp$max_q_nd)]
 View(dat_comp[,c("species","max_q","max_q_nd")])
 # Range of each component
 
 # check that this does not scale with mass
-pgls_model_mcmc <-
-  MCMCglmm::MCMCglmm(
-    log(max_q_nd) ~ log(full_m),
-    random = ~ phylo,
-    scale = FALSE, ## whether you use this is up to you -- whatever is fair
-    ginverse = list(phylo = inv.phylo$Ainv),
-    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
-    data = dat_comp,
-    prior = univ_prior,
-    nitt = 130000, thin = 100, burnin = 30000,
-    verbose = FALSE, ## switch this to TRUE if you feel like it
-    pr = TRUE, pl = TRUE ## this saves some model output stuff
-  )
-
+max_q_nd_model_mcmc_output
 
 tmp = aggregate(list(c_l_theory = dat_final$chord/dat_final$full_length), by = list(species = dat_final$species, BirdID = dat_final$BirdID), min)
 
 # Evolution
-OU_xcg$opt$aicc-BM_xcg$opt$aicc
-
 OU_maxstab$opt$aicc-BM_maxstab$opt$aicc
 OU_minstab$opt$aicc-BM_minstab$opt$aicc
+
+OU_maxstab$opt
+OU_minstab$opt
+
+OU_xcg$opt$aicc-BM_xcg$opt$aicc
+OU_xcg$opt
+exp(OU_xcg$opt$z0)
