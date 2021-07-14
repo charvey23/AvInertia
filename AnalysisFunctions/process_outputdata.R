@@ -25,7 +25,7 @@ dat_wing       = read.csv(file = paste(path_data_folder,filename_wing,sep= ""))
 dat_wing       = dat_wing[,-c(1)]
 # ---- Calculate the base aerodynamic properties of the wings ----
 # don't want the y direction included - just want the distance from leading to trailing edge in x-z plane
-# using max chord because we know for a gull that the AC is between 19%-43% of the max chord so this seems like a fair approach
+# using max chord because we know for a gull that the AC is between 19%-43% of the mean chord (~max wing root chord) so this seems like a fair approach
 dat_wing$chord        = sqrt((dat_wing$pt12_X - dat_wing$pt11_X)^2+(dat_wing$pt12_Z - dat_wing$pt11_Z)^2)
 # span is calculated as the furthest distance of the humerus to either P10 or P7.
 # The x component is neglected. Measured from the body center line
@@ -205,7 +205,8 @@ varlist_sp       <- c("full_Ixx_specific","full_Iyy_specific","full_Izz_specific
 short_varlist_sp <- c("Ixx_sp","Iyy_sp","Izz_sp","Ixz_sp","CGx_sp","CGx_sp_sh","CGy_sp","CGz_sp","CGx_wing_sp")
 varlist_abs      <- c("full_Ixx","full_Iyy","full_Izz","full_Ixz",
                       "full_CGx_orgBeak","full_CGx_orgShoulder","wing_CGy_orgShoulder","full_CGz","wing_CGx")
-short_varlist_abs<- c("Ixx","Iyy","Izz","Ixz","CGx","CGx_sh","CGy","CGz", "CGx_wing")
+short_varlist_abs<- c("Ixx","Iyy","Izz","Ixz",
+                      "CGx","CGx_sh","CGy","CGz", "CGx_wing")
 dat_bird$species <- as.character(dat_bird$species)
 success = TRUE
 count = 1

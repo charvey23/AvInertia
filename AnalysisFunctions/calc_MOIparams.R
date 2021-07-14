@@ -354,8 +354,8 @@ for (i in 1:nrow(I_contr)){
   I_contr_fullCG = rbind(feathers_row,skin_row,muscles_row,bones_row,head_row,neck_row,torso_row,tail_row)
   # replace any non-existent neck as 0
   I_contr_fullCG$value[which(is.na(I_contr_fullCG$value)& I_contr_fullCG$component == "neck")] <- 0
-  # there are two wings which is why add two
 
+  # there are two wings which is why add two of the feathers, bones, skin and muscles
   Ixx_CG = sum(subset(I_contr_fullCG, object == "Ixx")$value,
       subset(I_contr_fullCG, component == "feathers" & object == "Ixx")$value,
       subset(I_contr_fullCG, component == "skin" & object == "Ixx")$value,
