@@ -110,6 +110,11 @@ summary(pgls_model_mcmc) # if 95% overlap 1 this is indistinguishable from isome
 
 ## --------------------- Moment of Inertia -------------------
 
+# verify if overlapping with isometry 5/3, 1.666..
+Ixx_model_mcmc_output
+Iyy_model_mcmc_output
+Izz_model_mcmc_output
+
 tmp = aggregate(list(Ixx_range =  dat_comp$max_Ixx/dat_comp$min_Ixx),  by=list(species = dat_comp$species), max)
 View(tmp)
 tmp = aggregate(list(Izz_range =  dat_comp$max_Izz/dat_comp$min_Izz),  by=list(species = dat_comp$species), max)
