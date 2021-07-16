@@ -384,13 +384,10 @@ univ_prior <-
        R = list(V = 1, nu = 0.02))
 
 
-
-
 # to compute Pagels lambda - (pgls_model_mcmc$VCV[, 1] / (pgls_model_mcmc$VCV[, 1] + pgls_model_mcmc$VCV[, 2])) %>% mean
 
-
-filename = paste(format(Sys.Date(), "%Y_%m_%d"),"_alldata.csv",sep="")
-write.csv(dat_final,filename)
-filename = paste(format(Sys.Date(), "%Y_%m_%d"),"_compdata.csv",sep="")
-write.csv(dat_comp,filename)
+#filename = paste(format(Sys.Date(), "%Y_%m_%d"),"_alldata.csv",sep="")
+#write.csv(dat_final,filename)
+#filename = paste(format(Sys.Date(), "%Y_%m_%d"),"_compdata.csv",sep="")
+#write.csv(dat_comp,filename)
 

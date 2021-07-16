@@ -1,15 +1,4 @@
-library(cowplot)   # need for plot_grid()
-library(ggthemes)  # need for geom_rangeframe
-library(gridExtra) # for using grid arrange
-library(ggtree)    # for plotting phylogeny
-library(alphahull) # for computing convex hulls
-library(plyr)      # for computing convex hulls
-library(reshape)   # for melt
-library(sensiPhy)
-library(geomorph)
-library(mvMORPH)
-library(pmc)
-
+source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/process_outputdata.R")
 source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/plotting_setup.R")
 source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/calc_CGparams.R")
 source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/calc_MOIparams.R")

@@ -1,5 +1,15 @@
 #### ----- Script containing all aesthetics needed for plotting ----------
-
+library(cowplot)   # need for plot_grid()
+library(ggthemes)  # need for geom_rangeframe
+library(gridExtra) # for using grid arrange
+library(ggtree)    # for plotting phylogeny
+library(alphahull) # for computing convex hulls
+library(plyr)      # for computing convex hulls
+library(reshape)   # for melt
+library(sensiPhy)
+library(geomorph)
+library(mvMORPH)
+library(pmc)
 
 # ---------- Pre-define themes and base plots ----------
 # base theme

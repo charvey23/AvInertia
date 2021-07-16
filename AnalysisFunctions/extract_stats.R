@@ -59,6 +59,11 @@ min(dat_comp$CGz_man)
 length(which(dat_comp$CGz_man < 0))
 length(which(dat_comp$CGz_elb < 0))
 
+# If significantly different than isometry will scale with mass
+CGx_sp_model_mcmc_output
+CGy_sp_model_mcmc_output
+CGz_sp_model_mcmc_output
+
 # ---------------------- Shoulder CG effects ---------------
 
 #Shoulder maximum CG range
