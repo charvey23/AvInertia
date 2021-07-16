@@ -5,8 +5,8 @@
   ],
   "@type": "SoftwareSourceCode",
   "identifier": "AvInertia",
-  "description": "\n    This package was developed to compute the center of gravity and moment of \n    inertia tensor of any flying bird. It functions by modeling a bird as a \n    composite structure of simple geometric objects. This requires detailed \n    morphological measurements of bird specimens although those obtained for \n    the associated paper have been included in the package for use. Refer to \n    the vignettes and supplementary material for detailed information on the \n    package function.",
-  "name": "AvInertia: Calculate the inertial properties of a flying bird",
+  "description": "\n    Tools to compute the center of gravity and moment of inertia tensor of any \n    flying bird. The tools function by modeling a bird as a composite structure \n    of simple geometric objects. This requires detailed morphological \n    measurements of bird specimens although those obtained for the associated \n    paper have been included in the package for use. Refer to the vignettes and \n    supplementary material for detailed information on the package function.",
+  "name": "AvInertia: Calculate the Inertial Properties of a Flying Bird",
   "license": "https://spdx.org/licenses/GPL-3.0",
   "version": "0.0.1",
   "programmingLanguage": {
@@ -171,6 +171,6 @@
   "codeRepository": "https://github.com/charvey23/AvInertia",
   "releaseNotes": "https://github.com/charvey23/AvInertia/blob/master/NEWS.md",
   "readme": "https://github.com/charvey23/AvInertia/blob/master/README.md",
-  "fileSize": "202.079KB",
+  "fileSize": "201.482KB",
   "issueTracker": "https://github.com/charvey23/AvInertia/issues"
 }
