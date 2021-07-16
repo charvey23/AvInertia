@@ -76,7 +76,7 @@ plot_CGloc <-
         # Text
         axis.title  = ggplot2::element_text(size = 10),
         axis.text   = ggplot2::element_text(size = 10, colour = "black"),
-        axis.text.x = ggplot2::element_text(margin = ggplot2::margin(t = 10, unit = "pt")),
+        axis.text.x.top = ggplot2::element_text(margin = ggplot2::margin(t = 0, r = 0, b = 0, l = 0), vjust = 3.5),
         axis.text.y = ggplot2::element_text(margin = ggplot2::margin(r = 10)),
         # Axis line
         axis.line   = ggplot2::element_blank(),
