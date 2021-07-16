@@ -908,7 +908,7 @@ massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, l_leg,l_
   est_CGx_1   = rho_avg_1*(v_ell*CG_ell +
                              v_par*CG_par +
                              v_end_1*CG_end_1)/m_body
-  # if the error is larger than +- 10% of the torso length
+  # if the error is larger than +- 5% of the torso length
   if(abs(est_CGx_1-CG_body_x) > 0.05*l_tot){
     # ------ Option 2: Elliptical cone back and constant density ---------
     v_end_2       = (1/12)*(pi*w_leg*h_leg*l_end)
@@ -919,7 +919,7 @@ massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, l_leg,l_
                                v_par*CG_par +
                                v_end_2*CG_end_2)/m_body
 
-    # if the error is larger than +- 10% of the torso length
+    # if the error is larger than +- 5% of the torso length
     if(abs(est_CGx_2-CG_body_x) > 0.05*l_tot){
       # ------ Option 3: Elliptical cylinder back and variable density ---------
       est_CGx_3   = CG_body_x

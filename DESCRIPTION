@@ -1,5 +1,5 @@
 Package: AvInertia
-Title: Calculate the inertial properties of a flying bird
+Title: Calculate the Inertial Properties of a Flying Bird
 Version: 0.0.1
 Authors@R: 
     c(person(given = "Christina",
@@ -18,13 +18,12 @@ Authors@R:
            email = "jwong@zoology.ubc.ca",
            comment = c(ORCID = "0000-0003-4648-2503")))
 Description: 
-    This package was developed to compute the center of gravity and moment of 
-    inertia tensor of any flying bird. It functions by modeling a bird as a 
-    composite structure of simple geometric objects. This requires detailed 
-    morphological measurements of bird specimens although those obtained for 
-    the associated paper have been included in the package for use. Refer to 
-    the vignettes and supplementary material for detailed information on the 
-    package function.
+    Tools to compute the center of gravity and moment of inertia tensor of any 
+    flying bird. The tools function by modeling a bird as a composite structure 
+    of simple geometric objects. This requires detailed morphological 
+    measurements of bird specimens although those obtained for the associated 
+    paper have been included in the package for use. Refer to the vignettes and 
+    supplementary material for detailed information on the package function.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

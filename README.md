@@ -38,7 +38,7 @@ Guide first.
 
 ## Citation
 
-TBA
+Currently in submission: TBA
 
 ## License
 

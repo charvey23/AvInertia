@@ -169,12 +169,6 @@ plot_CGloc <-
       ggplot2::geom_point(ggplot2::aes(x = clean_pts[5:10, 2], y = clean_pts[5:10, 1]),
                           col = "black",
                           pch = 0) +
-      ggplot2::geom_point(ggplot2::aes(x = 0.1081319428, y = -0.0242471017),
-                          col = "gray50",
-                          pch = 15) +
-      ggplot2::geom_point(ggplot2::aes(x = 0.1081319428, y = -0.0242471017),
-                          col = "black",
-                          pch = 0) +
       # Theme
       th +
       # Axis control
@@ -282,12 +276,6 @@ plot_CGloc <-
                           col = "gray50",
                           pch = 15) +
       ggplot2::geom_point(ggplot2::aes(x = clean_pts[5:10, 2], y = -clean_pts[5:10, 3]),
-                          col = "black",
-                          pch = 0) +
-      ggplot2::geom_point(ggplot2::aes(x = 0.1081319428, y = -0.0005026221),
-                          col = "gray50",
-                          pch = 15) +
-      ggplot2::geom_point(ggplot2::aes(x = 0.1081319428, y = -0.0005026221),
                           col = "black",
                           pch = 0) +
       # Theme
