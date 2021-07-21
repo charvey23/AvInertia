@@ -19,6 +19,8 @@
 #' a solid cylinder about its center of gravity with z oriented
 #' through it's major axis
 #'
+#' @inherit combine_inertialprop examples
+#'
 #' @export
 #'
 calc_inertia_cylsolid <- function(r, h, m){
@@ -48,6 +50,8 @@ calc_inertia_cylsolid <- function(r, h, m){
 #'
 #' @return a 3x3 matrix representing the moment of inertia tensor of a hollow
 #' cylinder about its center of gravity with z oriented through it's major axis
+#'
+#' @inherit combine_inertialprop examples
 #'
 #' @export
 #'
@@ -87,6 +91,8 @@ calc_inertia_cylhollow <- function(r_out, r_in, h, m){
 #' CAUTION: Origin is at the center of gravity for a full ellipse or at the
 #' center of the base if modeling a half ellipse.
 #'
+#' @inherit combine_inertialprop examples
+#'
 #' @export
 #'
 calc_inertia_ellipse <- function(a, b, c, m){
@@ -122,6 +128,8 @@ calc_inertia_ellipse <- function(a, b, c, m){
 #' CAUTION: Origin of the output tensor is NOT at the center of gravity but
 #' at the center of the base.
 #'
+#' @inherit combine_inertialprop examples
+#'
 #' @export
 #'
 calc_inertia_conesolid <- function(r, h, m){
@@ -155,6 +163,9 @@ calc_inertia_conesolid <- function(r, h, m){
 #' @section
 #' CAUTION: Origin of the output tensor is NOT at the center of gravity
 #' but at the center of the base.
+#'
+#' @inherit combine_inertialprop examples
+#'
 #' @export
 #'
 calc_inertia_ellcone <- function(A, B, l, m){
@@ -190,6 +201,8 @@ calc_inertia_ellcone <- function(A, B, l, m){
 #' @return a 3x3 matrix representing the moment of inertia tensor of a solid
 #' elliptical cylinder about it's center of gravity
 #'
+#' @inherit combine_inertialprop examples
+#'
 #' @export
 #'
 calc_inertia_ellcyl <- function(a, b, l, m){
@@ -224,6 +237,8 @@ calc_inertia_ellcyl <- function(a, b, l, m){
 #' @section
 #' CAUTION: Origin is NOT at the center of gravity but at the center of the base.
 #'
+#' @inherit combine_inertialprop examples
+#'
 #' @export
 #'
 calc_inertia_pyrasolid <- function(w, h, m){
@@ -253,6 +268,8 @@ calc_inertia_pyrasolid <- function(w, h, m){
 #' @return a 3x3 matrix representing the moment of inertia tensor of a flat
 #' plate about its center of gravity with z oriented parallel with it's long
 #' edge (h) and y along its short edge (w)
+#'
+#' @inherit combine_inertialprop examples
 #'
 #' @export
 #'
@@ -299,6 +316,8 @@ calc_inertia_platerect <- function(w, h, m){
 #' The input points should be defined in a counterclockwise direction around the
 #' plate in the triangular plate frame of reference
 #' i.e. all z components should be equal
+#'
+#' @inherit combine_inertialprop examples
 #'
 #' @export
 #'
@@ -422,6 +441,8 @@ calc_inertia_platetri <- function(pts, A, rho, t, desired_prop){
 #' \item{CG_sec}{a 1x3 vector (x,y,z) representing the center of gravity of the primary feather (m).}
 #' \item{m_sec}{a double representing the mass of the primary feather (kg).}
 #' }
+#'
+#' @inherit combine_inertialprop examples
 #'
 #' @export
 #'

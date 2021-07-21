@@ -29,6 +29,43 @@
 #' @param symmetric {Logical indicating if the input wings are symmetric or not.
 #' If True than left_wing_data = right_wing_data.}
 #'
+#' @return a dataframe containing all of the inertial properties for each wing
+#' component and the full bird about it's center of gravity and the vehicle
+#' reference point (VRP)
+#'
+#' @examples
+#' # refer to the vignette
+#' library(AvInertia)
+#'
+#' # load data
+#' data(dat_id_curr, package = "AvInertia")
+#' data(dat_bird_curr, package = "AvInertia")
+#' data(dat_feat_curr, package = "AvInertia")
+#' data(dat_bone_curr, package = "AvInertia")
+#' data(dat_mat, package = "AvInertia")
+#' data(clean_pts, package = "AvInertia")
+#'
+#' # 1. Determine the center of gravity of the bird's torso (including the legs)
+#' dat_torsotail_out = massprop_restbody(dat_id_curr, dat_bird_curr)
+#' # 2. Calculate the inertia of the flight feathers about the tip of the calamus
+#' feather_inertia <- compute_feat_inertia(dat_mat, dat_feat_curr, dat_bird_curr)
+#' # 3. Determine the center of gravity of one of the bird's wings
+#' dat_wing_out      = massprop_birdwing(dat_id_curr, dat_bird_curr,
+#' dat_bone_curr, dat_feat_curr, dat_mat, clean_pts,
+#' feather_inertia, plot_var = 0)
+#' # Visualize the center of gravity of each wing component in the x and y axis
+#' dat_wing_out      = massprop_birdwing(dat_id_curr, dat_bird_curr,
+#' dat_bone_curr, dat_feat_curr, dat_mat, clean_pts,
+#' feather_inertia, plot_var = "yx")
+#' # or the y and z axis
+#' dat_wing_out      = massprop_birdwing(dat_id_curr, dat_bird_curr,
+#' dat_bone_curr, dat_feat_curr, dat_mat, clean_pts,
+#' feather_inertia, plot_var = "yz")
+#' # 4. Combine all data and obtain the center of gravity, moment of inertia
+#' # and principal axes of the bird
+#' curr_full_bird      = combine_inertialprop(dat_torsotail_out,dat_wing_out,
+#' dat_wing_out, dat_id_curr, dat_bird_curr, symmetric=TRUE)
+#'
 #' @export
 
 combine_inertialprop <- function(curr_torsotail_data,left_wing_data,
@@ -381,6 +418,8 @@ combine_inertialprop <- function(curr_torsotail_data,left_wing_data,
 #' @return Function returns a dataframe that includes the moment of inertia and
 #' center of gravity of head, neck, torso and tail.
 #'
+#' @inherit combine_inertialprop examples
+#'
 #' @export
 #'
 
@@ -590,6 +629,8 @@ massprop_restbody <- function(dat_wingID_curr, dat_bird_curr){
 #' @return Function returns a dataframe that includes the moment of inertia and
 #' center of gravity of one wing about the VRP in the VRP frame and that of each
 #' major anatomical group i.e. skin, feathers, bones, muscles.
+#'
+#' @inherit combine_inertialprop examples
 #'
 #' @export
 #'
@@ -912,6 +953,8 @@ massprop_birdwing <- function(dat_wingID_curr, dat_bird_curr, dat_bone_curr,
 #'
 #' @return This function returns mass_properties as an updated dataframe
 #' with a new row corresponding to the dat_mass information
+#'
+#' @inherit combine_inertialprop examples
 #'
 #' @export
 store_data <- function(dat_wingID_curr,dat_mass,mass_properties,name){

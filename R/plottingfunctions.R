@@ -49,6 +49,9 @@
 #' Defines the output axes of the plot.
 #'
 #' @return A plot of the request axes
+#'
+#' @inherit combine_inertialprop examples
+#'
 #' @export
 #'
 

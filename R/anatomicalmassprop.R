@@ -33,6 +33,8 @@
 #' Parallel axis theorem does not apply between two arbitrary points.
 #' One point must be the object's center of gravity.
 #'
+#' @inherit combine_inertialprop examples
+#'
 #' @export
 #'
 
@@ -125,6 +127,8 @@ massprop_bones <- function(m,l,r_out,r_in,rho,start,end){
 #' Parallel axis theorem does not apply between two arbitrary points. One point
 #' must be the object's center of gravity.
 #'
+#' @inherit combine_inertialprop examples
+#'
 #' @export
 
 massprop_muscles <- function(m,rho,l,start,end){
@@ -205,6 +209,8 @@ massprop_muscles <- function(m,rho,l,start,end){
 #' Caution: The skin frame of reference assumes that the z axis is normal
 #' to the incoming points.
 #'
+#' @inherit combine_inertialprop examples
+#'
 #' @export
 
 massprop_skin <- function(m,rho,pts){
@@ -275,6 +281,8 @@ massprop_skin <- function(m,rho,pts){
 #' Parallel axis theorem does not apply between two arbitrary points.
 #' One point must be the object's center of gravity.
 #'
+#' @inherit combine_inertialprop examples
+#'
 #' @export
 
 massprop_pm <- function(m,pt){
@@ -299,7 +307,8 @@ massprop_pm <- function(m,pt){
 
 #' Feather mass properties
 #'
-#' Calculate the moment of inertia of skin modeled as a flat triangular plate
+#' Calculate the moment of inertia of the feathers within the
+#' feather frame of reference.
 #'
 #' @param m_f Mass of the entire feather (kg)
 #' @param l_c Length of the calamus; start of vane to end of calamus(m)
@@ -324,14 +333,18 @@ massprop_pm <- function(m,pt){
 #' CAUTION: While computing the variable components of the feather the x axis
 #' is the normal of the feather.
 #'
-#' @return This function returns a list that includes:
+#' @return a list that includes:
 #' \itemize{
 #' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a
-#' simplified feather}
+#' simplified feather with the origin at the feather calamus end and within
+#' the feather frame of reference}
 #' \item{CG}{a 1x3 vector representing the center of gravity position of a
-#' simplified feather}
+#' simplified feather with the origin at the feather calamus end and within
+#' the feather frame of reference}
 #' \item{m}{a double that returns the feather mass}
 #' }
+#'
+#' @inherit combine_inertialprop examples
 #'
 #' @export
 
@@ -475,6 +488,40 @@ massprop_feathers <- function(m_f,l_c,l_r_cor,w_cal,r_b,d_b,rho_cor,
   return(mass_prop)
 }
 
+# ------------------------------------------------------------------------------
+# ---------------- Mass properties - Feathers (Transform) ----------------------
+# ------------------------------------------------------------------------------
+
+#' Transform feather specific inertial properties to current position
+#'
+#' @param m_f a scalar representing the mass of the feather (kg)
+#' @param I_fCG a 3x3 matrix representing the moment of inertia tensor with the
+#' origin at the feather calamus end and within the feather frame of reference
+#' @param CG_start a 1x3 vector representing the center of gravity of the
+#' feather with the origin at the feather calamus end and within the feather
+#' frame of reference
+#' @param start a 1x3 vector representing the location of the feather calamus
+#' end with the origin at the VRP and within the full bird frame of reference
+#' @param end a 1x3 vector representing the location of the feather
+#' tip with the origin at the VRP and within the full bird frame of reference
+#' @param normal a 1x3 vector representing the normal to the plane of the
+#' feather vanes within the full bird frame of reference
+#'
+#' @return a list that includes:
+#' \itemize{
+#' \item{I}{a 3x3 matrix representing the moment of inertia tensor of a
+#' simplified feather with the origin at the VRP and within the full bird
+#' frame of reference}
+#' \item{CG}{a 1x3 vector representing the center of gravity position of a
+#' simplified feather with the origin at the VRP and within the full bird
+#' frame of reference}
+#' \item{m}{a double that returns the feather mass}
+#' }
+#'
+#' @inherit combine_inertialprop examples
+#'
+#' @export
+
 structural2VRP_feat <- function(m_f, I_fCG, CG_start, start, end, normal){
   # ------------------------------- Adjust axis -------------------------------------
   # first find the frame where z points towards the tip then rotate to frame where z axis points straight along the calamus
@@ -542,6 +589,8 @@ structural2VRP_feat <- function(m_f, I_fCG, CG_start, start, end, normal){
 #' 3. "normal" a matrix that gives the vector that defines the normal to
 #' each feather plane.  Rows are the different feathers and columns are x, y, z
 #' vector directions respectively.
+#'
+#' @inherit combine_inertialprop examples
 #'
 #' @export
 
@@ -781,6 +830,8 @@ massprop_head <- function(m,r,l,start,end){
 #' Parallel axis theorem does not apply between two arbitrary points.
 #' One point must be the object's center of gravity.
 #'
+#' @inherit combine_inertialprop examples
+#'
 #' @export
 
 massprop_tail <- function(m,l,w,start,end){
@@ -847,6 +898,8 @@ massprop_tail <- function(m,l,w,start,end){
 #' @section Warning:
 #' Parallel axis theorem does not apply between two arbitrary points.
 #' One point must be the object's center of gravity.
+#'
+#' @inherit combine_inertialprop examples
 #'
 #' @export
 
@@ -1085,6 +1138,29 @@ massprop_torso <- function(m_true, m_legs, w_max, h_max, l_bmax, w_leg, l_leg,l_
 # ---------------------------------------------------------------------------------------
 ##### -------------------- Body component density optimizer ----------------------- #####
 # ---------------------------------------------------------------------------------------
+
+#' Optimize torso section densities
+#'
+#' Function that is used within an optimization routine to select the
+#' appropriate torso section density
+#'
+#' @param x a scalar guess at the density of the torso hemi-ellipsoid section (kg/m^3)
+#' @param m_body a scalar representing the mass of the full torso
+#' @param A a 2x2 matrix representing the mass and volume calculations of the
+#' final two torso section
+#' @param v_ell a scalar representing the volume of the hemi-ellipsoid
+#' @param CG_body_x a scalar representing the position of the center of gravity
+#' of the full torso along the x axis with the origin at the VRP
+#' @param CG_ell a scalar representing the position of the center of gravity
+#' of the hemi-ellipsoid section along the x axis with the origin at the VRP
+#' @param rho_avg average density of the full torso
+#'
+#' @return the squared error between the three section densities and the
+#' average torso density
+#'
+#' @inherit combine_inertialprop examples
+#'
+#' @export
 
 density_optimizer <- function(x,m_body,A,v_ell,CG_body_x,CG_ell,rho_avg){
   # ensures that the density is always positive & greater than medullary density

@@ -44,17 +44,20 @@ to the interior angle. Negative indicates the feather tip is rotated
 proximally relative to the start of the feather vane.}
 }
 \value{
-This function returns a list that includes:
+a list that includes:
 \itemize{
 \item{I}{a 3x3 matrix representing the moment of inertia tensor of a
-simplified feather}
+simplified feather with the origin at the feather calamus end and within
+the feather frame of reference}
 \item{CG}{a 1x3 vector representing the center of gravity position of a
-simplified feather}
+simplified feather with the origin at the feather calamus end and within
+the feather frame of reference}
 \item{m}{a double that returns the feather mass}
 }
 }
 \description{
-Calculate the moment of inertia of skin modeled as a flat triangular plate
+Calculate the moment of inertia of the feathers within the
+feather frame of reference.
 }
 \section{Warning}{
 
@@ -65,6 +68,40 @@ CAUTION: While computing the variable components of the feather the x axis
 is the normal of the feather.
 }
 
+\examples{
+# refer to the vignette
+library(AvInertia)
+
+# load data
+data(dat_id_curr, package = "AvInertia")
+data(dat_bird_curr, package = "AvInertia")
+data(dat_feat_curr, package = "AvInertia")
+data(dat_bone_curr, package = "AvInertia")
+data(dat_mat, package = "AvInertia")
+data(clean_pts, package = "AvInertia")
+
+# 1. Determine the center of gravity of the bird's torso (including the legs)
+dat_torsotail_out = massprop_restbody(dat_id_curr, dat_bird_curr)
+# 2. Calculate the inertia of the flight feathers about the tip of the calamus
+feather_inertia <- compute_feat_inertia(dat_mat, dat_feat_curr, dat_bird_curr)
+# 3. Determine the center of gravity of one of the bird's wings
+dat_wing_out      = massprop_birdwing(dat_id_curr, dat_bird_curr,
+dat_bone_curr, dat_feat_curr, dat_mat, clean_pts,
+feather_inertia, plot_var = 0)
+# Visualize the center of gravity of each wing component in the x and y axis
+dat_wing_out      = massprop_birdwing(dat_id_curr, dat_bird_curr,
+dat_bone_curr, dat_feat_curr, dat_mat, clean_pts,
+feather_inertia, plot_var = "yx")
+# or the y and z axis
+dat_wing_out      = massprop_birdwing(dat_id_curr, dat_bird_curr,
+dat_bone_curr, dat_feat_curr, dat_mat, clean_pts,
+feather_inertia, plot_var = "yz")
+# 4. Combine all data and obtain the center of gravity, moment of inertia
+# and principal axes of the bird
+curr_full_bird      = combine_inertialprop(dat_torsotail_out,dat_wing_out,
+dat_wing_out, dat_id_curr, dat_bird_curr, symmetric=TRUE)
+
+}
 \author{
 Christina Harvey
 }

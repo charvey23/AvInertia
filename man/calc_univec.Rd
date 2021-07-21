@@ -15,6 +15,18 @@ the unit vector in the size of the input vector
 \description{
 Determine the unit vector of any input vector
 }
+\examples{
+
+ library(AvInertia)
+
+ #any random input vector
+ vector = c(1,2,3)
+ output_vec = calc_univec(vector)
+
+ # if unit vector the magnitude should = 1
+ pracma::Norm(output_vec)
+
+}
 \author{
 Christina Harvey
 }

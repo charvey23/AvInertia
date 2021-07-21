@@ -22,6 +22,15 @@ VRP frame and object frame
 A 3x3 rotation matrix constructed by projecting the new axes onto the
 original system. Likely results in rotation about all axes.
 }
+\examples{
+library(AvInertia)
+z_vector = c(0,0,1)
+x_vector = c(-1,0,0)
+
+# should return matrix [[-1,0,0];[0,-1,0];[0,0,1]]
+calc_rot(z_vector, x_vector)
+
+}
 \author{
 Christina Harvey
 }

@@ -17,6 +17,17 @@ a scalar value. Returns 1 if i and j are equal otherwise returns 0
 \description{
 Kroneckerdelta function
 }
+\examples{
+
+library(AvInertia)
+
+# should return 1
+kronecker_delta(1,1)
+
+# should return 0
+kronecker_delta(0,1)
+
+}
 \author{
 Christina Harvey
 }

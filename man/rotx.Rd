@@ -22,6 +22,14 @@ Constructed using a cosine rotation matrix where the rotation angle in
 degrees is measured counterclockwise allowing positive rotation under
 the right hand rule.
 }
+\examples{
+
+library(AvInertia)
+angle = 90
+# should return matrix [[1,0,0];[0,0,1];[0,1,0]]
+rotx(angle)
+
+}
 \author{
 Christina Harvey
 }

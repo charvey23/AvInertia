@@ -13,6 +13,16 @@
 #'
 #' @return a scalar value. Returns 1 if i and j are equal otherwise returns 0
 #'
+#' @examples
+#'
+#' library(AvInertia)
+#'
+#' # should return 1
+#' kronecker_delta(1,1)
+#'
+#' # should return 0
+#' kronecker_delta(0,1)
+#'
 #' @export
 #'
 kronecker_delta <- function(i,j){
@@ -39,8 +49,16 @@ kronecker_delta <- function(i,j){
 #' @return a 3x3 matrix representing the rotation about the x-axis by the
 #' given angle
 #'
+#' @examples
+#'
+#' library(AvInertia)
+#' angle = 90
+#' # should return matrix [[1,0,0];[0,0,1];[0,1,0]]
+#' rotx(angle)
+#'
 #' @export
 #'
+
 rotx <- function(angle){
   R = matrix(0, nrow = 3, ncol = 3)
   R[1,1] = 1
@@ -62,6 +80,17 @@ rotx <- function(angle){
 #' @author Christina Harvey
 #'
 #' @return the unit vector in the size of the input vector
+#'
+#' @examples
+#'
+#'  library(AvInertia)
+#'
+#'  #any random input vector
+#'  vector = c(1,2,3)
+#'  output_vec = calc_univec(vector)
+#'
+#'  # if unit vector the magnitude should = 1
+#'  pracma::Norm(output_vec)
 #'
 #' @export
 
@@ -86,6 +115,14 @@ calc_univec <- function(vector){
 #'
 #' @return a 3x3 matrix representing the rotation matrix that transforms between
 #' VRP frame and object frame
+#'
+#' @examples
+#' library(AvInertia)
+#' z_vector = c(0,0,1)
+#' x_vector = c(-1,0,0)
+#'
+#' # should return matrix [[-1,0,0];[0,-1,0];[0,0,1]]
+#' calc_rot(z_vector, x_vector)
 #'
 #' @export
 #'
@@ -133,6 +170,7 @@ calc_rot <- function(z_vector, x_vector){
 #' @return a 3x3 matrix representing the transformed moment of inertia tensor
 #' after a solid body translation defined by the offset vector.
 #'
+#' @inherit combine_inertialprop examples
 #' @export
 #'
 
