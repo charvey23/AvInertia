@@ -31,65 +31,52 @@ all_data_means$body_inertia <- (all_data_means$full_length*all_data_means$max_wi
 all_data_means_mat           <- as.matrix(select_if(all_data_means, is.numeric))
 rownames(all_data_means_mat) <- all_data_means$binomial
 colnames(all_data_means_mat) <- colnames(select_if(all_data_means, is.numeric))
-# log transform all data - absolute is just for CGx which is negative
-all_data_means_mat <- apply(all_data_means_mat,2,function(x) log(abs(x)))
 
 # calculate the phylogenetic signal for the stability metrics
-physignal(all_data_means_mat[,c("max_q_nd","min_q_nd")], pruned_mcc)
-
-ind_var_CGx = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("mean_CGx_orgBeak")], model = "BM")
-ind_var_CGz = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("mean_CGz_orgDorsal")], model = "BM")
-ind_var_CGx_sh = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("mean_CGx_orgShoulder")], model = "BM")
-ind_var_CGz_sh = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("mean_CGz_orgShoulder")], model = "BM")
+# physignal(all_data_means_mat[,c("max_q_nd","min_q_nd")], pruned_mcc)
 
 BM_xcg = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("mean_CGx_specific_orgShoulder")], model = "BM")
 OU_xcg = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("mean_CGx_specific_orgShoulder")], model = "OU")
-BM_maxstab = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("max_stab")], model = "BM")
-OU_maxstab = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("max_stab")], model = "OU")
-BM_minstab = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("min_stab")], model = "BM")
-OU_minstab = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("min_stab")], model = "OU")
 
-# to verify that the OU model is an appropriate fit given the size of our data
-# out_xcg <- pmc(tree = pruned_mcc, data = all_data_means_mat[,c("mean_CGx_specific_orgShoulder")], "BM", "OU", nboot = 1000, mc.cores = 1)
-# out_maxstab <- pmc(tree = pruned_mcc, data = all_data_means_mat[,c("max_stab")], "BM", "OU", nboot = 1000, mc.cores = 1)
-# out_minstab <- pmc(tree = pruned_mcc, data = all_data_means_mat[,c("min_stab")], "BM", "OU", nboot = 1000, mc.cores = 1)
+BM_maxsm = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("max_sm_nd")], model = "BM")
+OU_maxsm = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("max_sm_nd")], model = "OU")
+BM_minsm = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("min_sm_nd")], model = "BM")
+OU_minsm = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("min_sm_nd")], model = "OU")
+
+BM_maxag = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("max_q_nd")], model = "BM")
+OU_maxag = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("max_q_nd")], model = "OU")
+
+BM_minag = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("min_q_nd")], model = "BM")
+OU_minag = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("min_q_nd")], model = "OU")
 #
-# filename = paste(format(Sys.Date(), "%Y_%m_%d"),"_pmc_xcg_output.RData",sep="")
-# save(out_xcg,file = filename)
-# filename = paste(format(Sys.Date(), "%Y_%m_%d"),"_pmc_maxstab_output.RData",sep="")
-# save(out_maxstab,file = filename)
-# filename = paste(format(Sys.Date(), "%Y_%m_%d"),"_pmc_minstab_output.RData",sep="")
-# save(out_minstab,file = filename)
-
-
-# Calculate the individual models of OU and BM respectively
-
-morpho_traits = c("head_height","head_length","head_mass",
-                  "body_height_max","body_width_max","torso_length","torso_mass",
-                  "tail_width","tail_length","tail_mass_g",
-                  "humerus_diameter_mm","humerus_length_mm","humerus_mass_g",
-                  "radius_diameter_mm","radius_length_mm","radius_mass_g",
-                  "ulna_diameter_mm","ulna_length_mm","ulna_mass_g",
-                  "cmc_diameter_mm","cmc_length_mm","cmc_mass_g",
-                  "feat_length.P","feat_width.P","feat_mass.P",
-                  "feat_length.S","feat_width.S","feat_mass.S")
-check_OU <- as.data.frame(matrix(nrow = 28,ncol = 6))
-colnames(check_OU) <- c("trait","aicc","del_aicc","sigsq","alpha","w")
-for (i in 1:length(morpho_traits)){
-  BM_model = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,morpho_traits[i]], model = "BM")
-  OU_model = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,morpho_traits[i]], model = "OU")
-  delta <- c(BM_model$opt$aicc,OU_model$opt$aicc) - min(c(BM_model$opt$aicc,OU_model$opt$aicc))
-  L <- exp(-0.5 * delta)            # relative likelihoods of models
-  w <- L/sum(L)                     # Akaike weights
-  # Save all OU data
-  check_OU$trait[i] = morpho_traits[i]
-  check_OU$aicc[i]  = OU_model$opt$aicc
-  check_OU$del_aicc[i]  = BM_model$opt$aicc-OU_model$opt$aicc
-  check_OU$sigsq[i] = OU_model$opt$sigsq
-  check_OU$alpha[i] = OU_model$opt$alpha
-  check_OU$w[i]     = w[2]
-}
-
+# # Calculate the individual models of OU and BM respectively
+#
+# morpho_traits = c("head_height","head_length","head_mass",
+#                   "body_height_max","body_width_max","torso_length","torso_mass",
+#                   "tail_width","tail_length","tail_mass_g",
+#                   "humerus_diameter_mm","humerus_length_mm","humerus_mass_g",
+#                   "radius_diameter_mm","radius_length_mm","radius_mass_g",
+#                   "ulna_diameter_mm","ulna_length_mm","ulna_mass_g",
+#                   "cmc_diameter_mm","cmc_length_mm","cmc_mass_g",
+#                   "feat_length.P","feat_width.P","feat_mass.P",
+#                   "feat_length.S","feat_width.S","feat_mass.S")
+# check_OU <- as.data.frame(matrix(nrow = 28,ncol = 6))
+# colnames(check_OU) <- c("trait","aicc","del_aicc","sigsq","alpha","w")
+# for (i in 1:length(morpho_traits)){
+#   BM_model = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,morpho_traits[i]], model = "BM")
+#   OU_model = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,morpho_traits[i]], model = "OU")
+#   delta <- c(BM_model$opt$aicc,OU_model$opt$aicc) - min(c(BM_model$opt$aicc,OU_model$opt$aicc))
+#   L <- exp(-0.5 * delta)            # relative likelihoods of models
+#   w <- L/sum(L)                     # Akaike weights
+#   # Save all OU data
+#   check_OU$trait[i] = morpho_traits[i]
+#   check_OU$aicc[i]  = OU_model$opt$aicc
+#   check_OU$del_aicc[i]  = BM_model$opt$aicc-OU_model$opt$aicc
+#   check_OU$sigsq[i] = OU_model$opt$sigsq
+#   check_OU$alpha[i] = OU_model$opt$alpha
+#   check_OU$w[i]     = w[2]
+# }
+#
 
 # ----- Below is code to calculate the multivariate BM results for each body component ----
 #
