@@ -45,3 +45,33 @@ tmp2               = aggregate(list(c_l_max = tmp3$c_l_max,
 stab_check               = merge(tmp1,tmp2, id = c("species","BirdID"))
 stab_check$species_order = factor(stab_check$species, levels = phylo_order$species)
 
+
+max_sm_nd_model_mcmc <-
+  MCMCglmm::MCMCglmm(
+    max_sm_nd ~ full_m,
+    random = ~ phylo,
+    scale = FALSE, ## whether you use this is up to you -- whatever is fair
+    ginverse = list(phylo = inv.phylo$Ainv),
+    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
+    data = dat_comp,
+    prior = univ_prior,
+    nitt = 130000, thin = 100, burnin = 30000,
+    verbose = FALSE, ## switch this to TRUE if you feel like it
+    pr = TRUE, pl = TRUE ## this saves some model output stuff
+  )
+max_sm_nd_model_mcmc_output  = summary(max_sm_nd_model_mcmc)
+
+min_sm_nd_model_mcmc <-
+  MCMCglmm::MCMCglmm(
+    min_sm_nd ~ full_m,
+    random = ~ phylo,
+    scale = FALSE, ## whether you use this is up to you -- whatever is fair
+    ginverse = list(phylo = inv.phylo$Ainv),
+    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
+    data = dat_comp,
+    prior = univ_prior,
+    nitt = 130000, thin = 100, burnin = 30000,
+    verbose = FALSE, ## switch this to TRUE if you feel like it
+    pr = TRUE, pl = TRUE ## this saves some model output stuff
+  )
+min_sm_nd_model_mcmc_output  = summary(min_sm_nd_model_mcmc)
