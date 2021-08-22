@@ -132,3 +132,44 @@ CG_range_model_mcmc <-
     nitt = 130000, thin = 100, burnin = 30000,
     verbose = FALSE,pr = TRUE, pl = TRUE)
 CG_range_model_mcmc_output  = summary(CG_range_model_mcmc)
+
+## ---------- Calculate the elbow and wrist CG range relation to arm to hand ratio ---------
+
+CGy_range_armhand <-
+  MCMCglmm::MCMCglmm(
+    log(range_wing_CGy_specific) ~ log(max_armhand_ratio),
+    random = ~ phylo,
+    scale = FALSE,
+    ginverse = list(phylo = inv.phylo$Ainv),
+    family = c("gaussian"),
+    data = dat_comp,
+    prior = univ_prior,
+    nitt = 130000, thin = 100, burnin = 30000,
+    verbose = FALSE,pr = TRUE, pl = TRUE)
+CGy_range_armhand_output  = summary(CGy_range_armhand)
+
+CGx_range_armhand <-
+  MCMCglmm::MCMCglmm(
+    range_CGx_specific ~ max_armhand_ratio,
+    random = ~ phylo,
+    scale = FALSE,
+    ginverse = list(phylo = inv.phylo$Ainv),
+    family = c("gaussian"),
+    data = dat_comp,
+    prior = univ_prior,
+    nitt = 130000, thin = 100, burnin = 30000,
+    verbose = FALSE,pr = TRUE, pl = TRUE)
+CGx_range_armhand_output  = summary(CGx_range_armhand)
+
+CGz_range_armhand <-
+  MCMCglmm::MCMCglmm(
+    range_CGz_specific ~ max_armhand_ratio,
+    random = ~ phylo,
+    scale = FALSE,
+    ginverse = list(phylo = inv.phylo$Ainv),
+    family = c("gaussian"),
+    data = dat_comp,
+    prior = univ_prior,
+    nitt = 130000, thin = 100, burnin = 30000,
+    verbose = FALSE,pr = TRUE, pl = TRUE)
+CGz_range_armhand_output  = summary(CGz_range_armhand)
