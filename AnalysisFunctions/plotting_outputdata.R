@@ -1,9 +1,11 @@
 source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/process_outputdata.R")
 source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/plotting_setup.R")
+source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/calc_evoparams.R")
+source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/analyse_CGsens.R")
 source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/calc_CGparams.R")
 source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/calc_MOIparams.R")
 source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/calc_manparams.R")
-source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/calc_evoparams.R")
+
 
 ## --------------------------------------------------------------------------------------------------------------------
 ## ------------------------------------------- Figure 1 ---------------------------------------------------------------
@@ -562,38 +564,13 @@ effectcol <- plot_grid(effect_Ixx,effect_Iyy,effect_Izz,effect_Ixz,
 ## ------------------------------------------------------------------------------------
 ## --------------------------------- Figure 4 -----------------------------------------
 ## ------------------------------------------------------------------------------------
-q_plot <- ggplot() +
-  geom_ribbon(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, ymin = exp(max_q_model_mcmc_output$solutions[1,1])*full_m^max_q_model_mcmc_output$solutions[2,2], ymax = exp(max_q_model_mcmc_output$solutions[1,1])*full_m^max_q_model_mcmc_output$solutions[2,3]),
-              col = NA, fill = "gray60", alpha = 0.15) +
-  # add model fit
-  geom_line(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, y = exp(max_q_model_mcmc_output$solutions[1,1])*full_m^max_q_model_mcmc_output$solutions[2,1]),
-            col = "gray60") +
-  #add data
-  geom_errorbar(data = dat_comp, aes(x = full_m, ymax = max_q, ymin = min_q, col = species_order), alpha = 0.5) +
-  geom_point(data = dat_comp, aes(x = full_m, y = max_q, col = species_order), alpha = 0.6, pch = 15,size = 0.8) +
-  geom_point(data = dat_comp, aes(x = full_m, y = max_q, col = species_order), pch = 0,size = 0.8) +
-  geom_point(data = dat_comp, aes(x = full_m, y = min_q, col = species_order), alpha = 0.6, pch = 15,size = 0.8) +
-  geom_point(data = dat_comp, aes(x = full_m, y = min_q, col = species_order), pch = 0,size = 0.8) +
-  #colour control
-  scale_colour_manual(values = rev(cc_rain), name = "species") +
-  #theme control
-  th +
-  theme(legend.position="none") +
-  # axis control
-  scale_x_continuous(trans='log10', limits = c(0.01,10), breaks = c(0.01,0.1,1,10), name = "Body mass (kg)",
-                     labels = c(expression(10^-2),expression(10^-1),expression(10^0),expression(10^1)))+
-  scale_y_continuous(trans='log10', limits = c(0.1,19), breaks = c(0.1,1,10),
-                     labels = c(expression(10^-1),expression(10^0),expression(10^1)), name = expression(paste("Pitch agility (s"^{-2},")")))+
-  geom_rangeframe() +
-  annotate(geom = "segment", x = 0, xend = 0, y = 1E-1, yend = 1E1) +
-  annotate(geom = "segment", x = 0.01, xend = 10, y = 0, yend = 0)
-
 q_nd_plot <- ggplot() +
-  geom_ribbon(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, ymin = exp(max_q_nd_model_mcmc_output$solutions[1,1])*full_m^max_q_nd_model_mcmc_output$solutions[2,2], ymax = exp(max_q_nd_model_mcmc_output$solutions[1,1])*full_m^max_q_nd_model_mcmc_output$solutions[2,3]),
-              col = NA, fill = "gray60", alpha = 0.15) +
-  # add model fit
-  geom_line(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, y = exp(max_q_nd_model_mcmc_output$solutions[1,1])*full_m^max_q_nd_model_mcmc_output$solutions[2,1]),
-            col = "gray60") +
+  # geom_ribbon(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, ymin = exp(max_q_nd_model_mcmc_output$solutions[1,1])*full_m^max_q_nd_model_mcmc_output$solutions[2,2], ymax = exp(max_q_nd_model_mcmc_output$solutions[1,1])*full_m^max_q_nd_model_mcmc_output$solutions[2,3]),
+  #             col = NA, fill = "gray60", alpha = 0.15) +
+  # # add model fit
+  # geom_line(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, y = exp(max_q_nd_model_mcmc_output$solutions[1,1])*full_m^max_q_nd_model_mcmc_output$solutions[2,1]),
+  #           col = "gray60") +
+  geom_rect(aes(ymin = 0, ymax = 1.5, xmin = 0, xmax = Inf), alpha = 0.1) +
   #add data
   geom_errorbar(data = dat_comp, aes(x = full_m, ymax = max_q_nd, ymin = min_q_nd, col = species_order), alpha = 0.5) +
   geom_point(data = dat_comp, aes(x = full_m, y = max_q_nd, col = species_order), alpha = 0.6, pch = 15,size = 0.8) +
@@ -608,13 +585,46 @@ q_nd_plot <- ggplot() +
   # axis control
   scale_x_continuous(trans='log10', limits = c(0.01,10), breaks = c(0.01,0.1,1,10), name = "Body mass (kg)",
                      labels = c(expression(10^-2),expression(10^-1),expression(10^0),expression(10^1)))+
-  scale_y_continuous(trans='log10', limits = c(0.08,1.3), breaks = c(0.1,1),
-                     labels = c(expression(10^-1),expression(10^0)), name = expression(paste("Normalized pitch agility")))+
+  scale_y_continuous(limits = c(-1.5,1.5), breaks = c(-1.5,-1,-0.5,0,0.5,1,1.5), name = expression(paste("Normalized pitch agility")))+
   geom_rangeframe() +
-  annotate(geom = "segment", x = 0, xend = 0, y = 1E-1, yend = 1) +
-  annotate(geom = "segment", x = 0.01, xend = 10, y = 0, yend = 0)
+  annotate(geom = "segment", x = 0, xend = 0, y = -1.5, yend = 1.5) +
+  annotate(geom = "segment", x = 0.01, xend = 10, y = -Inf, yend = -Inf)
+
+sm_nd_plot <- ggplot() +
+  geom_rect(aes(ymin = -0.6, ymax = 0, xmin = 0, xmax = Inf), alpha = 0.1) +
+  #add data
+  annotate(geom="text", x=5, y=0.4, label="max static margin \n optimal phenotype",color="black") +
+  annotate(geom="text", x=5, y=-0.29, label="min static margin \n optimal phenotype",color="black") +
+  annotate("segment", x = 5, xend = 5, y = 0.34, yend = 0.28, colour = "black", size=0.4,
+           arrow=arrow(length = unit(0.15, 'cm'), type = 'closed')) +
+  annotate("segment", x = 5, xend = 5, y = -0.23, yend = -0.17, colour = "black", size=0.4,
+           arrow=arrow(length = unit(0.15, 'cm'), type = 'closed')) +
+  geom_hline(yintercept = OU_maxsm$opt$z0, linetype = "dashed") +
+
+  geom_hline(yintercept = OU_minsm$opt$z0, linetype = "dashed") +
+  #geom_hline(yintercept = maxstab_tail_OU_outputs$opt$z0, linetype = "dashed", col = "gray70") +
+  #geom_hline(yintercept = minstab_tail_OU_outputs$opt$z0, linetype = "dashed", col = "gray70") +
+  geom_errorbar(data = dat_comp, aes(x = full_m, ymax = max_sm_nd, ymin = min_sm_nd, col = species_order), alpha = 0.5) +
+  geom_point(data = dat_comp, aes(x = full_m, y = max_sm_nd, col = species_order), alpha = 0.6, pch = 15,size = 0.8) +
+  geom_point(data = dat_comp, aes(x = full_m, y = max_sm_nd, col = species_order), pch = 0,size = 0.8) +
+  geom_point(data = dat_comp, aes(x = full_m, y = min_sm_nd, col = species_order), alpha = 0.6, pch = 15,size = 0.8) +
+  geom_point(data = dat_comp, aes(x = full_m, y = min_sm_nd, col = species_order), pch = 0,size = 0.8) +
+  #colour control
+  scale_colour_manual(values = rev(cc_rain), name = "species") +
+  #theme control
+  th +
+  theme(legend.position="none") +
+  # axis control
+  scale_x_continuous(trans='log10', limits = c(0.01,10), breaks = c(0.01,0.1,1,10), name = "Body mass (kg)",
+                     labels = c(expression(10^-2),expression(10^-1),expression(10^0),expression(10^1)))+
+  scale_y_continuous(limits = c(-0.6,0.6), name = expression(paste("Normalized static margin (% of c"["rmax"],")")))+
+  geom_rangeframe() +
+  annotate(geom = "segment", x = 0, xend = 0, y = -0.6, yend = 0.6) +
+  annotate(geom = "segment", x = 0.01, xend = 10, y = -Inf, yend = -Inf)
+
+
 #exported as 3x6.5
-plot_agility <- plot_grid(q_plot,q_nd_plot,
+plot_agility <- plot_grid(q_nd_plot,sm_nd_plot,
                        #arrangement data
                        nrow = 1,
                        rel_heights = c(1,1),
@@ -623,12 +633,12 @@ plot_agility <- plot_grid(q_plot,q_nd_plot,
                        label_size = 10,
                        label_fontfamily = "sans")
 
-#exported as 11x3.5
+#exported as 11x4
 chord_length_plot <- ggplot()+
-  geom_point(data = stab_check, aes(x = 1, y = 1, col = log(c_l_max), size = max_q_nd*1.5), alpha = 0.8) +
-  geom_point(data = stab_check, aes(x = 1, y = 1, col = log(c_l_max), size = max_q_nd*1.5), pch = 1, alpha = 1) +
-  geom_point(data = stab_check, aes(x = 0.98, y = 1, col = log(c_l_min), size = min_q_nd*1.5), alpha = 0.8) +
-  geom_point(data = stab_check, aes(x = 0.98, y = 1, col = log(c_l_min), size = min_q_nd*1.5), pch = 1, alpha = 1) +
+  geom_point(data = stab_check, aes(x = 1, y = 1, col = max_sm_nd, size = abs(max_q_nd)), alpha = 0.8) +
+  geom_point(data = stab_check, aes(x = 1, y = 1, col = max_sm_nd, size = abs(max_q_nd)), pch = 1, alpha = 1) +
+  geom_point(data = stab_check, aes(x = 0.98, y = 1, col = min_sm_nd, size = abs(min_q_nd)), alpha = 0.8) +
+  geom_point(data = stab_check, aes(x = 0.98, y = 1, col = min_sm_nd, size = abs(min_q_nd)), pch = 1, alpha = 1) +
   th +
   theme(axis.line=element_blank(),axis.text.x=element_blank(),
         axis.text.y=element_blank(),axis.ticks=element_blank(),
@@ -640,14 +650,10 @@ chord_length_plot <- ggplot()+
         # Background behind actual data points
         plot.background  = ggplot2::element_rect(fill = "transparent", color = NA))+
   facet_wrap(~species_order, ncol = 1) +
-  scale_size(range = c(0.05, 10), name="Normalized pitch agility", breaks = c(0.3,0.6,0.9,1.2,1.5), labels = c(0.2,0.4,0.6,0.8,1)) + #scales based on area
-  scale_colour_gradient2(midpoint=0, low="#1D0747", mid="#FFF9D3", high="#00510A", space ="Lab", name = "log(pitch stability ratio)") +
+  #scale_size(range = c(0.05, 10), name="Normalized pitch agility", breaks = c(0.3,0.6,0.9,1.2,1.5), labels = c(0.2,0.4,0.6,0.8,1)) + #scales based on area
+  scale_colour_gradient2(midpoint=0, low="#1D0747", mid="#FFF9D3", high="#00510A", space ="Lab", name = "static margin (% of max. root chord)") +
   scale_y_continuous(limits = c(0.955,1.025)) +
   scale_x_continuous(limits = c(0.955,1.025))
-
-
-
-
 
 
 Iyy_cont = ggplot() +
@@ -691,3 +697,75 @@ Iyy_cont = ggplot() +
   geom_rangeframe() +
   annotate(geom = "segment", x = 0, xend = 1, y = Inf, yend = Inf)
 
+### ------------- Extended Data Figure ----------
+
+test_max = aggregate(list(prop_q_dot = dat_final$prop_q_dot,
+                          full_m = dat_final$full_m,
+                          sm_nd = dat_final$sm_nd),
+                     by=list(species = dat_final$species_order, BirdID = dat_final$BirdID), max)
+test_min = aggregate(list(prop_q_dot = dat_final$prop_q_dot,
+                          full_m = dat_final$full_m,
+                          sm_nd = dat_final$sm_nd),
+                     by=list(species = dat_final$species_order, BirdID = dat_final$BirdID), min)
+
+chulls_xz <- ddply(dat_final[,c("species_order","BirdID","elbow","manus")], .(species_order, BirdID),
+                   function(df) df[chull(df$elbow, df$manus), ])
+
+ROM_plot_sm <- ggplot()+
+  #geom_polygon(data = chulls_xz, aes(x = elbow, y = manus), col = "black", fill = NA, alpha = 0.5) +
+  geom_point(data = dat_final, aes(x =elbow, y = manus, col = sm_nd)) +
+  geom_point(data = dat_final[which(dat_final$species %in% test_max$species & dat_final$sm_nd %in% test_max$sm_nd),],
+             aes(x = elbow, y = manus, fill = sm_nd), col = "black", alpha = 1, pch = 23) +
+  geom_point(data = dat_final[which(dat_final$species %in% test_min$species & dat_final$sm_nd %in% test_min$sm_nd),],
+             aes(x = elbow, y = manus, fill = sm_nd), col = "black", alpha = 1, pch = 23) +
+  facet_wrap(~species_order, nrow = 2) +
+  #colour control
+  scale_colour_gradient2(midpoint=0, low="#1D0747", mid="#FFF9D3", high="#00510A", space ="Lab", name = "static margin (% of max. root chord)") +
+  scale_fill_gradient2(midpoint=0, low="#1D0747", mid="#FFF9D3", high="#00510A", space ="Lab", name = "static margin (% of max. root chord)") +
+  #theme control
+  th +
+  theme(strip.background = element_blank(),
+        panel.background = ggplot2::element_rect(fill = "transparent"),
+        # Background behind actual data points
+        plot.background  = ggplot2::element_rect(fill = "transparent", color = NA))+
+  coord_fixed() +
+  scale_x_continuous(name='Elbow angle (°)', breaks = c(50,150)) +
+  scale_y_continuous(name='Wrist angle (°)', breaks = c(50,150)) +
+  geom_rangeframe() +
+  annotate(geom = "segment", x = -Inf, xend = -Inf, y = 50, yend = 150) +
+  annotate(geom = "segment", x = 50, xend = 150, y = -Inf, yend = -Inf) +
+  annotate(geom = "segment", x = 50, xend = 50, y = -Inf, yend = 50) +
+  annotate(geom = "segment", x = 150, xend = 150, y = -Inf, yend = 50) +
+  annotate(geom = "segment", x = -Inf, xend = 30, y = 50, yend = 50) +
+  annotate(geom = "segment", x = -Inf, xend = 30, y = 150, yend = 150)
+
+
+### ------------- Plot the tail volume coefficients for the supplemental materials ------------
+tail_plot <- ggplot() +
+  geom_point(data = aggregate(list(Vh = dat_final$Vh, full_m = dat_final$full_m),
+                              by=list(species_order = dat_final$species_order, BirdID = dat_final$BirdID), max),
+             aes(x = full_m, y = Vh, col = species_order)) +
+  geom_point(data = aggregate(list(Vh = dat_final$Vh, full_m = dat_final$full_m),
+                              by=list(species_order = dat_final$species_order, BirdID = dat_final$BirdID), min),
+             aes(x = full_m, y = Vh, col = species_order)) +
+  geom_segment(data = aggregate(list(Vh = dat_final$Vh, full_m = dat_final$full_m, Vh_max = -dat_final$Vh),
+                              by=list(species_order = dat_final$species_order, BirdID = dat_final$BirdID), min),
+             aes(x = full_m, xend = full_m, y = Vh, yend = -Vh_max, col = species_order)) +
+  geom_hline(yintercept = 0.4) +
+  annotate(geom="text", x=0.05, y=2, label="Approximate lower bound for \n traditional aircraft tail volume coefficients",
+           color="black") +
+  annotate("segment", x = 0.05, xend = 0.07, y = 1.3, yend = 0.45, colour = "black", size=0.4,
+           arrow=arrow(length = unit(0.25, 'cm'), type = 'closed')) +
+  #colour control
+  scale_colour_manual(values = rev(cc_rain), name = "species") +
+  #theme control
+  th +
+  theme(legend.position="none") +
+  # axis control
+  scale_x_continuous(trans='log10', limits = c(0.01,10), breaks = c(0.01,0.1,1,10), name = "Body mass (kg)",
+                     labels = c(expression(10^-2),expression(10^-1),expression(10^0),expression(10^1)))+
+  scale_y_continuous(trans='log10', limits = c(10^-3,10), breaks = c(0.001,0.01,0.1,1,10),
+                     labels = c(expression(10^-3),expression(10^-2),expression(10^-1),expression(10^0),expression(10^1)), name = expression(paste("Tail volume coefficient")))+
+  geom_rangeframe() +
+  annotate(geom = "segment", x = 0, xend = 0, y = 1E-3, yend = 10) +
+  annotate(geom = "segment", x = 0.01, xend = 10, y = 0, yend = 0)

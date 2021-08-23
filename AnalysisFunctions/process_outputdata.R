@@ -234,8 +234,8 @@ dat_final$sm    <- dat_final$full_CGx_orgShoulder-dat_final$x_np_est_orgShoulder
 dat_final$sm_nd <- dat_final$sm/dat_final$c_root_max
 
 ## ------------ Agility -----------
-dat_final$prop_q_dot     <- (abs(dat_final$sm)*dat_final$S_max*dat_final$full_m^0.24)/dat_final$full_Iyy
-dat_final$prop_q_dot_nd  <- (abs(dat_final$sm)*dat_final$S_max*dat_final$full_length^2)/dat_final$full_Iyy
+dat_final$prop_q_dot     <- (-dat_final$sm*dat_final$S_max*dat_final$full_m^0.24)/dat_final$full_Iyy
+dat_final$prop_q_dot_nd  <- (-dat_final$sm*dat_final$S_max*dat_final$full_length^2)/dat_final$full_Iyy
 #dat_final$del_M_specific <- dat_final$prop_q_dot*dat_final$full_Iyy/(dat_final$full_m*dat_final$full_length)
 # uses scaling from: Alerstam, T., Rosén, M., Bäckman, J., Ericson, P. G., & Hellgren, O. (2007).
 # Flight speeds among bird species: allometric and phylogenetic effects. PLoS Biol, 5(8), e197.
@@ -245,6 +245,7 @@ dat_final$sachs_pred_Ixx <- dat_final$full_m*(sqrt((0.14*dat_final$wing_m/dat_fi
 # dat_final$yaw_div   <- (dat_final$full_Iyy - dat_final$full_Ixx)/dat_final$full_Izz
 
 ## ----------- Tail Volume ------------
+# CAUTION: THIS IS NON-DIMENSIONALIZED WITH THE MAXIMUM MEAN CHORD TO COMPARE TO TRADITIONAL AIRCRAFT
 dat_final$Vh = abs(-(dat_final$torso_length+0.25*dat_final$tail_length)-dat_final$full_CGx)*dat_final$tail_length*dat_final$tail_width/(dat_final$c_mean_max*2*dat_final$S)
 
 ## ---- Compute the regression coefficients for each species for each variable -------
@@ -423,6 +424,9 @@ dat_comp <- merge(dat_comp,test, by = c("species","BirdID"))
 
 dat_comp$max_wing_CGx <- dat_final$wing_CGx[which((dat_final$wing_CGy - dat_final$pt1_Y) %in% dat_comp$max_wing_CGy)]
 dat_comp$max_wing_CGx_specific <- dat_final$wing_CGx_specific_orgShoulder[which((dat_final$wing_CGy - dat_final$pt1_Y) %in% dat_comp$max_wing_CGy)]
+
+dat_comp$sm_range = dat_comp$max_sm_nd - dat_comp$min_sm_nd
+dat_comp$q_range = dat_comp$max_q_nd - dat_comp$min_q_nd
 
 # --------- Trim the trees -----------
 # critical for PGLS models

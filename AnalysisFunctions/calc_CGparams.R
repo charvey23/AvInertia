@@ -137,7 +137,7 @@ CG_range_model_mcmc_output  = summary(CG_range_model_mcmc)
 
 CGy_range_armhand <-
   MCMCglmm::MCMCglmm(
-    log(range_wing_CGy_specific) ~ log(max_armhand_ratio),
+    range_wing_CGy_specific ~ max_armhand_ratio,
     random = ~ phylo,
     scale = FALSE,
     ginverse = list(phylo = inv.phylo$Ainv),
