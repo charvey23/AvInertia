@@ -262,8 +262,8 @@ for (m in 1:length(no_species)){
         dat_feat_curr$l_vane[i] = scaling_feat*dat_feat_curr$l_vane[i]
         dat_feat_curr$l_cal[i]  = scaling_feat*dat_feat_curr$l_cal[i]
         dat_feat_curr$w_cal[i]  = scaling_feat*dat_feat_curr$w_cal[i]
-        dat_feat_curr$w_vp[i]   = scaling_feat^2*dat_feat_curr$w_vp[i]
-        dat_feat_curr$w_vd[i]   = scaling_feat^2*dat_feat_curr$w_vd[i]
+        dat_feat_curr$w_vp[i]   = scaling_feat*dat_feat_curr$w_vp[i]
+        dat_feat_curr$w_vd[i]   = scaling_feat*dat_feat_curr$w_vd[i]
       }
     }
 
