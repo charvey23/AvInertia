@@ -94,7 +94,7 @@ combine_inertialprop <- function(curr_torsotail_data,left_wing_data,
                             component == "wing")$value,
                    subset(right_wing_data, object == "m" &
                             component == "wing")$value)
-  subset(curr_torsotail_data, object == "Ixx")$value
+
   # --- Moment of Inertia tensor --- **Origin is about the VRP**
   # Diagonal elements
   fullbird$I[1,1] = sum(subset(curr_torsotail_data, object == "Ixx")$value) +
