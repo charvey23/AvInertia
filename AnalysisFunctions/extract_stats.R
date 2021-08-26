@@ -176,7 +176,6 @@ OU_xcg$opt$z0
 
 # -------- Descriptive stats
 (length(which(out_xcg$null > out_xcg$lr))/5000)
-(length(which(out_maxag$null > out_maxag$lr))/5000)
 
 # calculate power of tests
 length(which(out_xcg$test > quantile(out_xcg$null, probs = 0.95)))/5000

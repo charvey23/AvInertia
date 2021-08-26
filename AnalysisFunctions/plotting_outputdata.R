@@ -6,7 +6,6 @@ source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/calc_CGpara
 source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/calc_MOIparams.R")
 source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/calc_manparams.R")
 
-
 ## --------------------------------------------------------------------------------------------------------------------
 ## ------------------------------------------- Figure 1 ---------------------------------------------------------------
 ## --------------------------------------------------------------------------------------------------------------------
@@ -61,14 +60,16 @@ ROM_plot <- ggplot()+ #exported as 3.5x10
         plot.background  = ggplot2::element_rect(fill = "transparent", color = NA))+
   theme(legend.position="none") +
   coord_fixed() +
-  scale_x_continuous(name='Elbow angle (°)', breaks = c(50,150)) +
-  scale_y_continuous(name='Wrist angle (°)', breaks = c(50,150)) +
+  scale_x_continuous(name='Elbow angle (°)', breaks = c(50,100,150)) +
+  scale_y_continuous(name='Wrist angle (°)', breaks = c(50,100,150)) +
   geom_rangeframe() +
   annotate(geom = "segment", x = -Inf, xend = -Inf, y = 50, yend = 150) +
   annotate(geom = "segment", x = 50, xend = 150, y = -Inf, yend = -Inf) +
   annotate(geom = "segment", x = 50, xend = 50, y = -Inf, yend = 50) +
+  annotate(geom = "segment", x = 100, xend = 100, y = -Inf, yend = 50) +
   annotate(geom = "segment", x = 150, xend = 150, y = -Inf, yend = 50) +
   annotate(geom = "segment", x = -Inf, xend = 30, y = 50, yend = 50) +
+  annotate(geom = "segment", x = -Inf, xend = 30, y = 100, yend = 100) +
   annotate(geom = "segment", x = -Inf, xend = 30, y = 150, yend = 150)
 
 ## --------------------------------------------------------------------------------------------------------------------

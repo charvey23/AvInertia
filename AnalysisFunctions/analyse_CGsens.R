@@ -350,7 +350,7 @@ sens_stability_max <- ggplot()+
              position=position_dodge(width=0.5)) +
   geom_point(data = subset(dat_sens_out,iter==16 & group == "max_stability"), aes(y = species_order, x = sm_nd, group = as.factor(BirdID)),
              fill = "white", col = "black", size = 1.5, pch = 23, position=position_dodge(width=0.5)) +
-  geom_vline(xintercept = 0, col = "black") +
+  geom_vline(xintercept = 0, col = "black", linetype = "dashed") +
   scale_colour_gradient2(low = "#D01B1B", mid = "white",high = "#95D2EC",midpoint = 0, name = "CG shift (%)", breaks = c(-0.15,-0.1,-0.05,0,0.05,0.1,0.15), labels = c(-15,-10,-5,0,5,10,15)) +
   th +
   scale_x_continuous(limits = c(-0.65,0.65), breaks = seq(-0.6,0.6,0.3), labels = c("-60","-30","0","30","60"),name = "maximum static margin (% of c   )") +
@@ -363,7 +363,7 @@ sens_stability_min <- ggplot()+
              position=position_dodge(width=0.5)) +
   geom_point(data = subset(dat_sens_out,iter==16 & group == "min_stability"), aes(y = species_order, x = sm_nd, group = as.factor(BirdID)),
              fill = "white", col = "black", size = 1.5, pch = 23, position=position_dodge(width=0.5)) +
-  geom_vline(xintercept = 0, col = "black") +
+  geom_vline(xintercept = 0, col = "black", linetype = "dashed") +
   scale_colour_gradient2(low = "#D01B1B", mid = "white",high = "#95D2EC",midpoint = 0, name = "CG shift (%)", breaks = c(-0.15,-0.1,-0.05,0,0.05,0.1,0.15), labels = c(-15,-10,-5,0,5,10,15)) +
   th +
   scale_x_continuous(limits = c(-0.65,0.65), breaks = seq(-0.6,0.6,0.3), labels = c("-60","-30","0","30","60"),name = "minimum static margin (% of c   )") +
