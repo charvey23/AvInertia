@@ -1,14 +1,6 @@
-
-### -------- PAPER STATS ----------
-
-# allometric relationship for Iwing max
-Ixx_val_mcmc_output
-
-# ----- Comparison of pigeon data -------
-# absolute values of Ixxwing
-Ixx_max[which(Ixx_max$species == "col_liv"),c("species","wing_hum_Ixx")]
-# maximum yCGwing difference between our values and Berg and Rayner
-max(subset(dat_final, species == "col_liv")$wing_CGy_specific_orgShoulder)-(0.071/0.323)
+### -----------------------------------------
+### -------- MAIN MANUSCRIPT STATS ----------
+### -----------------------------------------
 
 # ---------- Full Bird CG -----------
 # Full bird CGx range due to elbow and wrist
@@ -64,7 +56,6 @@ length(which(dat_comp$CGz_elb < 0))
 
 # If significantly different than isometry will scale with mass
 CGx_sp_model_mcmc_output
-CGy_sp_model_mcmc_output
 CGz_sp_model_mcmc_output
 
 # ---------------------- Shoulder CG effects ---------------
@@ -72,13 +63,11 @@ CGz_sp_model_mcmc_output
 #Shoulder maximum CG range
 max(shoulder_motion$range_CGx_specific)
 shoulder_motion$species[which.max(shoulder_motion$range_CGx_specific)]
-max(shoulder_motion$range_CGx)
-shoulder_motion$species[which.max(shoulder_motion$range_CGx)]
+shoulder_motion$range_CGx[which.max(shoulder_motion$range_CGx_specific)]
 #Shoulder minimum CG range
 min(shoulder_motion$range_CGx_specific)
 shoulder_motion$species[which.min(shoulder_motion$range_CGx_specific)]
-min(shoulder_motion$range_CGx)
-shoulder_motion$species[which.min(shoulder_motion$range_CGx)]
+shoulder_motion$range_CGx[which.min(shoulder_motion$range_CGx_specific)]
 
 # obtain p-value for range plot with wing length
 CG_range_model_mcmc_output
@@ -94,9 +83,12 @@ dat_comp$species[which.min(dat_comp$range_wing_CGy_specific)]
 max(dat_final$wing_CGy_specific_orgShoulder)
 dat_final$species[which.max(dat_final$wing_CGy_specific_orgShoulder)]
 
-
 # arm to hand wing ratio
 CGy_range_armhand_output
+# ranges provided in the reviewer response
+max(dat_comp$max_armhand_ratio)
+min(dat_comp$max_armhand_ratio)
+hist(dat_comp$max_armhand_ratio, breaks = seq(0,1.5,0.1))
 
 max(dat_comp$CGy_elb_p)
 min(dat_comp$CGy_elb_etap)
@@ -107,7 +99,7 @@ min(dat_comp$CGy_man_etap)
 ## check how the wing position is scaling with wingspan - per Rayner
 pgls_model_mcmc <-
   MCMCglmm::MCMCglmm(
-    log(max_wing_CGy) ~ log(max_wingspan),
+    log(mean_wing_CGy) ~ log(max_wingspan),
     random = ~ phylo,
     scale = FALSE, ## whether you use this is up to you -- whatever is fair
     ginverse = list(phylo = inv.phylo$Ainv),
@@ -150,6 +142,10 @@ View(tmp)
 max_q_nd_model_mcmc_output
 min_q_nd_model_mcmc_output
 
+# check this is true if we remove the storm petrels
+max_q_nd_model_mcmc_output_adj
+min_q_nd_model_mcmc_output_adj
+
 dat_comp$species[which.max(dat_comp$max_q_nd)]
 View(dat_comp[,c("species","max_q","max_q_nd")])
 
@@ -173,6 +169,25 @@ OU_xcg$opt$aicc-BM_xcg$opt$aicc
 OU_xcg$opt
 OU_xcg$opt$z0
 (length(which(out_xcg$null > out_xcg$lr))/5000) # p-value
+
+
+### -----------------------------------------
+### ------------ METHODS STATS --------------
+### -----------------------------------------
+
+# ----- Validation of AvInertia -------
+Ixx_val_mcmc_output # allometric relationship for Iwing max
+# compare upper 95% CI to lower 95% CI from Kirkpatrick  and Berg and Rayner
+Ixx_val_mcmc_output$solutions[2,3] > 1.89  # Kirkpatick
+Ixx_val_mcmc_output$solutions[2,3] > 1.787 # Berg and Rayner
+
+# ----- Comparison of pigeon data -------
+# absolute values of Ixxwing
+Ixx_max[which(Ixx_max$species == "col_liv"),c("species","wing_hum_Ixx")]
+# maximum yCGwing difference between our values and Berg and Rayner
+max(subset(dat_final, species == "col_liv")$wing_CGy_specific_orgShoulder)-(0.071/0.323)
+
+
 
 # -------- Descriptive stats
 (length(which(out_xcg$null > out_xcg$lr))/5000)
@@ -207,3 +222,6 @@ dist_sigsq_maxstab = out_maxstab$par_dists$value[which(out_maxstab$par_dists$com
 quantile(dist_sigsq_maxstab, probs = c(0.05,0.95))/1e-3
 dist_sigsq_minstab = out_minstab$par_dists$value[which(out_minstab$par_dists$comparison == "BB" & out_minstab$par_dists$parameter =="sigsq")]
 quantile(dist_sigsq_minstab, probs = c(0.05,0.95))/1e-3
+
+
+
