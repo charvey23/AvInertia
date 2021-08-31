@@ -75,7 +75,7 @@ Ixx_val_mcmc <-
     family = c("gaussian"),
     data = Ixx_max,
     prior = univ_prior,
-    nitt = 130000, thin = 100, burnin = 30000,
+    nitt = 26000000, thin = 20000, burnin = 6000000,
     verbose = FALSE,pr = TRUE, pl = TRUE)
 Ixx_val_mcmc_output  = summary(Ixx_val_mcmc)
 
@@ -90,7 +90,7 @@ Ixx_model_mcmc <-
     family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
     data = dat_comp,
     prior = univ_prior,
-    nitt = 130000, thin = 100, burnin = 30000,
+    nitt = 26000000, thin = 20000, burnin = 6000000,
     verbose = FALSE, ## switch this to TRUE if you feel like it
     pr = TRUE, pl = TRUE ## this saves some model output stuff
   )
@@ -105,7 +105,7 @@ Iyy_model_mcmc <-
     family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
     data = dat_comp,
     prior = univ_prior,
-    nitt = 130000, thin = 100, burnin = 30000,
+    nitt = 26000000, thin = 20000, burnin = 6000000,
     verbose = FALSE, ## switch this to TRUE if you feel like it
     pr = TRUE, pl = TRUE ## this saves some model output stuff
   )
@@ -120,7 +120,7 @@ Izz_model_mcmc <-
     family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
     data = dat_comp,
     prior = univ_prior,
-    nitt = 130000, thin = 100, burnin = 30000,
+    nitt = 26000000, thin = 20000, burnin = 6000000,
     verbose = FALSE, ## switch this to TRUE if you feel like it
     pr = TRUE, pl = TRUE ## this saves some model output stuff
   )
@@ -325,7 +325,7 @@ for (i in 1:nrow(I_contr)){
 
   tail$m     = I_contr$tail_m[i]
 
-  tail_row     = shift_Iorigin(tail$I,c(0,0,0),tail$CG,"A",tail$m,full_CG,"tail",I_contr[i,])
+  tail_row   = shift_Iorigin(tail$I,c(0,0,0),tail$CG,"A",tail$m,full_CG,"tail",I_contr[i,])
 
   ## ----------- Neck ------------
   neck    = dat
@@ -357,11 +357,17 @@ for (i in 1:nrow(I_contr)){
 
   # there are two wings which is why add two of the feathers, bones, skin and muscles
   Ixx_CG = sum(subset(I_contr_fullCG, object == "Ixx")$value,
-      subset(I_contr_fullCG, component == "feathers" & object == "Ixx")$value,
-      subset(I_contr_fullCG, component == "skin" & object == "Ixx")$value,
-      subset(I_contr_fullCG, component == "bone" & object == "Ixx")$value,
-      subset(I_contr_fullCG, component == "muscle" & object == "Ixx")$value)
-  if(abs(Ixx_CG - I_contr$full_Ixx[i]) > 10^-12){
+               subset(I_contr_fullCG, component == "feathers" & object == "Ixx")$value,
+               subset(I_contr_fullCG, component == "skin" & object == "Ixx")$value,
+               subset(I_contr_fullCG, component == "bone" & object == "Ixx")$value,
+               subset(I_contr_fullCG, component == "muscle" & object == "Ixx")$value)
+  Izz_CG = sum(subset(I_contr_fullCG, object == "Izz")$value,
+               subset(I_contr_fullCG, component == "feathers" & object == "Izz")$value,
+               subset(I_contr_fullCG, component == "skin" & object == "Izz")$value,
+               subset(I_contr_fullCG, component == "bone" & object == "Izz")$value,
+               subset(I_contr_fullCG, component == "muscle" & object == "Izz")$value)
+  if(abs(Ixx_CG - I_contr$full_Ixx[i]) > 10^-12 | abs(Izz_CG - I_contr$full_Izz[i]) > 10^-12){
+    print(c(Ixx_CG, I_contr$full_Ixx[i],100*abs(Ixx_CG - I_contr$full_Ixx[i])/I_contr$full_Ixx[i]))
     warning("Error: not correct match")
   }
 

@@ -1,31 +1,31 @@
-## Calculate the evolutionary models for the data
-tmp        <- subset(dat_feat, feather != "alula")
-tmp$length <- tmp$l_vane + tmp$l_cal
-tmp$width  <- tmp$w_cal + tmp$w_vd + tmp$w_vp
-tmp$comb <- paste(tmp$species,tmp$BirdID,sep = "_")
-tmp <- subset(tmp, species %in% c("acc_str","acc_coo","chr_amh","lop_nyc","lop_imp","cyp_nig","bra_can","fal_per","lar_gla","pel_ery","cor_cor") |
-                comb == "tyt_alb_19_265" | comb == "meg_alc_20_3495" | comb == "fal_col_20_1016" | comb == "ana_pla_20_0291" | comb == "cho_min_20_1027" | comb == "aec_occ_20_0922" |
-                comb == "cya_ste_20_0925" | comb == "oce_leu_20_1015" | comb == "ard_her_20_0284" | comb == "col_liv_20_0303" | comb == "col_aur_20_0907")
-tmp$grouping = NA
-tmp$grouping[which(grepl("P", tmp$feather, fixed = TRUE))] = "P"
-tmp$grouping[which(grepl("S", tmp$feather, fixed = TRUE))] = "S"
-
-dat_feat_means <- aggregate(list(feat_length = tmp$length,
-                                 feat_width = tmp$width,
-                                 feat_mass = tmp$m_f), by = list(species = tmp$species, grouping = tmp$grouping), mean)
-
-dat_feat_means <- reshape(dat_feat_means,idvar = "species",timevar = "grouping",direction = "wide")
+# ## Calculate the evolutionary models for the data
+# tmp        <- subset(dat_feat, feather != "alula")
+# tmp$length <- tmp$l_vane + tmp$l_cal
+# tmp$width  <- tmp$w_cal + tmp$w_vd + tmp$w_vp
+# tmp$comb <- paste(tmp$species,tmp$BirdID,sep = "_")
+# tmp <- subset(tmp, species %in% c("acc_str","acc_coo","chr_amh","lop_nyc","lop_imp","cyp_nig","bra_can","fal_per","lar_gla","pel_ery","cor_cor") |
+#                 comb == "tyt_alb_19_265" | comb == "meg_alc_20_3495" | comb == "fal_col_20_1016" | comb == "ana_pla_20_0291" | comb == "cho_min_20_1027" | comb == "aec_occ_20_0922" |
+#                 comb == "cya_ste_20_0925" | comb == "oce_leu_20_1015" | comb == "ard_her_20_0284" | comb == "col_liv_20_0303" | comb == "col_aur_20_0907")
+# tmp$grouping = NA
+# tmp$grouping[which(grepl("P", tmp$feather, fixed = TRUE))] = "P"
+# tmp$grouping[which(grepl("S", tmp$feather, fixed = TRUE))] = "S"
+#
+# dat_feat_means <- aggregate(list(feat_length = tmp$length,
+#                                  feat_width = tmp$width,
+#                                  feat_mass = tmp$m_f), by = list(species = tmp$species, grouping = tmp$grouping), mean)
+#
+# dat_feat_means <- reshape(dat_feat_means,idvar = "species",timevar = "grouping",direction = "wide")
 # Take the mean of each metric by species
 output_data_means <- aggregate(select_if(dat_comp, is.numeric), by = list(species = dat_comp$species), mean)
 morpho_data_means <- aggregate(select_if(dat_bird, is.numeric), by = list(species = dat_bird$species), mean)
 
-all_data_means              <- merge(dat_feat_means, output_data_means, id = "species")
-all_data_means              <- merge(all_data_means, morpho_data_means, id = "species")
+# all_data_means              <- merge(dat_feat_means, output_data_means, id = "species")
+all_data_means              <- merge(output_data_means, morpho_data_means, id = "species")
 all_data_means              <- merge(all_data_means, unique(dat_comp[,c("species", "binomial")]), id = "species")
-all_data_means$torso_length <- all_data_means$torsotail_length - all_data_means$tail_length
-all_data_means$torso_mass   <- all_data_means$torsotail_mass - all_data_means$tail_mass_g
-all_data_means$leg_mass     <- 0.5*(all_data_means$left_leg_mass_g+all_data_means$right_leg_mass)
-all_data_means$body_inertia <- (all_data_means$full_length*all_data_means$max_wingspan*all_data_means$full_m)
+# all_data_means$torso_length <- all_data_means$torsotail_length - all_data_means$tail_length
+# all_data_means$torso_mass   <- all_data_means$torsotail_mass - all_data_means$tail_mass_g
+# all_data_means$leg_mass     <- 0.5*(all_data_means$left_leg_mass_g+all_data_means$right_leg_mass)
+# all_data_means$body_inertia <- (all_data_means$full_length*all_data_means$max_wingspan*all_data_means$full_m)
 
 # create a matrix from the final data as it is required for fitContinuous()
 all_data_means_mat           <- as.matrix(select_if(all_data_means, is.numeric))
@@ -43,11 +43,11 @@ OU_maxsm = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("max_sm_n
 BM_minsm = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("min_sm_nd")], model = "BM")
 OU_minsm = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("min_sm_nd")], model = "OU")
 
-BM_maxag = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("max_q_nd")], model = "BM")
-OU_maxag = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("max_q_nd")], model = "OU")
+#BM_maxag = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("max_q_nd")], model = "BM")
+#OU_maxag = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("max_q_nd")], model = "OU")
 
-BM_minag = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("min_q_nd")], model = "BM")
-OU_minag = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("min_q_nd")], model = "OU")
+# BM_minag = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("min_q_nd")], model = "BM")
+# OU_minag = fitContinuous(phy = pruned_mcc, dat = all_data_means_mat[,c("min_q_nd")], model = "OU")
 #
 # # Calculate the individual models of OU and BM respectively
 #

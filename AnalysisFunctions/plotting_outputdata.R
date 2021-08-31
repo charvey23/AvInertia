@@ -1,10 +1,11 @@
 source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/process_outputdata.R")
 source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/plotting_setup.R")
 source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/calc_evoparams.R")
-source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/analyse_CGsens.R")
 source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/calc_CGparams.R")
 source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/calc_MOIparams.R")
 source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/calc_manparams.R")
+# the following script has very long run time due to bootstrapping
+source("/Users/christinaharvey/Documents/AvInertia/AnalysisFunctions/analyse_CGsens.R")
 
 ## --------------------------------------------------------------------------------------------------------------------
 ## ------------------------------------------- Figure 1 ---------------------------------------------------------------
@@ -239,7 +240,7 @@ CGrange_plot <- ggplot() +
   theme(legend.position="none") +
   # axis control
   scale_x_continuous(limits = c(0,3.25), breaks = c(0,1,2,3,4), labels = c(0,100,200,300,400), name = "Maximum wingspan/body length (%)") +
-  scale_y_continuous(limits = c(-0.025,0.25), breaks = c(0,0.05,0.1,0.15,0.2,0.25), labels = c(0,5,10,15,20,25), name = "Range of the CG position (% of body length)")+
+  scale_y_continuous(limits = c(-0.025,0.255), breaks = c(0,0.05,0.1,0.15,0.2,0.25), labels = c(0,5,10,15,20,25), name = "Range of the CG position (% of body length)")+
   geom_rangeframe() +
   annotate(geom = "segment", x = -Inf, xend = -Inf, y = 0, yend = 0.25) +
   annotate(geom = "segment", x = 0, xend = 3, y = -Inf, yend = -Inf)
@@ -651,52 +652,10 @@ chord_length_plot <- ggplot()+
         # Background behind actual data points
         plot.background  = ggplot2::element_rect(fill = "transparent", color = NA))+
   facet_wrap(~species_order, ncol = 1) +
-  #scale_size(range = c(0.05, 10), name="Normalized pitch agility", breaks = c(0.3,0.6,0.9,1.2,1.5), labels = c(0.2,0.4,0.6,0.8,1)) + #scales based on area
   scale_colour_gradient2(midpoint=0, low="#1D0747", mid="#FFF9D3", high="#00510A", space ="Lab", name = "static margin (% of max. root chord)") +
   scale_y_continuous(limits = c(0.955,1.025)) +
   scale_x_continuous(limits = c(0.955,1.025))
 
-
-Iyy_cont = ggplot() +
-  geom_rect(data=subset(I_contr,type_metric=="min"), aes(xmin=bone_con_Iyy+feat_con_Iyy+musc_con_Iyy+skin_con_Iyy+head_con_Iyy+neck_con_Iyy+torso_con_Iyy,
-                                                         xmax=bone_con_Iyy+feat_con_Iyy+musc_con_Iyy+skin_con_Iyy+head_con_Iyy+neck_con_Iyy+torso_con_Iyy+tail_con_Iyy,
-                                                         ymin=as.numeric(as.factor(species_order))-0.5,
-                                                         ymax=as.numeric(as.factor(species_order))+0.5), stat = "identity", fill = col_tail, alpha = set_alp) +
-  geom_rect(data=subset(I_contr,type_metric=="min"), aes(xmin=bone_con_Iyy+feat_con_Iyy+musc_con_Iyy+skin_con_Iyy+head_con_Iyy+neck_con_Iyy,
-                                                         xmax=bone_con_Iyy+feat_con_Iyy+musc_con_Iyy+skin_con_Iyy+head_con_Iyy+neck_con_Iyy+torso_con_Iyy,
-                                                         ymin=as.numeric(as.factor(species_order))-0.5,
-                                                         ymax=as.numeric(as.factor(species_order))+0.5), stat = "identity", fill = col_torso, alpha = set_alp) +
-  geom_rect(data=subset(I_contr,type_metric=="min"), aes(xmin=bone_con_Iyy+feat_con_Iyy+musc_con_Iyy+skin_con_Iyy+head_con_Iyy,
-                                                         xmax=bone_con_Iyy+feat_con_Iyy+musc_con_Iyy+skin_con_Iyy+head_con_Iyy+neck_con_Iyy,
-                                                         ymin=as.numeric(as.factor(species_order))-0.5,
-                                                         ymax=as.numeric(as.factor(species_order))+0.5), stat = "identity", fill = col_neck, alpha = set_alp) +
-  geom_rect(data=subset(I_contr,type_metric=="min"), aes(xmin=bone_con_Iyy+feat_con_Iyy+musc_con_Iyy+skin_con_Iyy,
-                                                         xmax=bone_con_Iyy+feat_con_Iyy+musc_con_Iyy+skin_con_Iyy+head_con_Iyy,
-                                                         ymin=as.numeric(as.factor(species_order))-0.5,
-                                                         ymax=as.numeric(as.factor(species_order))+0.5), stat = "identity", fill = col_head, alpha = set_alp) +
-  geom_rect(data=subset(I_contr,type_metric=="min"), aes(xmin=bone_con_Iyy+feat_con_Iyy+musc_con_Iyy,
-                                                         xmax=bone_con_Iyy+feat_con_Iyy+musc_con_Iyy+skin_con_Iyy,
-                                                         ymin=as.numeric(as.factor(species_order))-0.5,
-                                                         ymax=as.numeric(as.factor(species_order))+0.5), stat = "identity", fill = col_skin, alpha = set_alp) +
-  geom_rect(data=subset(I_contr,type_metric=="min"), aes(xmin=bone_con_Iyy+feat_con_Iyy,
-                                                         xmax=bone_con_Iyy+feat_con_Iyy+musc_con_Iyy,
-                                                         ymin=as.numeric(as.factor(species_order))-0.5,
-                                                         ymax=as.numeric(as.factor(species_order))+0.5), stat = "identity", fill = col_musc, alpha = set_alp) +
-  geom_rect(data=subset(I_contr,type_metric=="min"), aes(xmin=bone_con_Iyy,
-                                                         xmax=bone_con_Iyy+feat_con_Iyy,
-                                                         ymin=as.numeric(as.factor(species_order))-0.5,
-                                                         ymax=as.numeric(as.factor(species_order))+0.5), stat = "identity", fill = col_feat, alpha = set_alp) +
-  geom_rect(data=subset(I_contr,type_metric=="min"), aes(xmin=0,
-                                                         xmax=bone_con_Iyy,
-                                                         ymin=as.numeric(as.factor(species_order))-0.5,
-                                                         ymax=as.numeric(as.factor(species_order))+0.5), stat = "identity", fill = col_bone, alpha = set_alp) +
-  #theme control
-  th +
-  theme(axis.ticks.y=element_blank(),axis.text.y=element_blank()) +
-  scale_y_continuous(breaks = seq(1,22,1), labels = phylo_order$species, trans="reverse", name = "") +
-  scale_x_continuous(limits = c(0,1.01), breaks = c(0,0.25,0.5,0.75,1), labels = c(0,25,50,75,100)) +
-  geom_rangeframe() +
-  annotate(geom = "segment", x = 0, xend = 1, y = Inf, yend = Inf)
 
 ### ------------- Extended Data Figure ----------
 
@@ -712,6 +671,7 @@ test_min = aggregate(list(prop_q_dot = dat_final$prop_q_dot,
 chulls_xz <- ddply(dat_final[,c("species_order","BirdID","elbow","manus")], .(species_order, BirdID),
                    function(df) df[chull(df$elbow, df$manus), ])
 
+# exported as 12x4
 ROM_plot_sm <- ggplot()+
   #geom_polygon(data = chulls_xz, aes(x = elbow, y = manus), col = "black", fill = NA, alpha = 0.5) +
   geom_point(data = dat_final, aes(x =elbow, y = manus, col = sm_nd)) +

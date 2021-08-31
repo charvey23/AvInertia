@@ -67,10 +67,14 @@ dat_wing$arm_span     = sqrt((dat_wing$pt1_X-dat_wing$pt3_X)^2+(dat_wing$pt1_Y-d
 dat_wing$hand_span    = apply(cbind(sqrt((dat_wing$pt8_X-dat_wing$pt3_X)^2+(dat_wing$pt8_Y-dat_wing$pt3_Y)^2+(dat_wing$pt8_Z-dat_wing$pt3_Z)^2),
                                     sqrt((dat_wing$pt9_X-dat_wing$pt3_X)^2+(dat_wing$pt9_Y-dat_wing$pt3_Y)^2+(dat_wing$pt9_Z-dat_wing$pt3_Z)^2)), 1, max)
 
+filename = paste(format(Sys.Date(), "%Y_%m_%d"),"_allwingdata.csv",sep="")
+write.csv(dat_wing,filename)
+
 ## ------------- Read in the feather data --------------
-filename_feat = list.files(path = path_data_folder, pattern = paste("allspecimen_featherinfo"))
-dat_feat      = read.csv(file = paste(path_data_folder,filename_feat,sep= ""))
-dat_feat      = dat_feat[,-c(1,3:7)]
+# CAUTION: This data is not necessary - most recent outputs excel rounded off sig figs if desired should re-run all species in one group to avoid rounding errors
+# filename_feat = list.files(path = path_data_folder, pattern = paste("allspecimen_featherinfo"))
+# dat_feat      = read.csv(file = paste(path_data_folder,filename_feat,sep= ""))
+# dat_feat      = dat_feat[,-c(1,3:7)]
 
 ## ------------- Read in the body morphology data --------------
 filename_bird = list.files(path = path_data_folder, pattern = paste("allspecimen_birdinfo"))
@@ -446,8 +450,8 @@ univ_prior <-
 
 # to compute Pagels lambda - (pgls_model_mcmc$VCV[, 1] / (pgls_model_mcmc$VCV[, 1] + pgls_model_mcmc$VCV[, 2])) %>% mean
 
-filename = paste(format(Sys.Date(), "%Y_%m_%d"),"_alldata.csv",sep="")
-write.csv(dat_final,filename)
-filename = paste(format(Sys.Date(), "%Y_%m_%d"),"_compdata.csv",sep="")
-write.csv(dat_comp,filename)
+# filename = paste(format(Sys.Date(), "%Y_%m_%d"),"_alldata.csv",sep="")
+# write.csv(dat_final,filename)
+# filename = paste(format(Sys.Date(), "%Y_%m_%d"),"_compdata.csv",sep="")
+# write.csv(dat_comp,filename)
 

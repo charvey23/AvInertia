@@ -8,7 +8,7 @@ max_q_nd_model_mcmc <-
     family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
     data = dat_comp,
     prior = univ_prior,
-    nitt = 130000, thin = 100, burnin = 30000,
+    nitt = 26000000, thin = 20000, burnin = 6000000,
     verbose = FALSE, ## switch this to TRUE if you feel like it
     pr = TRUE, pl = TRUE ## this saves some model output stuff
   )
@@ -24,7 +24,7 @@ min_q_nd_model_mcmc <-
     family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
     data = dat_comp,
     prior = univ_prior,
-    nitt = 130000, thin = 100, burnin = 30000,
+    nitt = 26000000, thin = 20000, burnin = 6000000,
     verbose = FALSE, ## switch this to TRUE if you feel like it
     pr = TRUE, pl = TRUE ## this saves some model output stuff
   )
@@ -45,7 +45,7 @@ max_q_nd_model_mcmc_adj <-
     family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
     data = dat_comp[which(dat_comp$binomial != "oce_leu"),],
     prior = univ_prior,
-    nitt = 130000, thin = 100, burnin = 30000,
+    nitt = 26000000, thin = 20000, burnin = 6000000,
     verbose = FALSE, ## switch this to TRUE if you feel like it
     pr = TRUE, pl = TRUE ## this saves some model output stuff
   )
@@ -60,7 +60,7 @@ min_q_nd_model_mcmc_adj <-
     family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
     data = dat_comp[which(dat_comp$binomial != "oce_leu"),],
     prior = univ_prior,
-    nitt = 130000, thin = 100, burnin = 30000,
+    nitt = 26000000, thin = 20000, burnin = 6000000,
     verbose = FALSE, ## switch this to TRUE if you feel like it
     pr = TRUE, pl = TRUE ## this saves some model output stuff
   )
@@ -75,7 +75,7 @@ range_q_nd_model_mcmc <-
     family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
     data = dat_comp,
     prior = univ_prior,
-    nitt = 130000, thin = 100, burnin = 30000,
+    nitt = 26000000, thin = 20000, burnin = 6000000,
     verbose = FALSE, ## switch this to TRUE if you feel like it
     pr = TRUE, pl = TRUE ## this saves some model output stuff
   )
@@ -99,7 +99,7 @@ range_sm_nd_model_mcmc <-
     family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
     data = dat_comp,
     prior = univ_prior,
-    nitt = 130000, thin = 100, burnin = 30000,
+    nitt = 26000000, thin = 20000, burnin = 6000000,
     verbose = FALSE, ## switch this to TRUE if you feel like it
     pr = TRUE, pl = TRUE ## this saves some model output stuff
   )
