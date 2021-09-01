@@ -240,7 +240,7 @@ CGrange_plot <- ggplot() +
   theme(legend.position="none") +
   # axis control
   scale_x_continuous(limits = c(0,3.25), breaks = c(0,1,2,3,4), labels = c(0,100,200,300,400), name = "Maximum wingspan/body length (%)") +
-  scale_y_continuous(limits = c(-0.025,0.255), breaks = c(0,0.05,0.1,0.15,0.2,0.25), labels = c(0,5,10,15,20,25), name = "Range of the CG position (% of body length)")+
+  scale_y_continuous(limits = c(-0.025,0.28), breaks = c(0,0.05,0.1,0.15,0.2,0.25), labels = c(0,5,10,15,20,25), name = "Range of the CG position (% of body length)")+
   geom_rangeframe() +
   annotate(geom = "segment", x = -Inf, xend = -Inf, y = 0, yend = 0.25) +
   annotate(geom = "segment", x = 0, xend = 3, y = -Inf, yend = -Inf)
@@ -257,10 +257,10 @@ leftcol <- plot_grid(phylo_plot_complete,CGxz_plot, wingCGxy_plot,
                        label_size = 10,
                        label_fontfamily = "sans")
 
-rightcol_ind <- plot_grid(effect_CGx,effect_CGz,effect_CGy,CG_isometry_fullbird,CG_isometry_wingonly,CGrange_plot,
+rightcol_ind <- plot_grid(CGrange_plot,effect_CGx,effect_CGz,effect_CGy,CG_isometry_fullbird,CG_isometry_wingonly,
                       #arrangement data
                       ncol = 1,
-                      rel_heights = c(0.5,0.5,0.5,1.3,1.3,1.4),
+                      rel_heights = c(1.4,0.5,0.5,0.5,1.3,1.3),
                       #labels
                       labels = c("",""),
                       label_size = 10,

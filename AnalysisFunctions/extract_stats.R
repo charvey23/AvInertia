@@ -96,22 +96,6 @@ min(dat_comp$CGy_elb_etap)
 max(dat_comp$CGy_man_p)
 min(dat_comp$CGy_man_etap)
 
-## check how the wing position is scaling with wingspan - per Rayner
-pgls_model_mcmc <-
-  MCMCglmm::MCMCglmm(
-    log(mean_wing_CGy) ~ log(max_wingspan),
-    random = ~ phylo,
-    scale = FALSE, ## whether you use this is up to you -- whatever is fair
-    ginverse = list(phylo = inv.phylo$Ainv),
-    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
-    data = dat_comp,
-    prior = univ_prior,
-    nitt = 130000, thin = 100, burnin = 30000,
-    verbose = FALSE, ## switch this to TRUE if you feel like it
-    pr = TRUE, pl = TRUE ## this saves some model output stuff
-  )
-summary(pgls_model_mcmc) # if 95% overlap 1 this is indistinguishable from isometry
-
 ## --------------------- Moment of Inertia -------------------
 
 # verify if overlapping with isometry 5/3, 1.666..
@@ -151,6 +135,9 @@ View(dat_comp[,c("species","max_q","max_q_nd")])
 
 range_sm_nd_model_mcmc_output
 
+mean(dat_final$c_root_max[which(dat_final$species == "cyp_nig")]^2*dat_final$S_max[which(dat_final$species == "cyp_nig")]/dat_final$full_Iyy[which(dat_final$species == "cyp_nig")]) # this value is lower
+mean(dat_final$c_root_max[which(dat_final$species == "oce_leu")]^2*dat_final$S_max[which(dat_final$species == "oce_leu")]/dat_final$full_Iyy[which(dat_final$species == "oce_leu")])
+
 dat_comp$species[which(dat_comp$min_sm>0 & dat_comp$max_sm>0)] # number of individuals that remain stable
 dat_comp$species[which(dat_comp$min_sm<0 & dat_comp$max_sm<0)] # number of individuals that remain unstable
 ## ---------------------- Evolution -----------------------
@@ -187,10 +174,31 @@ Ixx_max[which(Ixx_max$species == "col_liv"),c("species","wing_hum_Ixx")]
 # maximum yCGwing difference between our values and Berg and Rayner
 max(subset(dat_final, species == "col_liv")$wing_CGy_specific_orgShoulder)-(0.071/0.323)
 
+# ----- Extended Data Table 1 -----
+CGx_sp_model_mcmc_output
+CGz_sp_model_mcmc_output
+CG_range_model_mcmc_output
 
+CGy_sp_model_mcmc_output
+CGy_range_armhand_output
+CGx_range_armhand_output
+CGz_range_armhand_output
+
+Ixx_model_mcmc_output
+Iyy_model_mcmc_output
+Izz_model_mcmc_output
+Ixx_val_mcmc_output
+
+range_q_nd_model_mcmc_output
+range_sm_nd_model_mcmc_output
+
+#check that the agility range still decreases with mass even once the petrels are removed
+range_q_nd_model_mcmc_output_adj
 
 # -------- Descriptive stats
 (length(which(out_xcg$null > out_xcg$lr))/5000)
+(length(which(out_maxstab$null > out_maxstab$lr))/5000)
+(length(which(out_minstab$null > out_minstab$lr))/5000)
 
 # calculate power of tests
 length(which(out_xcg$test > quantile(out_xcg$null, probs = 0.95)))/5000

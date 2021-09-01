@@ -102,7 +102,7 @@ for (i in 2:length(filename_results)){
 }
 
 # clean up environment
-remove(filename_wing,filename_feat,filename_bird,filename_body,filename_results)
+remove(filename_wing,filename_bird,filename_body,filename_results)
 
 ## ------------- Read in full tree phylogeny --------------
 full_tree <- read.nexus("/Users/christinaharvey/documents/AvInertia/AnalysisData/vikROM_passerines_403sp.tre")
@@ -240,7 +240,6 @@ dat_final$sm_nd <- dat_final$sm/dat_final$c_root_max
 ## ------------ Agility -----------
 dat_final$prop_q_dot     <- (-dat_final$sm*dat_final$S_max*dat_final$full_m^0.24)/dat_final$full_Iyy
 dat_final$prop_q_dot_nd  <- (-dat_final$sm*dat_final$S_max*dat_final$full_length^2)/dat_final$full_Iyy
-#dat_final$del_M_specific <- dat_final$prop_q_dot*dat_final$full_Iyy/(dat_final$full_m*dat_final$full_length)
 # uses scaling from: Alerstam, T., Rosén, M., Bäckman, J., Ericson, P. G., & Hellgren, O. (2007).
 # Flight speeds among bird species: allometric and phylogenetic effects. PLoS Biol, 5(8), e197.
 
