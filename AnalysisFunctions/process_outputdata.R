@@ -244,8 +244,6 @@ dat_final$prop_q_dot_nd  <- (-dat_final$sm*dat_final$S_max*dat_final$full_length
 # Flight speeds among bird species: allometric and phylogenetic effects. PLoS Biol, 5(8), e197.
 
 dat_final$sachs_pred_Ixx <- dat_final$full_m*(sqrt((0.14*dat_final$wing_m/dat_final$full_m))*dat_final$span*0.5)^2
-# dat_final$pitch_div <- (dat_final$full_Izz - dat_final$full_Ixx)/dat_final$full_Iyy
-# dat_final$yaw_div   <- (dat_final$full_Iyy - dat_final$full_Ixx)/dat_final$full_Izz
 
 ## ----------- Tail Volume ------------
 # CAUTION: THIS IS NON-DIMENSIONALIZED WITH THE MAXIMUM MEAN CHORD TO COMPARE TO TRADITIONAL AIRCRAFT
@@ -368,7 +366,7 @@ test     <- aggregate(list(mean_CGx_orgBeak      = dat_final$full_CGx_orgBeak,
                            mean_Iyy          = dat_final$full_Iyy,
                            mean_Izz          = dat_final$full_Izz,
                            mean_Ixz          = dat_final$full_Ixz,
-                           full_length = dat_final$full_length), # noote that this isn't actually a mean just pulling out each specimen's length
+                           full_length       = dat_final$full_length), # noote that this isn't actually a mean just pulling out each specimen's length
                       by=list(species = dat_final$species, BirdID = dat_final$BirdID), mean)
 dat_comp <- merge(dat_comp,test, by = c("species","BirdID"))
 # Maximum values
