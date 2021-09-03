@@ -93,105 +93,111 @@ dat_chord$st_mean_ac_nondim   <- dat_chord$st_mean_ac_nobody/dat_chord$c_root_ma
 dat_chord$x_np_nondim         <- dat_chord$x_np/dat_chord$c_root_max
 
 # Evaluate metric 1
-test <- lm(log(-x_np_nondim)~log(root_ac_nondim), data = dat_chord)
-summary(test)
+test_1 <- lm(log(-x_np_nondim)~log(root_ac_nondim), data = dat_chord)
+summary(test_1)
+confint(test_1)
 # Evaluate metric 2
-test <- lm(log(-x_np_nondim)~log(-mean_proj_ac_nondim), data = dat_chord)
-summary(test)
+test_2 <- lm(log(-x_np_nondim)~log(-mean_proj_ac_nondim), data = dat_chord)
+summary(test_2)
+confint(test_2)
 # Evaluate metric 3
-test <- lm(log(-x_np_nondim)~log(-mean_ac_nondim), data = dat_chord)
-summary(test)
+test_3 <- lm(log(-x_np_nondim)~log(-mean_ac_nondim), data = dat_chord)
+summary(test_3)
+confint(test_3)
 # Evaluate metric 4
-test <- lm(log(-x_np_nondim)~log(-mac_ac_nondim), data = dat_chord)
-summary(test)
+test_4 <- lm(log(-x_np_nondim)~log(-mac_ac_nondim), data = dat_chord)
+summary(test_4)
+confint(test_4)
 # Evaluate metric 5
-test <- lm(log(-x_np_nondim)~log(-cen_ac_nondim), data = dat_chord)
-summary(test)
+test_5 <- lm(log(-x_np_nondim)~log(-cen_ac_nondim), data = dat_chord)
+summary(test_5)
+confint(test_5)
 # Evaluate metric 6
-test <- lm(log(-x_np_nondim)~log(-st_mean_ac_nondim), data = dat_chord)
-summary(test)
-
-### Option #1: Use the root chord change to estimate the neutral point position
-dat_chord$c_root_max <- 0
-dat_chord$c_root_max[which(dat_chord$WingID == "17_0285")] = max(dat_chord$c_root[which(dat_chord$WingID == "17_0285")])
-dat_chord$c_root_max[which(dat_chord$WingID == "17_0243")] = max(dat_chord$c_root[which(dat_chord$WingID == "17_0243")])
-dat_chord$c_root_max[which(dat_chord$WingID == "16_0048")] = max(dat_chord$c_root[which(dat_chord$WingID == "16_0048")])
-
-dat_chord$x_root_ac = -0.25*dat_chord$c_root
-# center at the mean
-dat_chord$x_root_ac = dat_chord$x_root_ac-mean(dat_chord$x_root_ac)
-mod_root <- lm(x_np ~ x_root_ac, data = subset(dat_chord,WingID=="17_0285"))
-### Option #2: Use the mean chord change to estimate the neutral point position
-# Option #2a: the project wing area divided by the half span
-#this is the one wing projected area divided by the half span which includes the body width
-# substract half the constant body width from this one
-# Option #2a - no body area
-dat_chord$x_mean_proj_ac1 = -0.25*(dat_chord$S_proj/(dat_chord$b-(0.5*0.09481795)))
-# center at the mean
-dat_chord$x_mean_proj_ac1 = dat_chord$x_mean_proj_ac1-mean(dat_chord$x_mean_proj_ac1)
-#fit model
-mod_mean_proj1 <- lm(x_np ~ x_mean_proj_ac1, data = dat_chord)
-# Option #2b -include the body area
-dat_chord$x_mean_proj_ac2 = -0.25*((dat_chord$S_proj+(0.5*0.00305))/(dat_chord$b))
-# center at the mean
-dat_chord$x_mean_proj_ac2 = dat_chord$x_mean_proj_ac2-mean(dat_chord$x_mean_proj_ac2)
-#fit model
-mod_mean_proj2 <- lm(x_np ~ x_mean_proj_ac2, data = dat_chord)
-
-# Option #2c - no body area
-dat_chord$x_mean_ac1 = -0.25*(dat_chord$S_wing/(dat_chord$b-(0.5*0.09481795)))
-# center at the mean
-dat_chord$x_mean_ac1 = dat_chord$x_mean_ac1-mean(dat_chord$x_mean_ac1)
-#fit model
-mod_mean1 <- lm(x_np ~ x_mean_ac1, data = dat_chord)
-# Option #2d - include the body area
-dat_chord$x_mean_ac2 = -0.25*((dat_chord$S_wing+(0.5*0.00305))/(dat_chord$b))
-# center at the mean
-dat_chord$x_mean_ac2 = dat_chord$x_mean_ac2-mean(dat_chord$x_mean_ac2)
-#fit model
-mod_mean2 <- lm(x_np ~ x_mean_ac2, data = dat_chord)
-
-### Option #3: Use the mean aerodynamic chord change to estimate the neutral point position
-dat_chord$x_mac_ac = -0.25*dat_chord$MAC
-# center at the mean
-dat_chord$x_mac_ac = dat_chord$x_mac_ac-mean(dat_chord$x_mac_ac)
-#fit model
-mod_MAC <- lm(x_np ~ x_mac_ac, data = dat_chord)
-
-th <- theme_classic() +
-  theme(
-    # Text
-    axis.title = element_text(size = 10),
-    plot.title = element_text(hjust = 0.5),
-    axis.text = element_text(size = 8, colour = "black"),
-    axis.text.x = element_text(margin = margin(t = 10, unit = "pt")),
-    axis.text.y = element_text(margin = margin(r = 10)),
-    # Axis line
-    axis.line = element_blank(),
-    axis.ticks.length = unit(-5,"pt"),
-    # Legend
-    legend.position = 'none',
-    # Background transparency
-    # Background of panel
-    panel.background = element_rect(fill = "transparent"),
-    # Background behind actual data points
-    plot.background = element_rect(fill = "transparent", color = NA)
-  )
-
-plot_chord <- ggplot()+
-  geom_abline(intercept = 0, slope = 1, linetype = "dashed") +
-  geom_smooth(data = dat_chord, aes(x = x_mean_proj_ac1, y = x_np), col = "red", linetype = 3, method = "lm", formula = "y~x", size = 0.5) +
-  geom_smooth(data = dat_chord, aes(x = x_mean_proj_ac2, y = x_np), col = "red",  method = "lm", formula = "y~x",size = 0.5) +
-  geom_smooth(data = dat_chord, aes(x = x_mean_ac1, y = x_np), method = "lm", linetype = 3, formula = "y~x",size = 0.5) +
-  geom_smooth(data = dat_chord, aes(x = x_mean_ac2, y = x_np), method = "lm", formula = "y~x",size = 0.5) +
-  geom_smooth(data = dat_chord, aes(x = x_root_ac, y = x_np), method = "lm", formula = "y~x",size = 0.5) +
-  geom_smooth(data = dat_chord, aes(x = x_mac_ac, y = x_np), col = "green", fill= "green", alpha = 0.3, method = "lm", formula = "y~x",size = 0.5) + th +
-  coord_fixed()+
-  scale_y_continuous(limits = c(-0.03,0.03), breaks = c(-0.03,-0.015,0,0.015,0.03), name = "Neutral point - centered (m)") +
-  scale_x_continuous(limits = c(-0.03,0.03), breaks = c(-0.03,-0.015,0,0.015,0.03), name = "Proxy chord length - centered (m)") +
-  geom_rangeframe() +
-  annotate(geom = "segment", x = log(0), xend = log(0), y = -0.03, yend = 0.03) +
-  annotate(geom = "segment", x = -0.03, xend = 0.03, y = log(0), yend = log(0))
+test_6 <- lm(log(-x_np_nondim)~log(-st_mean_ac_nondim), data = dat_chord)
+summary(test_6)
+confint(test_6)
+#
+# ### Option #1: Use the root chord change to estimate the neutral point position
+# dat_chord$c_root_max <- 0
+# dat_chord$c_root_max[which(dat_chord$WingID == "17_0285")] = max(dat_chord$c_root[which(dat_chord$WingID == "17_0285")])
+# dat_chord$c_root_max[which(dat_chord$WingID == "17_0243")] = max(dat_chord$c_root[which(dat_chord$WingID == "17_0243")])
+# dat_chord$c_root_max[which(dat_chord$WingID == "16_0048")] = max(dat_chord$c_root[which(dat_chord$WingID == "16_0048")])
+#
+# dat_chord$x_root_ac = -0.25*dat_chord$c_root
+# # center at the mean
+# dat_chord$x_root_ac = dat_chord$x_root_ac-mean(dat_chord$x_root_ac)
+# mod_root <- lm(x_np ~ x_root_ac, data = subset(dat_chord,WingID=="17_0285"))
+# ### Option #2: Use the mean chord change to estimate the neutral point position
+# # Option #2a: the project wing area divided by the half span
+# #this is the one wing projected area divided by the half span which includes the body width
+# # substract half the constant body width from this one
+# # Option #2a - no body area
+# dat_chord$x_mean_proj_ac1 = -0.25*(dat_chord$S_proj/(dat_chord$b-(0.5*0.09481795)))
+# # center at the mean
+# dat_chord$x_mean_proj_ac1 = dat_chord$x_mean_proj_ac1-mean(dat_chord$x_mean_proj_ac1)
+# #fit model
+# mod_mean_proj1 <- lm(x_np ~ x_mean_proj_ac1, data = dat_chord)
+# # Option #2b -include the body area
+# dat_chord$x_mean_proj_ac2 = -0.25*((dat_chord$S_proj+(0.5*0.00305))/(dat_chord$b))
+# # center at the mean
+# dat_chord$x_mean_proj_ac2 = dat_chord$x_mean_proj_ac2-mean(dat_chord$x_mean_proj_ac2)
+# #fit model
+# mod_mean_proj2 <- lm(x_np ~ x_mean_proj_ac2, data = dat_chord)
+#
+# # Option #2c - no body area
+# dat_chord$x_mean_ac1 = -0.25*(dat_chord$S_wing/(dat_chord$b-(0.5*0.09481795)))
+# # center at the mean
+# dat_chord$x_mean_ac1 = dat_chord$x_mean_ac1-mean(dat_chord$x_mean_ac1)
+# #fit model
+# mod_mean1 <- lm(x_np ~ x_mean_ac1, data = dat_chord)
+# # Option #2d - include the body area
+# dat_chord$x_mean_ac2 = -0.25*((dat_chord$S_wing+(0.5*0.00305))/(dat_chord$b))
+# # center at the mean
+# dat_chord$x_mean_ac2 = dat_chord$x_mean_ac2-mean(dat_chord$x_mean_ac2)
+# #fit model
+# mod_mean2 <- lm(x_np ~ x_mean_ac2, data = dat_chord)
+#
+# ### Option #3: Use the mean aerodynamic chord change to estimate the neutral point position
+# dat_chord$x_mac_ac = -0.25*dat_chord$MAC
+# # center at the mean
+# dat_chord$x_mac_ac = dat_chord$x_mac_ac-mean(dat_chord$x_mac_ac)
+# #fit model
+# mod_MAC <- lm(x_np ~ x_mac_ac, data = dat_chord)
+#
+# th <- theme_classic() +
+#   theme(
+#     # Text
+#     axis.title = element_text(size = 10),
+#     plot.title = element_text(hjust = 0.5),
+#     axis.text = element_text(size = 8, colour = "black"),
+#     axis.text.x = element_text(margin = margin(t = 10, unit = "pt")),
+#     axis.text.y = element_text(margin = margin(r = 10)),
+#     # Axis line
+#     axis.line = element_blank(),
+#     axis.ticks.length = unit(-5,"pt"),
+#     # Legend
+#     legend.position = 'none',
+#     # Background transparency
+#     # Background of panel
+#     panel.background = element_rect(fill = "transparent"),
+#     # Background behind actual data points
+#     plot.background = element_rect(fill = "transparent", color = NA)
+#   )
+#
+# plot_chord <- ggplot()+
+#   geom_abline(intercept = 0, slope = 1, linetype = "dashed") +
+#   geom_smooth(data = dat_chord, aes(x = x_mean_proj_ac1, y = x_np), col = "red", linetype = 3, method = "lm", formula = "y~x", size = 0.5) +
+#   geom_smooth(data = dat_chord, aes(x = x_mean_proj_ac2, y = x_np), col = "red",  method = "lm", formula = "y~x",size = 0.5) +
+#   geom_smooth(data = dat_chord, aes(x = x_mean_ac1, y = x_np), method = "lm", linetype = 3, formula = "y~x",size = 0.5) +
+#   geom_smooth(data = dat_chord, aes(x = x_mean_ac2, y = x_np), method = "lm", formula = "y~x",size = 0.5) +
+#   geom_smooth(data = dat_chord, aes(x = x_root_ac, y = x_np), method = "lm", formula = "y~x",size = 0.5) +
+#   geom_smooth(data = dat_chord, aes(x = x_mac_ac, y = x_np), col = "green", fill= "green", alpha = 0.3, method = "lm", formula = "y~x",size = 0.5) + th +
+#   coord_fixed()+
+#   scale_y_continuous(limits = c(-0.03,0.03), breaks = c(-0.03,-0.015,0,0.015,0.03), name = "Neutral point - centered (m)") +
+#   scale_x_continuous(limits = c(-0.03,0.03), breaks = c(-0.03,-0.015,0,0.015,0.03), name = "Proxy chord length - centered (m)") +
+#   geom_rangeframe() +
+#   annotate(geom = "segment", x = log(0), xend = log(0), y = -0.03, yend = 0.03) +
+#   annotate(geom = "segment", x = -0.03, xend = 0.03, y = log(0), yend = log(0))
 
 
 
