@@ -294,20 +294,6 @@ fig_pmc <- plot_grid(plot_x_cg,plot_maxstab,plot_minstab,
                       label_size = 10,
                       label_fontfamily = "sans")
 
-# calculate power of tests
-length(which(out_xcg$test > quantile(out_xcg$null, probs = 0.95)))/5000
-length(which(out_maxstab$test > quantile(out_maxstab$null, probs = 0.95)))/5000
-length(which(out_minstab$test > quantile(out_minstab$null, probs = 0.95)))/5000
-
-# extract the 95% confidence intervals
-dist_alpha_xcg = out_xcg$par_dists$value[which(out_xcg$par_dists$comparison == "BB" & out_xcg$par_dists$parameter =="alpha")]
-quantile(dist_alpha, probs = c(0.05,0.95))
-
-
-#dat_sens_opt_max <- dat_sens_opt_out - run this after loading saved data
-1-length(which(dat_sens_opt_max$z0 < 1))/1000
-1-length(which(dat_sens_opt_min$z0 > 1))/1000
-
 ## ----------------------------------- Figure S2 -------------------------------------------------
 
 load("/Users/christinaharvey/Documents/AvInertia/AnalysisData/2021_09_02_maxstab_z0.RData")
