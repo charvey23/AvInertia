@@ -33,10 +33,10 @@ range_q_model_mcmc_output  = summary(range_q_model_mcmc)
 
 
 # ---- Check if agility is robust to the removal of the petrel ----
-# sp_mean_matched_adj <- keep.tip(phy = full_tree, tip = dat_comp$binomial[which(dat_comp$binomial != "oce_leu")])
-# ## ladderization rotates nodes to make it easier to see basal vs derived
-# pruned_mcc_adj      <- ape::ladderize(sp_mean_matched)
-# inv.phylo_adj <- inverseA(pruned_mcc_adj, nodes = "TIPS", scale = TRUE)
+sp_mean_matched_adj <- keep.tip(phy = full_tree, tip = dat_comp$binomial[which(dat_comp$binomial != "oce_leu")])
+## ladderization rotates nodes to make it easier to see basal vs derived
+pruned_mcc_adj      <- ape::ladderize(sp_mean_matched)
+inv.phylo_adj <- inverseA(pruned_mcc_adj, nodes = "TIPS", scale = TRUE)
 
 range_q_nd_model_mcmc_adj <-
   MCMCglmm::MCMCglmm(
