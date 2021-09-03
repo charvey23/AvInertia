@@ -89,7 +89,7 @@ CGx_sp_model_mcmc <-
     family = c("gaussian"),
     data = dat_comp,
     prior = univ_prior,
-    nitt = 26000000, thin = 20000, burnin = 6000000,
+    nitt = 13000000, thin = 10000, burnin = 3000000,
     verbose = FALSE,pr = TRUE, pl = TRUE)
 CGx_sp_model_mcmc_output  = summary(CGx_sp_model_mcmc)
 
@@ -102,7 +102,7 @@ CGy_sp_model_mcmc <-
     family = c("gaussian"),
     data = dat_comp,
     prior = univ_prior,
-    nitt = 26000000, thin = 20000, burnin = 6000000,
+    nitt = 13000000, thin = 10000, burnin = 3000000,
     verbose = FALSE,pr = TRUE, pl = TRUE)
 CGy_sp_model_mcmc_output  = summary(CGy_sp_model_mcmc)
 
@@ -115,7 +115,7 @@ CGz_sp_model_mcmc <-
     family = c("gaussian"),
     data = dat_comp,
     prior = univ_prior,
-    nitt = 26000000, thin = 20000, burnin = 6000000,
+    nitt = 13000000, thin = 10000, burnin = 3000000,
     verbose = FALSE,pr = TRUE, pl = TRUE)
 CGz_sp_model_mcmc_output  = summary(CGz_sp_model_mcmc)
 
@@ -129,7 +129,7 @@ CG_range_model_mcmc <-
     family = c("gaussian"),
     data = shoulder_motion,
     prior = univ_prior,
-    nitt = 26000000, thin = 20000, burnin = 6000000,
+    nitt = 13000000, thin = 10000, burnin = 3000000,
     verbose = FALSE,pr = TRUE, pl = TRUE)
 CG_range_model_mcmc_output  = summary(CG_range_model_mcmc)
 
@@ -144,7 +144,7 @@ CGy_range_armhand <-
     family = c("gaussian"),
     data = dat_comp,
     prior = univ_prior,
-    nitt = 26000000, thin = 20000, burnin = 6000000,
+    nitt = 13000000, thin = 10000, burnin = 3000000,
     verbose = FALSE,pr = TRUE, pl = TRUE)
 CGy_range_armhand_output  = summary(CGy_range_armhand)
 
@@ -157,7 +157,7 @@ CGx_range_armhand <-
     family = c("gaussian"),
     data = dat_comp,
     prior = univ_prior,
-    nitt = 26000000, thin = 20000, burnin = 6000000,
+    nitt = 13000000, thin = 10000, burnin = 3000000,
     verbose = FALSE,pr = TRUE, pl = TRUE)
 CGx_range_armhand_output  = summary(CGx_range_armhand)
 
@@ -170,6 +170,6 @@ CGz_range_armhand <-
     family = c("gaussian"),
     data = dat_comp,
     prior = univ_prior,
-    nitt = 26000000, thin = 20000, burnin = 6000000,
+    nitt = 13000000, thin = 10000, burnin = 3000000,
     verbose = FALSE,pr = TRUE, pl = TRUE)
 CGz_range_armhand_output  = summary(CGz_range_armhand)

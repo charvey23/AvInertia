@@ -671,7 +671,7 @@ test_min = aggregate(list(prop_q_dot = dat_final$prop_q_dot,
 chulls_xz <- ddply(dat_final[,c("species_order","BirdID","elbow","manus")], .(species_order, BirdID),
                    function(df) df[chull(df$elbow, df$manus), ])
 
-# exported as 12x4
+# exported as 4x12
 ROM_plot_sm <- ggplot()+
   #geom_polygon(data = chulls_xz, aes(x = elbow, y = manus), col = "black", fill = NA, alpha = 0.5) +
   geom_point(data = dat_final, aes(x =elbow, y = manus, col = sm_nd)) +
@@ -702,7 +702,7 @@ ROM_plot_sm <- ggplot()+
 
 
 ### ------------- Plot the tail volume coefficients for the supplemental materials ------------
-tail_plot <- ggplot() +
+tail_plot <- ggplot() + #exported as 5x7
   geom_point(data = aggregate(list(Vh = dat_final$Vh, full_m = dat_final$full_m),
                               by=list(species_order = dat_final$species_order, BirdID = dat_final$BirdID), max),
              aes(x = full_m, y = Vh, col = species_order)) +

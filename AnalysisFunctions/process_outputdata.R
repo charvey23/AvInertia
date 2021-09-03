@@ -428,8 +428,9 @@ dat_comp <- merge(dat_comp,test, by = c("species","BirdID"))
 dat_comp$max_wing_CGx <- dat_final$wing_CGx[which((dat_final$wing_CGy - dat_final$pt1_Y) %in% dat_comp$max_wing_CGy)]
 dat_comp$max_wing_CGx_specific <- dat_final$wing_CGx_specific_orgShoulder[which((dat_final$wing_CGy - dat_final$pt1_Y) %in% dat_comp$max_wing_CGy)]
 
-dat_comp$sm_range = dat_comp$max_sm_nd - dat_comp$min_sm_nd
-dat_comp$q_range = dat_comp$max_q_nd - dat_comp$min_q_nd
+dat_comp$sm_range   = dat_comp$max_sm_nd - dat_comp$min_sm_nd
+dat_comp$q_range    = dat_comp$max_q - dat_comp$min_q
+dat_comp$q_nd_range = dat_comp$max_q_nd - dat_comp$min_q_nd
 
 # --------- Trim the trees -----------
 # critical for PGLS models

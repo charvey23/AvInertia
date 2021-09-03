@@ -75,7 +75,7 @@ Ixx_val_mcmc <-
     family = c("gaussian"),
     data = Ixx_max,
     prior = univ_prior,
-    nitt = 26000000, thin = 20000, burnin = 6000000,
+    nitt = 13000000, thin = 10000, burnin = 3000000,
     verbose = FALSE,pr = TRUE, pl = TRUE)
 Ixx_val_mcmc_output  = summary(Ixx_val_mcmc)
 
@@ -90,7 +90,7 @@ Ixx_model_mcmc <-
     family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
     data = dat_comp,
     prior = univ_prior,
-    nitt = 26000000, thin = 20000, burnin = 6000000,
+    nitt = 13000000, thin = 10000, burnin = 3000000,
     verbose = FALSE, ## switch this to TRUE if you feel like it
     pr = TRUE, pl = TRUE ## this saves some model output stuff
   )
@@ -105,7 +105,7 @@ Iyy_model_mcmc <-
     family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
     data = dat_comp,
     prior = univ_prior,
-    nitt = 26000000, thin = 20000, burnin = 6000000,
+    nitt = 13000000, thin = 10000, burnin = 3000000,
     verbose = FALSE, ## switch this to TRUE if you feel like it
     pr = TRUE, pl = TRUE ## this saves some model output stuff
   )
@@ -120,7 +120,7 @@ Izz_model_mcmc <-
     family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
     data = dat_comp,
     prior = univ_prior,
-    nitt = 26000000, thin = 20000, burnin = 6000000,
+    nitt = 13000000, thin = 10000, burnin = 3000000,
     verbose = FALSE, ## switch this to TRUE if you feel like it
     pr = TRUE, pl = TRUE ## this saves some model output stuff
   )
@@ -367,7 +367,7 @@ for (i in 1:nrow(I_contr)){
                subset(I_contr_fullCG, component == "bone" & object == "Izz")$value,
                subset(I_contr_fullCG, component == "muscle" & object == "Izz")$value)
   if(abs(Ixx_CG - I_contr$full_Ixx[i]) > 10^-12 | abs(Izz_CG - I_contr$full_Izz[i]) > 10^-12){
-    print(c(Ixx_CG, I_contr$full_Ixx[i],100*abs(Ixx_CG - I_contr$full_Ixx[i])/I_contr$full_Ixx[i]))
+    print(c(abs(Ixx_CG - I_contr$full_Ixx[i]),abs(Izz_CG - I_contr$full_Izz[i])))
     warning("Error: not correct match")
   }
 

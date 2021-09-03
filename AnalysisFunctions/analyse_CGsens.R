@@ -233,7 +233,7 @@ library("ggplot2")
 library("tidyr")
 library("dplyr")
 
-load("/Users/christinaharvey/Documents/AvInertia/AnalysisData/2021_08_26_pmc_xcg_output.RData")
+load("/Users/christinaharvey/Documents/AvInertia/AnalysisData/2021_09_02_pmc_xcg_output.RData")
 dists_x_cg <- data.frame(null = out_xcg$null, test = out_xcg$test)
 plot_x_cg <- dists_x_cg %>%
   gather(dists_x_cg, value) %>%
@@ -250,7 +250,7 @@ plot_x_cg <- dists_x_cg %>%
   annotate(geom = "segment", x = 0, xend = 30, y = log(0), yend = log(0))+
   annotate(geom = "segment", y = 0, yend = 1.5, x = log(0), xend = log(0))
 
-load("/Users/christinaharvey/Documents/AvInertia/AnalysisData/2021_08_26_pmc_maxstab_output.RData")
+load("/Users/christinaharvey/Documents/AvInertia/AnalysisData/2021_09_02_pmc_maxstab_output.RData")
 dists_maxstab <- data.frame(null = out_maxstab$null, test = out_maxstab$test)
 plot_maxstab <- dists_maxstab %>%
   gather(dists_maxstab, value) %>%
@@ -267,7 +267,7 @@ plot_maxstab <- dists_maxstab %>%
   annotate(geom = "segment", x = 0, xend = 30, y = log(0), yend = log(0))+
   annotate(geom = "segment", y = 0, yend = 1.5, x = log(0), xend = log(0))
 
-load("/Users/christinaharvey/Documents/AvInertia/AnalysisData/2021_08_26_pmc_minstab_output.RData")
+load("/Users/christinaharvey/Documents/AvInertia/AnalysisData/2021_09_02_pmc_minstab_output.RData")
 dists_minstab <- data.frame(null = out_minstab$null, test = out_minstab$test)
 plot_minstab <- dists_minstab %>%
   gather(dists_minstab, value) %>%
@@ -310,8 +310,8 @@ quantile(dist_alpha, probs = c(0.05,0.95))
 
 ## ----------------------------------- Figure S2 -------------------------------------------------
 
-load("/Users/christinaharvey/Documents/AvInertia/AnalysisData/2021_08_26_maxstab_z0.RData")
-load("/Users/christinaharvey/Documents/AvInertia/AnalysisData/2021_08_26_minstab_z0.RData")
+load("/Users/christinaharvey/Documents/AvInertia/AnalysisData/2021_09_02_maxstab_z0.RData")
+load("/Users/christinaharvey/Documents/AvInertia/AnalysisData/2021_09_02_minstab_z0.RData")
 
 #exported as 3.5x5
 boot_stab <- ggplot()+
@@ -329,7 +329,7 @@ boot_stab <- ggplot()+
   annotate(geom = "segment", y = 0, yend = 50, x = log(0), xend = log(0))
 
 ## ----------------------------------- Figure S3 -------------------------------------------------
-load("/Users/christinaharvey/Documents/AvInertia/AnalysisData/2021_08_26_CGsensana.RData")
+load("/Users/christinaharvey/Documents/AvInertia/AnalysisData/2021_09_02_CGsensana.RData")
 
 sens_agility_nd <- ggplot()+
   geom_rect(data = shading, aes(ymin = col1, ymax = col2, xmin = -1.5, xmax = 1.5), alpha = 0.1, position = position_nudge(y = -0.5)) +

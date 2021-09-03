@@ -1,103 +1,59 @@
-## ------ Unstable maximum agility --------
-max_q_nd_model_mcmc <-
-  MCMCglmm::MCMCglmm(
-    max_q_nd ~ full_m,
-    random = ~ phylo,
-    scale = FALSE, ## whether you use this is up to you -- whatever is fair
-    ginverse = list(phylo = inv.phylo$Ainv),
-    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
-    data = dat_comp,
-    prior = univ_prior,
-    nitt = 26000000, thin = 20000, burnin = 6000000,
-    verbose = FALSE, ## switch this to TRUE if you feel like it
-    pr = TRUE, pl = TRUE ## this saves some model output stuff
-  )
-max_q_nd_model_mcmc_output  = summary(max_q_nd_model_mcmc)
 
-## ------ Stable maximum agility --------
-min_q_nd_model_mcmc <-
-  MCMCglmm::MCMCglmm(
-    min_q_nd ~ full_m,
-    random = ~ phylo,
-    scale = FALSE, ## whether you use this is up to you -- whatever is fair
-    ginverse = list(phylo = inv.phylo$Ainv),
-    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
-    data = dat_comp,
-    prior = univ_prior,
-    nitt = 26000000, thin = 20000, burnin = 6000000,
-    verbose = FALSE, ## switch this to TRUE if you feel like it
-    pr = TRUE, pl = TRUE ## this saves some model output stuff
-  )
-min_q_nd_model_mcmc_output  = summary(min_q_nd_model_mcmc)
-
-
-# ---- Check if robust to the removal of the petrel ----
-sp_mean_matched_adj <- keep.tip(phy = full_tree, tip = dat_comp$binomial[which(dat_comp$binomial != "oce_leu")])
-## ladderization rotates nodes to make it easier to see basal vs derived
-pruned_mcc_adj      <- ape::ladderize(sp_mean_matched)
-inv.phylo_adj <- inverseA(pruned_mcc_adj, nodes = "TIPS", scale = TRUE)
-max_q_nd_model_mcmc_adj <-
-  MCMCglmm::MCMCglmm(
-    max_q_nd ~ full_m,
-    random = ~ phylo,
-    scale = FALSE, ## whether you use this is up to you -- whatever is fair
-    ginverse = list(phylo = inv.phylo_adj$Ainv),
-    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
-    data = dat_comp[which(dat_comp$binomial != "oce_leu"),],
-    prior = univ_prior,
-    nitt = 26000000, thin = 20000, burnin = 6000000,
-    verbose = FALSE, ## switch this to TRUE if you feel like it
-    pr = TRUE, pl = TRUE ## this saves some model output stuff
-  )
-max_q_nd_model_mcmc_output_adj  = summary(max_q_nd_model_mcmc_adj)
-
-min_q_nd_model_mcmc_adj <-
-  MCMCglmm::MCMCglmm(
-    min_q_nd ~ full_m,
-    random = ~ phylo,
-    scale = FALSE, ## whether you use this is up to you -- whatever is fair
-    ginverse = list(phylo = inv.phylo_adj$Ainv),
-    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
-    data = dat_comp[which(dat_comp$binomial != "oce_leu"),],
-    prior = univ_prior,
-    nitt = 26000000, thin = 20000, burnin = 6000000,
-    verbose = FALSE, ## switch this to TRUE if you feel like it
-    pr = TRUE, pl = TRUE ## this saves some model output stuff
-  )
-min_q_nd_model_mcmc_output_adj  = summary(min_q_nd_model_mcmc_adj)
-
-range_q_nd_model_mcmc_adj <-
-  MCMCglmm::MCMCglmm(
-    q_range ~ full_m,
-    random = ~ phylo,
-    scale = FALSE, ## whether you use this is up to you -- whatever is fair
-    ginverse = list(phylo = inv.phylo_adj$Ainv),
-    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
-    data = dat_comp[which(dat_comp$binomial != "oce_leu"),],
-    prior = univ_prior,
-    nitt = 26000000, thin = 20000, burnin = 6000000,
-    verbose = FALSE, ## switch this to TRUE if you feel like it
-    pr = TRUE, pl = TRUE ## this saves some model output stuff
-  )
-range_q_nd_model_mcmc_output_adj  = summary(range_q_nd_model_mcmc_adj)
-
-## ------------------- Range specific models ----------------
+## ------------------- Range specific agility models ----------------
 
 range_q_nd_model_mcmc <-
   MCMCglmm::MCMCglmm(
-    q_range ~ full_m,
+    q_nd_range ~ full_m,
     random = ~ phylo,
     scale = FALSE, ## whether you use this is up to you -- whatever is fair
     ginverse = list(phylo = inv.phylo$Ainv),
     family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
     data = dat_comp,
     prior = univ_prior,
-    nitt = 26000000, thin = 20000, burnin = 6000000,
+    nitt = 13000000, thin = 10000, burnin = 3000000,
     verbose = FALSE, ## switch this to TRUE if you feel like it
     pr = TRUE, pl = TRUE ## this saves some model output stuff
   )
 range_q_nd_model_mcmc_output  = summary(range_q_nd_model_mcmc)
 
+range_q_model_mcmc <-
+  MCMCglmm::MCMCglmm(
+    q_range ~ full_m,
+    random = ~ phylo,
+    scale = FALSE, ## whether you use this is up to you -- whatever is fair
+    ginverse = list(phylo = inv.phylo$Ainv),
+    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
+    data = dat_comp,
+    prior = univ_prior,
+    nitt = 13000000, thin = 10000, burnin = 3000000,
+    verbose = FALSE, ## switch this to TRUE if you feel like it
+    pr = TRUE, pl = TRUE ## this saves some model output stuff
+  )
+range_q_model_mcmc_output  = summary(range_q_model_mcmc)
+
+
+# ---- Check if agility is robust to the removal of the petrel ----
+# sp_mean_matched_adj <- keep.tip(phy = full_tree, tip = dat_comp$binomial[which(dat_comp$binomial != "oce_leu")])
+# ## ladderization rotates nodes to make it easier to see basal vs derived
+# pruned_mcc_adj      <- ape::ladderize(sp_mean_matched)
+# inv.phylo_adj <- inverseA(pruned_mcc_adj, nodes = "TIPS", scale = TRUE)
+
+range_q_nd_model_mcmc_adj <-
+  MCMCglmm::MCMCglmm(
+    q_nd_range ~ full_m,
+    random = ~ phylo,
+    scale = FALSE, ## whether you use this is up to you -- whatever is fair
+    ginverse = list(phylo = inv.phylo_adj$Ainv),
+    family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
+    data = dat_comp[which(dat_comp$binomial != "oce_leu"),],
+    prior = univ_prior,
+    nitt = 13000000, thin = 10000, burnin = 3000000,
+    verbose = FALSE, ## switch this to TRUE if you feel like it
+    pr = TRUE, pl = TRUE ## this saves some model output stuff
+  )
+range_q_nd_model_mcmc_output_adj  = summary(range_q_nd_model_mcmc_adj)
+
+## ------------------- Range specific stability models ----------------
 
 range_sm_nd_model_mcmc <-
   MCMCglmm::MCMCglmm(
@@ -108,7 +64,7 @@ range_sm_nd_model_mcmc <-
     family = c("gaussian"), ## errors are modeled as drawn from a Gaussian
     data = dat_comp,
     prior = univ_prior,
-    nitt = 26000000, thin = 20000, burnin = 6000000,
+    nitt = 13000000, thin = 10000, burnin = 3000000,
     verbose = FALSE, ## switch this to TRUE if you feel like it
     pr = TRUE, pl = TRUE ## this saves some model output stuff
   )
