@@ -110,7 +110,7 @@ View(tmp)
 ## Determine the significance values for MOI
 max(dat_comp$Ixx_elb_p)
 min(dat_comp$Ixx_elb_etap)
-tmp = aggregate(list(Ixx_range =  dat_comp$Ixx_elb_p),  by=list(species = dat_comp$species), max)
+tmp = aggregate(list(Ixx_p =  dat_comp$Ixx_elb_p),  by=list(species = dat_comp$species), max)
 View(tmp)
 dat_comp$species[which.max(dat_comp$Ixx_elb_p)]
 
@@ -123,20 +123,20 @@ View(tmp)
 tmp = aggregate(list(Ixz_range =  abs(dat_comp$max_Ixz-dat_comp$min_Ixz)),  by=list(species = dat_comp$species), max)
 View(tmp)
 ## ---------------------- Agility -----------------------
-max_q_nd_model_mcmc_output
-min_q_nd_model_mcmc_output
+range_q_model_mcmc_output
+range_q_nd_model_mcmc_output
 
 # check this is true if we remove the storm petrels
-max_q_nd_model_mcmc_output_adj
-min_q_nd_model_mcmc_output_adj
-
-dat_comp$species[which.max(dat_comp$max_q_nd)]
-View(dat_comp[,c("species","max_q","max_q_nd")])
+range_q_nd_model_mcmc_output_adj
+# lowest negative is the most agile stable flyer
+dat_comp$species[which.min(dat_comp$min_q_nd)]
+# check out the most agile in the stable range
+View(dat_comp[,c("species","min_q","min_q_nd")])
 
 range_sm_nd_model_mcmc_output
 
-mean(dat_final$c_root_max[which(dat_final$species == "cyp_nig")]^2*dat_final$S_max[which(dat_final$species == "cyp_nig")]/dat_final$full_Iyy[which(dat_final$species == "cyp_nig")]) # this value is lower
-mean(dat_final$c_root_max[which(dat_final$species == "oce_leu")]^2*dat_final$S_max[which(dat_final$species == "oce_leu")]/dat_final$full_Iyy[which(dat_final$species == "oce_leu")])
+mean(dat_final$S_max[which(dat_final$species == "cyp_nig")]/dat_final$full_Iyy[which(dat_final$species == "cyp_nig")]) # this value is lower
+mean(dat_final$S_max[which(dat_final$species == "oce_leu")]/dat_final$full_Iyy[which(dat_final$species == "oce_leu")])
 
 dat_comp$species[which(dat_comp$min_sm>0 & dat_comp$max_sm>0)] # number of individuals that remain stable
 dat_comp$species[which(dat_comp$min_sm<0 & dat_comp$max_sm<0)] # number of individuals that remain unstable
@@ -145,16 +145,20 @@ OU_maxsm$opt$aicc-BM_maxsm$opt$aicc
 OU_minsm$opt$aicc-BM_minsm$opt$aicc
 (length(which(out_maxstab$null > out_maxstab$lr))/5000)# p_value
 (length(which(out_minstab$null > out_minstab$lr))/5000)# p_value
+# max static margin
 OU_maxsm$opt$z0
 OU_maxsm$opt$alpha
 OU_maxsm$opt$sigsq
+# min static margin
 OU_minsm$opt$z0
 OU_minsm$opt$alpha
 OU_minsm$opt$sigsq
-
+# xcg
 OU_xcg$opt$aicc-BM_xcg$opt$aicc
-OU_xcg$opt
 OU_xcg$opt$z0
+OU_xcg$opt$alpha
+OU_xcg$opt$sigsq
+
 (length(which(out_xcg$null > out_xcg$lr))/5000) # p-value
 
 
