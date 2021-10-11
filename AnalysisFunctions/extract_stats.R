@@ -124,10 +124,9 @@ tmp = aggregate(list(Ixz_range =  abs(dat_comp$max_Ixz-dat_comp$min_Ixz)),  by=l
 View(tmp)
 ## ---------------------- Agility -----------------------
 range_q_model_mcmc_output
-range_q_nd_model_mcmc_output
 
 # check this is true if we remove the storm petrels
-range_q_nd_model_mcmc_output_adj
+range_q_model_mcmc_output_adj
 # lowest negative is the most agile stable flyer
 dat_comp$species[which.min(dat_comp$min_q_nd)]
 # check out the most agile in the stable range
@@ -135,8 +134,8 @@ View(dat_comp[,c("species","min_q","min_q_nd")])
 
 range_sm_nd_model_mcmc_output
 
-mean(dat_final$S_max[which(dat_final$species == "cyp_nig")]/dat_final$full_Iyy[which(dat_final$species == "cyp_nig")]) # this value is lower
-mean(dat_final$S_max[which(dat_final$species == "oce_leu")]/dat_final$full_Iyy[which(dat_final$species == "oce_leu")])
+#mean(dat_final$S_max[which(dat_final$species == "cyp_nig")]/dat_final$full_Iyy[which(dat_final$species == "cyp_nig")]) # this value is lower
+#mean(dat_final$S_max[which(dat_final$species == "oce_leu")]/dat_final$full_Iyy[which(dat_final$species == "oce_leu")])
 
 dat_comp$species[which(dat_comp$min_sm>0 & dat_comp$max_sm>0)] # number of individuals that remain stable
 dat_comp$species[which(dat_comp$min_sm<0 & dat_comp$max_sm<0)] # number of individuals that remain unstable
@@ -193,11 +192,11 @@ Iyy_model_mcmc_output
 Izz_model_mcmc_output
 Ixx_val_mcmc_output
 
-range_q_nd_model_mcmc_output
+range_q_model_mcmc_output
 range_sm_nd_model_mcmc_output
 
 #check that the agility range still decreases with mass even once the petrels are removed
-range_q_nd_model_mcmc_output_adj
+range_q_model_mcmc_output_adj
 
 # -------- Descriptive stats
 (length(which(out_xcg$null > out_xcg$lr))/5000)
