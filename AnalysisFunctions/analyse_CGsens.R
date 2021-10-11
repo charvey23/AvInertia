@@ -75,14 +75,15 @@ for(m in 1:36){
 
       if(length(subset(curr_torsotail_data, object == "m" & component == "neck")$value) == 0){
         dat_sens_out$CGx[count]   = (subset(curr_torsotail_data, object == "CGx" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
-                                       subset(curr_torsotail_data, object == "CGx" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
-                                       subset(curr_torsotail_data, object == "CGx" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
-                                       2*dat_wing_curr$wing_CGx*dat_wing_curr$wing_m)/dat_wing_curr$full_m}else{
-                                         dat_sens_out$CGx[count]   = (subset(curr_torsotail_data, object == "CGx" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
-                                                                        subset(curr_torsotail_data, object == "CGx" & component == "neck")$value*subset(curr_torsotail_data, object == "m" & component == "neck")$value +
-                                                                        subset(curr_torsotail_data, object == "CGx" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
-                                                                        subset(curr_torsotail_data, object == "CGx" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
-                                                                        2*dat_wing_curr$wing_CGx*dat_wing_curr$wing_m)/dat_wing_curr$full_m}
+                                     subset(curr_torsotail_data, object == "CGx" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
+                                     subset(curr_torsotail_data, object == "CGx" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
+                                     2*dat_wing_curr$wing_CGx*dat_wing_curr$wing_m)/dat_wing_curr$full_m}
+      else{
+        dat_sens_out$CGx[count]   = (subset(curr_torsotail_data, object == "CGx" & component == "head")$value*subset(curr_torsotail_data, object == "m" & component == "head")$value +
+                                     subset(curr_torsotail_data, object == "CGx" & component == "neck")$value*subset(curr_torsotail_data, object == "m" & component == "neck")$value +
+                                     subset(curr_torsotail_data, object == "CGx" & component == "torso")$value*subset(curr_torsotail_data, object == "m" & component == "torso")$value +
+                                     subset(curr_torsotail_data, object == "CGx" & component == "tail")$value*subset(curr_torsotail_data, object == "m" & component == "tail")$value +
+                                     2*dat_wing_curr$wing_CGx*dat_wing_curr$wing_m)/dat_wing_curr$full_m}
 
       #Shift the I to the CG
       fullbird$I         = parallelaxis(fullbird$I,-c(dat_sens_out$CGx[count],0,dat_wing_curr$full_CGz),dat_wing_curr$full_m,"A")
@@ -103,7 +104,7 @@ for(m in 1:36){
       dat_sens_out$r_Raymer[count]  = abs(-(dat_wing_curr$torso_length+0.25*dat_wing_curr$tail_length)-dat_wing_curr$full_CGx)/(0.5*dat_wing_curr$span)
       dat_sens_out$AR[count]        = dat_wing_curr$AR
       ## assume that a_t/a*(1-d(epsilon)/d(alpha))*eta_t = 0.73
-      dat_sens_out$sm_TailNP[count]       = (dat_sens_out$CGx[count]-dat_wing_curr$pt1_X)-(dat_wing_curr$x_np_est_orgShoulder-(dat_wing_curr$Vh*0.73*dat_wing_curr$c_mean_max))
+      dat_sens_out$sm_TailNP[count]       = (dat_sens_out$CGx[count]-dat_wing_curr$pt1_X)-(dat_wing_curr$x_np_est_orgShoulder-(dat_wing_curr$Vh*0.73*dat_wing_curr$c_mean_mean))
       dat_sens_out$sm_TailNP_nd[count]    = dat_sens_out$sm_TailNP[count]/dat_wing_curr$c_root_max
 
       dat_sens_out$binomial[count]        = dat_wing_curr$binomial
@@ -136,6 +137,47 @@ names(data_in) <- subset(tmp, group == "min_stability")$binomial
 minstab_tail_OU_outputs = fitContinuous(phy = pruned_mcc, dat = data_in, model = "OU")
 minstab_tail_BM_outputs = fitContinuous(phy = pruned_mcc, dat = data_in, model = "BM")
 minstab_tail_OU_outputs$opt$aicc-minstab_tail_BM_outputs$opt$aicc
+
+### -------------------------------------------------------------------------
+### ------------------------ Sensitivity on scaling -------------------------
+### -------------------------------------------------------------------------
+range_scale = c(0.7,0.8,0.9,1,1.1)
+scale_sens = list()
+for (i in 1:5){
+  dat_tmp = dat_final
+  dat_tmp$x_np_est_orgShoulder = -(abs(dat_tmp$x_np_proxy_nd)^range_scale[i])*dat_tmp$c_root_max
+  # we want the computed neutral point to be in the same direction as the standard mean quarter chord
+  # i.e. the neutral point should be positive if the standard mean quarter chord is positive
+  dat_tmp$x_np_est_orgShoulder[which(dat_tmp$x_np_proxy_nd > 0)] = -dat_tmp$x_np_est_orgShoulder[which(dat_tmp$x_np_proxy_nd > 0)]
+
+  ## ------------ Stablity -----------
+  dat_tmp$sm    = dat_tmp$full_CGx_orgShoulder-dat_tmp$x_np_est_orgShoulder
+  dat_tmp$sm_nd = dat_tmp$sm/dat_tmp$c_root_max
+
+  tmp1   = aggregate(list(min_sm_nd = dat_tmp$sm_nd, binomial = dat_tmp$binomial), by=list(species = dat_tmp$species, BirdID = dat_tmp$BirdID), min)
+  tmp2   = aggregate(list(max_sm_nd = dat_tmp$sm_nd), by=list(species = dat_tmp$species, BirdID = dat_tmp$BirdID), max)
+
+  tmp <- merge(tmp1,tmp2, by = c("species","BirdID"))
+  output_data_means_sens <- aggregate(select_if(tmp, is.numeric), by = list(species = dat_comp$species), mean)
+
+  all_data_means_sens = merge(output_data_means_sens, morpho_data_means, id = "species")
+  all_data_means_sens = merge(all_data_means_sens, unique(tmp[,c("species", "binomial")]), id = "species")
+
+  all_data_means_sens_mat           <- as.matrix(select_if(all_data_means_sens, is.numeric))
+  rownames(all_data_means_sens_mat) <- all_data_means_sens$binomial
+  colnames(all_data_means_sens_mat) <- colnames(select_if(all_data_means_sens, is.numeric))
+
+  BM_maxsm_sens = fitContinuous(phy = pruned_mcc, dat = all_data_means_sens_mat[,c("max_sm_nd")], model = "BM")
+  OU_maxsm_sens = fitContinuous(phy = pruned_mcc, dat = all_data_means_sens_mat[,c("max_sm_nd")], model = "OU")
+  BM_minsm_sens = fitContinuous(phy = pruned_mcc, dat = all_data_means_sens_mat[,c("min_sm_nd")], model = "BM")
+  OU_minsm_sens = fitContinuous(phy = pruned_mcc, dat = all_data_means_sens_mat[,c("min_sm_nd")], model = "OU")
+
+  scale_sens$scale[i] = range_scale[i]
+  scale_sens$max_sm_z0[i] = OU_maxsm_sens$opt$z0
+  scale_sens$min_sm_z0[i] = OU_minsm_sens$opt$z0
+}
+
+
 
 ### -------------------------------------------------------------------------
 ### ------------------------ CG Error Bootstrapping -------------------------
