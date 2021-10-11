@@ -566,19 +566,19 @@ effectcol <- plot_grid(effect_Ixx,effect_Iyy,effect_Izz,effect_Ixz,
 ## ------------------------------------------------------------------------------------
 ## --------------------------------- Figure 4 -----------------------------------------
 ## ------------------------------------------------------------------------------------
-q_nd_plot <- ggplot() +
+q_plot <- ggplot() +
   # geom_ribbon(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, ymin = exp(max_q_nd_model_mcmc_output$solutions[1,1])*full_m^max_q_nd_model_mcmc_output$solutions[2,2], ymax = exp(max_q_nd_model_mcmc_output$solutions[1,1])*full_m^max_q_nd_model_mcmc_output$solutions[2,3]),
   #             col = NA, fill = "gray60", alpha = 0.15) +
   # # add model fit
   # geom_line(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, y = exp(max_q_nd_model_mcmc_output$solutions[1,1])*full_m^max_q_nd_model_mcmc_output$solutions[2,1]),
   #           col = "gray60") +
-  geom_rect(aes(ymin = 0, ymax = 1.5, xmin = 0, xmax = Inf), alpha = 0.1) +
+  geom_rect(aes(ymin = 0, ymax = 17, xmin = 0, xmax = Inf), alpha = 0.1) +
   #add data
-  geom_errorbar(data = dat_comp, aes(x = full_m, ymax = max_q_nd, ymin = min_q_nd, col = species_order), alpha = 0.5) +
-  geom_point(data = dat_comp, aes(x = full_m, y = max_q_nd, col = species_order), alpha = 0.6, pch = 15,size = 0.8) +
-  geom_point(data = dat_comp, aes(x = full_m, y = max_q_nd, col = species_order), pch = 0,size = 0.8) +
-  geom_point(data = dat_comp, aes(x = full_m, y = min_q_nd, col = species_order), alpha = 0.6, pch = 15,size = 0.8) +
-  geom_point(data = dat_comp, aes(x = full_m, y = min_q_nd, col = species_order), pch = 0,size = 0.8) +
+  geom_errorbar(data = dat_comp, aes(x = full_m, ymax = max_q, ymin = min_q, col = species_order), alpha = 0.5) +
+  geom_point(data = dat_comp, aes(x = full_m, y = max_q, col = species_order), alpha = 0.6, pch = 15,size = 0.8) +
+  geom_point(data = dat_comp, aes(x = full_m, y = max_q, col = species_order), pch = 0,size = 0.8) +
+  geom_point(data = dat_comp, aes(x = full_m, y = min_q, col = species_order), alpha = 0.6, pch = 15,size = 0.8) +
+  geom_point(data = dat_comp, aes(x = full_m, y = min_q, col = species_order), pch = 0,size = 0.8) +
   #colour control
   scale_colour_manual(values = rev(cc_rain), name = "species") +
   #theme control
@@ -587,10 +587,11 @@ q_nd_plot <- ggplot() +
   # axis control
   scale_x_continuous(trans='log10', limits = c(0.01,10), breaks = c(0.01,0.1,1,10), name = "Body mass (kg)",
                      labels = c(expression(10^-2),expression(10^-1),expression(10^0),expression(10^1)))+
-  scale_y_continuous(limits = c(-1.5,1.5), breaks = c(-1.5,-1,-0.5,0,0.5,1,1.5), name = expression(paste("Normalized pitch agility")))+
+  scale_y_continuous(limits = c(-17,17), breaks = c(-15,-10,-5,0,5,10,15), name = expression(paste("Pitch agility (s"^-2,")")))+
   geom_rangeframe() +
-  annotate(geom = "segment", x = 0, xend = 0, y = -1.5, yend = 1.5) +
+  annotate(geom = "segment", x = 0, xend = 0, y = -15, yend = 15) +
   annotate(geom = "segment", x = 0.01, xend = 10, y = -Inf, yend = -Inf)
+
 
 sm_nd_plot <- ggplot() +
   geom_rect(aes(ymin = -0.6, ymax = 0, xmin = 0, xmax = Inf), alpha = 0.1) +
@@ -626,7 +627,7 @@ sm_nd_plot <- ggplot() +
 
 
 #exported as 3x6.5
-plot_agility <- plot_grid(q_nd_plot,sm_nd_plot,
+plot_agility <- plot_grid(q_plot,sm_nd_plot,
                        #arrangement data
                        nrow = 1,
                        rel_heights = c(1,1),
@@ -637,10 +638,10 @@ plot_agility <- plot_grid(q_nd_plot,sm_nd_plot,
 
 #exported as 11x4
 chord_length_plot <- ggplot()+
-  geom_point(data = stab_check, aes(x = 1, y = 1, col = max_sm_nd, size = abs(max_q_nd)), alpha = 0.8) +
-  geom_point(data = stab_check, aes(x = 1, y = 1, col = max_sm_nd, size = abs(max_q_nd)), pch = 1, alpha = 1) +
-  geom_point(data = stab_check, aes(x = 0.98, y = 1, col = min_sm_nd, size = abs(min_q_nd)), alpha = 0.8) +
-  geom_point(data = stab_check, aes(x = 0.98, y = 1, col = min_sm_nd, size = abs(min_q_nd)), pch = 1, alpha = 1) +
+  geom_point(data = stab_check, aes(x = 1, y = 1, col = max_sm_nd, size = (abs(max_q))), alpha = 0.8) +
+  geom_point(data = stab_check, aes(x = 1, y = 1, col = max_sm_nd, size = (abs(max_q))), pch = 1, alpha = 1) +
+  geom_point(data = stab_check, aes(x = 0.98, y = 1, col = min_sm_nd, size = (abs(min_q))), alpha = 0.8) +
+  geom_point(data = stab_check, aes(x = 0.98, y = 1, col = min_sm_nd, size = (abs(min_q))), pch = 1, alpha = 1) +
   th +
   theme(axis.line=element_blank(),axis.text.x=element_blank(),
         axis.text.y=element_blank(),axis.ticks=element_blank(),
@@ -652,6 +653,7 @@ chord_length_plot <- ggplot()+
         # Background behind actual data points
         plot.background  = ggplot2::element_rect(fill = "transparent", color = NA))+
   facet_wrap(~species_order, ncol = 1) +
+  scale_size_area(breaks = c(1,3,5,7,9,11,13,15,17), max_size = 9) +
   scale_colour_gradient2(midpoint=0, low="#1D0747", mid="#FFF9D3", high="#00510A", space ="Lab", name = "static margin (% of max. root chord)") +
   scale_y_continuous(limits = c(0.955,1.025)) +
   scale_x_continuous(limits = c(0.955,1.025))
@@ -730,3 +732,31 @@ tail_plot <- ggplot() + #exported as 5x7
   geom_rangeframe() +
   annotate(geom = "segment", x = 0, xend = 0, y = 1E-3, yend = 10) +
   annotate(geom = "segment", x = 0.01, xend = 10, y = 0, yend = 0)
+
+## -------------------- Absolute pitch agility metric ---------------------
+#
+# q_nd_plot <- ggplot() +
+#   # geom_ribbon(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, ymin = exp(max_q_nd_model_mcmc_output$solutions[1,1])*full_m^max_q_nd_model_mcmc_output$solutions[2,2], ymax = exp(max_q_nd_model_mcmc_output$solutions[1,1])*full_m^max_q_nd_model_mcmc_output$solutions[2,3]),
+#   #             col = NA, fill = "gray60", alpha = 0.15) +
+#   # # add model fit
+#   # geom_line(data = unique(dat_final[,c("species_order","BirdID","full_m")]), aes(x = full_m, y = exp(max_q_nd_model_mcmc_output$solutions[1,1])*full_m^max_q_nd_model_mcmc_output$solutions[2,1]),
+#   #           col = "gray60") +
+#   geom_rect(aes(ymin = 0, ymax = 1.5, xmin = 0, xmax = Inf), alpha = 0.1) +
+#   #add data
+#   geom_errorbar(data = dat_comp, aes(x = full_m, ymax = max_q_nd, ymin = min_q_nd, col = species_order), alpha = 0.5) +
+#   geom_point(data = dat_comp, aes(x = full_m, y = max_q_nd, col = species_order), alpha = 0.6, pch = 15,size = 0.8) +
+#   geom_point(data = dat_comp, aes(x = full_m, y = max_q_nd, col = species_order), pch = 0,size = 0.8) +
+#   geom_point(data = dat_comp, aes(x = full_m, y = min_q_nd, col = species_order), alpha = 0.6, pch = 15,size = 0.8) +
+#   geom_point(data = dat_comp, aes(x = full_m, y = min_q_nd, col = species_order), pch = 0,size = 0.8) +
+#   #colour control
+#   scale_colour_manual(values = rev(cc_rain), name = "species") +
+#   #theme control
+#   th +
+#   theme(legend.position="none") +
+#   # axis control
+#   scale_x_continuous(trans='log10', limits = c(0.01,10), breaks = c(0.01,0.1,1,10), name = "Body mass (kg)",
+#                      labels = c(expression(10^-2),expression(10^-1),expression(10^0),expression(10^1)))+
+#   scale_y_continuous(limits = c(-1.5,1.5), breaks = c(-1.5,-1,-0.5,0,0.5,1,1.5), name = expression(paste("Normalized pitch agility")))+
+#   geom_rangeframe() +
+#   annotate(geom = "segment", x = 0, xend = 0, y = -1.5, yend = 1.5) +
+#   annotate(geom = "segment", x = 0.01, xend = 10, y = -Inf, yend = -Inf)
