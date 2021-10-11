@@ -44,7 +44,7 @@ for (k in 1:nrow(dat_wing)){
 
   if (dat_wing$pt11_Y[k] > dat_wing$pt12_Y[k]){
     peri_pts = rbind(peri_pts,c(dat_wing$pt11_X[k],dat_wing$pt12_Y[k],dat_wing$pt12_Z[k]))
-    # likely will have a significant portion of the wing area proximal to the last secondary - this estimates the surface area of the tertiaries
+    # likely will have a portion of the wing area proximal to the last secondary - this estimates the surface area of the tertiaries
     A8 = abs(0.5*Norm(cross(as.vector(t(c(dat_wing$pt11_X[k],dat_wing$pt12_Y[k],dat_wing$pt12_Z[k])-dat_wing[k,c("pt2_X","pt2_Y","pt2_Z")])),
                             as.vector(t(c(dat_wing$pt11_X[k],dat_wing$pt12_Y[k],dat_wing$pt12_Z[k])-dat_wing[k,c("pt11_X","pt11_Y","pt11_Z")]))), p = 2))
     dat_wing$S[k] = dat_wing$S[k] + A8
@@ -53,14 +53,15 @@ for (k in 1:nrow(dat_wing)){
 }
 
 dat_wing$c_stan_mean_orgShoulder <- dat_wing$c_stan_mean_orgVRP - dat_wing$pt1_X
+# Caution S and S_proj are a single wing area only!
 
-# span is calculated as the furthest distance of the humerus to either P10, P7 or the point on the digit leading edge.
+# span is calculated as the furthest distance of the humeral head to either P10, P7 or the point on the digit leading edge.
 # The x component is neglected. Measured from the body center line
 dat_wing$span         = apply(cbind(2*sqrt(dat_wing$pt8_Y^2+dat_wing$pt8_Z^2),
                                     2*sqrt(dat_wing$pt9_Y^2+dat_wing$pt9_Z^2),
                                     2*sqrt(dat_wing$pt7_Y^2+dat_wing$pt7_Z^2)), 1, max)
 dat_wing$AR           = (dat_wing$span^2)/(2*dat_wing$S)
-dat_wing$c_mean       = dat_wing$S/dat_wing$span
+dat_wing$c_mean       = (2*dat_wing$S)/dat_wing$span
 dat_wing$AR_proj      = (dat_wing$span^2)/(2*dat_wing$S_proj)
 dat_wing$arm_span     = sqrt((dat_wing$pt1_X-dat_wing$pt3_X)^2+(dat_wing$pt1_Y-dat_wing$pt3_Y)^2+(dat_wing$pt1_Z-dat_wing$pt3_Z)^2)
 # need this to be distance from wrist joint to wing tip, i.e. not the most exterior position so don't allow pt7 - also I want the full distance
@@ -129,21 +130,19 @@ dat_final$full_CGx_orgBeak             = (dat_final$full_CGx-dat_final$head_leng
 dat_final$full_CGx_specific_orgBeak    = (dat_final$full_CGx-dat_final$head_length-dat_final$neck_length)/dat_final$full_length
 dat_final$full_CGz_orgDorsal           = (dat_final$full_CGz+dat_final$z_dist_to_veh_ref_point_cm)
 dat_final$full_CGz_specific_orgDorsal  = (dat_final$full_CGz+dat_final$z_dist_to_veh_ref_point_cm)/dat_final$full_length
-dat_final$shoulderx_specific_orgBeak   = (dat_final$pt1_X-dat_final$head_length-dat_final$neck_length)/dat_final$full_length
-dat_final$shoulderz_specific_orgDorsal = (dat_final$pt1_Z+dat_final$z_dist_to_veh_ref_point_cm)/dat_final$full_length
+#dat_final$shoulderx_specific_orgBeak   = (dat_final$pt1_X-dat_final$head_length-dat_final$neck_length)/dat_final$full_length
+#dat_final$shoulderz_specific_orgDorsal = (dat_final$pt1_Z+dat_final$z_dist_to_veh_ref_point_cm)/dat_final$full_length
 
 dat_final$full_CGx_specific_orgShoulder = (dat_final$full_CGx-dat_final$pt1_X)/dat_final$full_length
 dat_final$full_CGx_orgShoulder          = (dat_final$full_CGx-dat_final$pt1_X)
 dat_final$full_CGz_specific_orgShoulder = (dat_final$full_CGz-dat_final$pt1_Z)/dat_final$full_length
 dat_final$full_CGz_orgShoulder          = (dat_final$full_CGz-dat_final$pt1_Z)
-dat_final$BeakTipx_orgShoulder          = (dat_final$head_length+dat_final$neck_length+dat_final$pt1_X)/dat_final$full_length
-dat_final$Centrez_orgShoulder           = (dat_final$pt1_Z)/dat_final$full_length
-dat_final$TailTipx_orgShoulder          = (-dat_final$torsotail_length-dat_final$pt1_X)/dat_final$full_length
-dat_final$MaxWidthx_orgShoulder         = (-dat_final$x_loc_of_body_max-dat_final$pt1_X)/dat_final$full_length
-dat_final$Dorsalz_orgShoulder           = -(dat_final$z_dist_to_veh_ref_point_cm+dat_final$pt1_Z)/dat_final$full_length
-dat_final$Ventralz_orgShoulder          = (dat_final$body_height_max-(dat_final$z_dist_to_veh_ref_point_cm+dat_final$pt1_Z))/dat_final$full_length
-
-test <- aggregate(list(humerus_per = dat_final$humerus_length_mm/dat_final$span),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), min)
+#dat_final$BeakTipx_orgShoulder          = (dat_final$head_length+dat_final$neck_length+dat_final$pt1_X)/dat_final$full_length
+#dat_final$Centrez_orgShoulder           = (dat_final$pt1_Z)/dat_final$full_length
+#dat_final$TailTipx_orgShoulder          = (-dat_final$torsotail_length-dat_final$pt1_X)/dat_final$full_length
+#dat_final$MaxWidthx_orgShoulder         = (-dat_final$x_loc_of_body_max-dat_final$pt1_X)/dat_final$full_length
+#dat_final$Dorsalz_orgShoulder           = -(dat_final$z_dist_to_veh_ref_point_cm+dat_final$pt1_Z)/dat_final$full_length
+#dat_final$Ventralz_orgShoulder          = (dat_final$body_height_max-(dat_final$z_dist_to_veh_ref_point_cm+dat_final$pt1_Z))/dat_final$full_length
 
 dat_final$elbow_scaled = dat_final$elbow*0.001
 dat_final$manus_scaled = dat_final$manus*0.001
@@ -152,11 +151,12 @@ dat_final$manus_scaled = dat_final$manus*0.001
 ### --------------------------- Compute summed quantities ---------------------------------
 ### ---------------------------------------------------------------------------------------
 # Maximum projected wing area and maximum wing span
-test       <- aggregate(list(S_proj_max = dat_final$wing_S_proj,
-                             S_max = dat_final$S,
+test1       <- aggregate(list(S_proj_max = dat_final$wing_S_proj, # CAUTION: Half wing projected area
+                             S_max = dat_final$S,    # CAUTION: Half wing area
                              b_max = dat_final$span, # CAUTION: this span includes both y and z components
-                             c_root_max = dat_final$c_root,
-                             c_mean_max = dat_final$c_mean),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
+                             c_root_max = dat_final$c_root),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), max)
+test2       <- aggregate(list(c_mean_mean = dat_final$c_mean),  by=list(species = dat_final$species, BirdID = dat_final$BirdID), mean)
+test <- merge(test1,test2, by = c("species","BirdID"))
 dat_bird   <- merge(dat_bird,test, by = c("species","BirdID"))
 dat_final  <- merge(dat_final,test, by = c("species","BirdID"))
 
@@ -196,12 +196,12 @@ shoulder_motion$rest_CGz = (shoulder_motion$full_m*shoulder_motion$full_CGz - 2*
 
 # - Rotate the wing forward about the shoulder in the x-y plane - allows a rotation about Pt1
 new_wing_CGx = (cosd(angle_shoulder)*(shoulder_motion$wing_CGx-shoulder_motion$pt1_X) + sind(angle_shoulder)*(shoulder_motion$wing_CGy-shoulder_motion$pt1_Y)) + shoulder_motion$pt1_X
-new_wing_CGy = (-sind(angle_shoulder)*(shoulder_motion$wing_CGx-shoulder_motion$pt1_X) + cosd(angle_shoulder)*(shoulder_motion$wing_CGy-shoulder_motion$pt1_Y)) + shoulder_motion$pt1_Y
+#new_wing_CGy = (-sind(angle_shoulder)*(shoulder_motion$wing_CGx-shoulder_motion$pt1_X) + cosd(angle_shoulder)*(shoulder_motion$wing_CGy-shoulder_motion$pt1_Y)) + shoulder_motion$pt1_Y
 shoulder_motion$forward_CGx = (shoulder_motion$rest_m*shoulder_motion$rest_CGx + 2*shoulder_motion$wing_m*new_wing_CGx)/shoulder_motion$full_m
 
 # - Rotate the wing backwards about the shoulder in the x-y plane
 new_wing_CGx = (cosd(-angle_shoulder)*(shoulder_motion$wing_CGx-shoulder_motion$pt1_X) + sind(-angle_shoulder)*(shoulder_motion$wing_CGy-shoulder_motion$pt1_Y)) + shoulder_motion$pt1_X
-new_wing_CGy = (-sind(-angle_shoulder)*(shoulder_motion$wing_CGx-shoulder_motion$pt1_X) + cosd(-angle_shoulder)*(shoulder_motion$wing_CGy-shoulder_motion$pt1_Y)) + shoulder_motion$pt1_Y
+#new_wing_CGy = (-sind(-angle_shoulder)*(shoulder_motion$wing_CGx-shoulder_motion$pt1_X) + cosd(-angle_shoulder)*(shoulder_motion$wing_CGy-shoulder_motion$pt1_Y)) + shoulder_motion$pt1_Y
 shoulder_motion$backwards_CGx = (shoulder_motion$rest_m*shoulder_motion$rest_CGx + 2*shoulder_motion$wing_m*new_wing_CGx)/shoulder_motion$full_m
 
 shoulder_motion$forward_CGx_specific   = (shoulder_motion$forward_CGx-shoulder_motion$pt1_X)/shoulder_motion$full_length
@@ -211,12 +211,12 @@ shoulder_motion$range_CGx_specific     = shoulder_motion$range_CGx/(shoulder_mot
 
 # - Rotate the wing up about the shoulder in the y-z plane
 new_wing_CGz = (cosd(angle_shoulder)*(shoulder_motion$wing_CGz-shoulder_motion$pt1_Z) - sind(angle_shoulder)*(shoulder_motion$wing_CGy-shoulder_motion$pt1_Y)) + shoulder_motion$pt1_Z
-new_wing_CGy = (sind(angle_shoulder)*(shoulder_motion$wing_CGz-shoulder_motion$pt1_Z) + cosd(angle_shoulder)*(shoulder_motion$wing_CGy-shoulder_motion$pt1_Y)) + shoulder_motion$pt1_Y
+#new_wing_CGy = (sind(angle_shoulder)*(shoulder_motion$wing_CGz-shoulder_motion$pt1_Z) + cosd(angle_shoulder)*(shoulder_motion$wing_CGy-shoulder_motion$pt1_Y)) + shoulder_motion$pt1_Y
 shoulder_motion$upwards_CGz   = (shoulder_motion$rest_m*shoulder_motion$rest_CGz + 2*shoulder_motion$wing_m*new_wing_CGz)/shoulder_motion$full_m
 
 # - Rotate the wing down about the shoulder in the y-z plane
 new_wing_CGz = (cosd(-angle_shoulder)*(shoulder_motion$wing_CGz-shoulder_motion$pt1_Z) - sind(-angle_shoulder)*(shoulder_motion$wing_CGy-shoulder_motion$pt1_Y)) + shoulder_motion$pt1_Z
-new_wing_CGy = (sind(-angle_shoulder)*(shoulder_motion$wing_CGz-shoulder_motion$pt1_Z) + cosd(-angle_shoulder)*(shoulder_motion$wing_CGy-shoulder_motion$pt1_Y)) + shoulder_motion$pt1_Y
+#new_wing_CGy = (sind(-angle_shoulder)*(shoulder_motion$wing_CGz-shoulder_motion$pt1_Z) + cosd(-angle_shoulder)*(shoulder_motion$wing_CGy-shoulder_motion$pt1_Y)) + shoulder_motion$pt1_Y
 shoulder_motion$downwards_CGz = (shoulder_motion$rest_m*shoulder_motion$rest_CGz + 2*shoulder_motion$wing_m*new_wing_CGz)/shoulder_motion$full_m
 
 shoulder_motion$upwards_CGz_specific   = (shoulder_motion$upwards_CGz-shoulder_motion$pt1_Z)/shoulder_motion$full_length
@@ -228,6 +228,8 @@ shoulder_motion                        = mutate(shoulder_motion, phylo = binomia
 
 ### ---------------------- Compute manuevering metrics -------------------------
 # calculate the estimated neutral point using the quarter chord position of the standard mean chord
+# the negative is necessary for the bird frame of reference as the orginal fit is to the absolute of the numbers
+# this line is equivalent to x_np = (x_chord/c_root)^0.8*c_root
 dat_final$x_np_est_orgShoulder = -(abs(dat_final$x_np_proxy_nd)^0.8)*dat_final$c_root_max
 # we want the computed neutral point to be in the same direction as the standard mean quarter chord
 # i.e. the neutral point should be positive if the standard mean quarter chord is positive
@@ -247,7 +249,8 @@ dat_final$sachs_pred_Ixx <- dat_final$full_m*(sqrt((0.14*dat_final$wing_m/dat_fi
 
 ## ----------- Tail Volume ------------
 # CAUTION: THIS IS NON-DIMENSIONALIZED WITH THE MAXIMUM MEAN CHORD TO COMPARE TO TRADITIONAL AIRCRAFT
-dat_final$Vh = abs(-(dat_final$torso_length+0.25*dat_final$tail_length)-dat_final$full_CGx)*dat_final$tail_length*dat_final$tail_width/(dat_final$c_mean_max*2*dat_final$S)
+# absolute is just to get the absolute distance
+dat_final$Vh = abs(-(dat_final$torso_length+0.25*dat_final$tail_length)-dat_final$full_CGx)*(dat_final$tail_length*dat_final$tail_width)/(dat_final$c_mean_mean*2*dat_final$S)
 
 ## ---- Compute the regression coefficients for each species for each variable -------
 
