@@ -44,6 +44,7 @@ dat_chord$c_root_max[which(dat_chord$WingID == "17_0285")] = max(dat_chord$c_roo
 dat_chord$c_root_max[which(dat_chord$WingID == "17_0243")] = max(dat_chord$c_root[which(dat_chord$WingID == "17_0243")])
 dat_chord$c_root_max[which(dat_chord$WingID == "16_0048")] = max(dat_chord$c_root[which(dat_chord$WingID == "16_0048")])
 
+#this is the one wing projected area divided by the half span which includes the body width
 dat_chord$mean_proj_chord_nobody = (dat_chord$S_proj/(dat_chord$b-(0.5*0.09481795)))
 dat_chord$mean_chord_nobody = (dat_chord$S_wing/(dat_chord$b-(0.5*0.09481795)))
 
