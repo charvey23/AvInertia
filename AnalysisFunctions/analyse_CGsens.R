@@ -357,20 +357,20 @@ boot_stab <- ggplot()+
   annotate(geom = "segment", y = 0, yend = 50, x = log(0), xend = log(0))
 
 ## ----------------------------------- Figure S3 -------------------------------------------------
-load("/Users/christinaharvey/Documents/AvInertia/AnalysisData/2021_09_02_CGsensana.RData")
+load("/Users/christinaharvey/Documents/AvInertia/AnalysisData/2021_10_15_CGsensana.RData")
 
-sens_agility_nd <- ggplot()+
-  geom_rect(data = shading, aes(ymin = col1, ymax = col2, xmin = -1.5, xmax = 1.5), alpha = 0.1, position = position_nudge(y = -0.5)) +
-  geom_point(data = subset(dat_sens_out, group == "max_agility"), aes(y = species_order, x = prop_q_dot_nd, col = shift[iter], group = as.factor(BirdID)),
+sens_agility <- ggplot()+
+  geom_rect(data = shading, aes(ymin = col1, ymax = col2, xmin = -19, xmax = 17), alpha = 0.1, position = position_nudge(y = -0.5)) +
+  geom_point(data = subset(dat_sens_out, group == "max_agility"), aes(y = species_order, x = prop_q_dot, col = shift[iter], group = as.factor(BirdID)),
              position=position_dodge(width=0.5)) +
-  geom_point(data = subset(dat_sens_out,iter==16 & group == "max_agility"), aes(y = species_order, x = prop_q_dot_nd, group = as.factor(BirdID)),
+  geom_point(data = subset(dat_sens_out,iter==16 & group == "max_agility"), aes(y = species_order, x = prop_q_dot, group = as.factor(BirdID)),
              fill = "white", col = "black", size = 1.5, pch = 23, position=position_dodge(width=0.5)) +
   scale_colour_gradient2(low = "#D01B1B", mid = "white",high = "#95D2EC",midpoint = 0, name = "CG shift (%)", breaks = c(-0.15,-0.1,-0.05,0,0.05,0.1,0.15), labels = c(-15,-10,-5,0,5,10,15)) +
   th +
-  scale_x_continuous(limits = c(-1.5,1.5), breaks = c(-1.5,-1,-0.5,0,0.5,1,1.5),
-                     name = "Normalized maximum stable pitch agility") +
+  scale_x_continuous(limits = c(-19,17), breaks = c(-15,-10,-5,0,5,10,15),
+                     name = "Maximum stable pitch agility") +
   scale_y_discrete(expand = c(0.1,0), limits = rev(phylo_order$species), name = "") +
-  annotate(geom = "segment", x = -1.5, xend = 1.5, y = log(0), yend = log(0))
+  annotate(geom = "segment", x = -15, xend = 15, y = log(0), yend = log(0))
 
 sens_stability_max <- ggplot()+
   geom_rect(data = shading, aes(ymin = col1, ymax = col2, xmin = -Inf, xmax = Inf), alpha = 0.1, position = position_nudge(y = -0.5)) +
@@ -381,7 +381,7 @@ sens_stability_max <- ggplot()+
   geom_vline(xintercept = 0, col = "black", linetype = "dashed") +
   scale_colour_gradient2(low = "#D01B1B", mid = "white",high = "#95D2EC",midpoint = 0, name = "CG shift (%)", breaks = c(-0.15,-0.1,-0.05,0,0.05,0.1,0.15), labels = c(-15,-10,-5,0,5,10,15)) +
   th +
-  scale_x_continuous(limits = c(-0.65,0.65), breaks = seq(-0.6,0.6,0.3), labels = c("-60","-30","0","30","60"),name = "maximum static margin (% of c   )") +
+  scale_x_continuous(limits = c(-0.66,0.66), breaks = seq(-0.6,0.6,0.3), labels = c("-60","-30","0","30","60"),name = "maximum static margin (% of c   )") +
   scale_y_discrete(expand = c(0.1,0), limits = rev(phylo_order$species), name = "") +
   annotate(geom = "segment", x = -0.6, xend = 0.6, y = log(0), yend = log(0))
 
@@ -399,7 +399,7 @@ sens_stability_min <- ggplot()+
   annotate(geom = "segment", x = -0.6, xend = 0.6, y = log(0), yend = log(0))
 
 #exported as 4x12
-fig_sens <- plot_grid(sens_agility_nd,sens_stability_min,sens_stability_max,
+fig_sens <- plot_grid(sens_agility,sens_stability_min,sens_stability_max,
                      #arrangement data
                      nrow = 1,
                      rel_heights = c(1,1,1),
