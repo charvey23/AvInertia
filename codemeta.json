@@ -8,7 +8,7 @@
   "description": "\n    Tools to compute the center of gravity and moment of inertia tensor of any \n    flying bird. The tools function by modeling a bird as a composite structure \n    of simple geometric objects. This requires detailed morphological \n    measurements of bird specimens although those obtained for the associated \n    paper have been included in the package for use. Refer to the vignettes and \n    supplementary material for detailed information on the package function.",
   "name": "AvInertia: Calculate the Inertial Properties of a Flying Bird",
   "license": "https://spdx.org/licenses/GPL-3.0",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "programmingLanguage": {
     "@type": "ComputerLanguage",
     "name": "R",
@@ -171,6 +171,60 @@
   "codeRepository": "https://github.com/charvey23/AvInertia",
   "releaseNotes": "https://github.com/charvey23/AvInertia/blob/master/NEWS.md",
   "readme": "https://github.com/charvey23/AvInertia/blob/master/README.md",
-  "fileSize": "249.639KB",
-  "issueTracker": "https://github.com/charvey23/AvInertia/issues"
+  "fileSize": "250.97KB",
+  "issueTracker": "https://github.com/charvey23/AvInertia/issues",
+  "provider": {
+    "@id": "https://cran.r-project.org",
+    "@type": "Organization",
+    "name": "Comprehensive R Archive Network (CRAN)",
+    "url": "https://cran.r-project.org"
+  },
+  "citation": [
+    {
+      "@type": "ScholarlyArticle",
+      "datePublished": "2022",
+      "author": [
+        {
+          "@type": "Person",
+          "givenName": "Christina",
+          "familyName": "Harvey"
+        },
+        {
+          "@type": "Person",
+          "givenName": "Vikram B.",
+          "familyName": "Baliga"
+        },
+        {
+          "@type": "Person",
+          "givenName": "Jasmin C.M.",
+          "familyName": "Wong"
+        },
+        {
+          "@type": "Person",
+          "givenName": "Douglas L.",
+          "familyName": "Altshuler"
+        },
+        {
+          "@type": "Person",
+          "givenName": "Daniel J.",
+          "familyName": "Inman"
+        }
+      ],
+      "name": "Birds can transition between stable and unstable states via wing morphing",
+      "identifier": "10.1038/s41586-022-04477-8",
+      "url": "https://doi.org/10.1038/s41586-022-04477-8",
+      "pagination": "648–-653",
+      "@id": "https://doi.org/10.1038/s41586-022-04477-8",
+      "sameAs": "https://doi.org/10.1038/s41586-022-04477-8",
+      "isPartOf": {
+        "@type": "PublicationIssue",
+        "datePublished": "2022",
+        "isPartOf": {
+          "@type": ["PublicationVolume", "Periodical"],
+          "volumeNumber": "603",
+          "name": "Nature"
+        }
+      }
+    }
+  ]
 }

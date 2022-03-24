@@ -45,7 +45,7 @@ first.
 
 ## Citation
 
-Currently in submission: TBA
+Harvey, C., Baliga, V.B., Wong, J.C.M., Altshuler D.L., and Inman, D.J. Birds can transition between stable and unstable states via wing morphing. Nature 603, 648–653 (2022). https://doi.org/10.1038/s41586-022-04477-8
 
 
 ## License

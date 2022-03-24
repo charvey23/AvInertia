@@ -1,0 +1,21 @@
+citHeader("To cite AvInertia in publications use:")
+
+citEntry(
+  entry    = "Article",
+	title    = "Birds can transition between stable and unstable states via wing morphing",
+	url      = "https://doi.org/10.1038/s41586-022-04477-8",
+	doi      = "10.1038/s41586-022-04477-8",
+	journal  = "Nature",
+	author   = c(person("Christina", "Harvey"),
+               person("Vikram B.", "Baliga"),
+               person("Jasmin C.M.", "Wong"),
+               person("Douglas L.", "Altshuler"),
+               person("Daniel J.", "Inman")),
+	volume   = "603",
+	pages    = "648–-653",
+	month    = "mar",
+	year     = "2022",
+  textVersion = paste("Harvey, C., Baliga, V.B., Wong, J.C.M., Altshuler D.L., and Inman, D.J. (2022).",
+                      "Birds can transition between stable and unstable states via wing morphing.",
+  	                  "Nature, 603, 648–653. doi: 10.1038/s41586-022-04477-8")
+)

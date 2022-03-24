@@ -1,6 +1,6 @@
 Package: AvInertia
 Title: Calculate the Inertial Properties of a Flying Bird
-Version: 0.0.1
+Version: 0.0.2
 Authors@R: 
     c(person(given = "Christina",
            family = "Harvey",
